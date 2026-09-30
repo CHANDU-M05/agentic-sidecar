@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Companion intelligence and real-time decision supervision layer for autonomous AI agents.">
+  <meta property="og:title" content="Agentic Sidecar — Runtime Governance for AI Agents">
+  <meta property="og:description" content="Evaluate agent decisions against policy, risk, intent, and budget limits before execution.">
+  <title>Agentic Sidecar — Runtime Governance for AI Agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="nav shell">
+    <a class="brand" href="#top">
+      <span class="brand-mark"></span>
+      Agentic Sidecar
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#playground">Live Demo</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#modules">Capabilities</a>
+      <a href="#modes">Observe vs Govern</a>
+      <a href="#quickstart">Quickstart</a>
+      <a href="#ecosystem">Ecosystem</a>
+    </nav>
+    <a class="button button-small button-ghost" href="https://github.com/CHANDU-M05/agentic-sidecar" target="_blank" rel="noopener">
+      GitHub <span>↗</span>
+    </a>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero shell" id="top">
+    <div class="hero-copy">
+      <div class="eyebrow">
+        <span class="live-dot"></span> Open-source · Local-first · Real-time Decision Supervision
+      </div>
+      <h1>Runtime Governance for <span>Agentic AI</span></h1>
+      <p class="hero-lead">
+        Agentic Sidecar attaches to your agent harness and evaluates every proposed tool call against policy, risk, intent, and budget limits <em>before</em> execution—without taking over the agent loop.
+      </p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#playground">Explore Live Demo <span>↓</span></a>
+        <button class="copy-command" id="copy-install" title="Copy install command">
+          <code>pip install agentic-sidecar</code>
+          <span>⧉</span>
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <strong>218</strong>
+          <span>Tests Passing</span>
+        </div>
+        <div class="stat-item">
+          <strong>89%</strong>
+          <span>Code Coverage</span>
+        </div>
+        <div class="stat-item">
+          <strong>v0.6.0</strong>
+          <span>PyPI Release</span>
+        </div>
+        <div class="stat-item">
+          <strong>0</strong>
+          <span>Required Services</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Architecture Box -->
+    <div class="hero-visual" aria-label="Sidecar Decision Pipeline">
+      <div style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; font-family: var(--font-mono);">
+        Sidecar Execution Flow
+      </div>
+      <div class="pipeline-box">
+        <div><strong>1. Agent Action Proposed</strong><br><span style="color: var(--text-muted); font-size: 12px;">issue_refund(amount=$850)</span></div>
+        <span class="tag tag-blue">LangGraph Adapter</span>
+      </div>
+      <div class="pipeline-box">
+        <div><strong>2. Decision Gate Evaluation</strong><br><span style="color: var(--text-muted); font-size: 12px;">Policy → Risk → Intent Guardian</span></div>
+        <span class="tag tag-purple">Sidecar Runtime</span>
+      </div>
+      <div class="pipeline-box" style="border-color: rgba(255,94,126,0.3);">
+        <div><strong>3. Gate Verdict: BLOCK</strong><br><span style="color: var(--red); font-size: 12px;">Exceeds max refund constraint ($500)</span></div>
+        <span class="tag tag-red">Govern Mode</span>
+      </div>
+      <div class="pipeline-box">
+        <div><strong>4. Adapter Action</strong><br><span style="color: var(--green); font-size: 12px;">Raises SidecarBlockedError (Tool Stopped)</span></div>
+        <span class="tag tag-green">Enforcement</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Demo Section -->
+  <section class="section shell" id="playground">
+    <div class="section-header">
+      <div class="eyebrow">Interactive Playground</div>
+      <h2 class="section-title">Governed Customer Support Agent Demo</h2>
+      <p class="section-subtitle">Test simulated agent actions against Policy Advisor, Risk Evaluator, Intent Guardian, and Budget Guardian in real time.</p>
+    </div>
+
+    <div class="demo-card">
+      <div class="demo-controls">
+        <div>
+          <span style="font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 12px;">Operation Mode:</span>
+          <div class="mode-toggle">
+            <button class="mode-btn" id="mode-observe">Observe Mode</button>
+            <button class="mode-btn active" id="mode-govern">Govern Mode</button>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button class="act-btn" data-action="read_order">1. Read Order ($450)</button>
+          <button class="act-btn" data-action="refund_250">2. Refund $250 (OK)</button>
+          <button class="act-btn" data-action="refund_850">3. Refund $850 (Limit)</button>
+          <button class="act-btn" data-action="delete_customer">4. Delete Customer (Deny)</button>
+          <button class="act-btn" data-action="over_budget">5. Exceed Budget ($5.20)</button>
+        </div>
+      </div>
+
+      <div class="demo-grid">
+        <!-- Console Output -->
+        <div>
+          <div class="console-header">
+            <span>Execution Terminal</span>
+            <span style="color: var(--green);">● Active Runtime</span>
+          </div>
+          <div class="console-box" id="demo-console">
+            <div style="color: var(--text-dim); margin-bottom: 8px;">[SYSTEM] Governed Customer Support Agent initialized in GOVERN mode.</div>
+            <div style="color: var(--text-muted); margin-bottom: 8px;">Click an action button above to evaluate tool calls against Sidecar rules.</div>
+          </div>
+        </div>
+
+        <!-- JSON Context Inspector -->
+        <div>
+          <div class="console-header">
+            <span>Decision Payload Inspector</span>
+            <span style="color: var(--cyan);">JSON Data</span>
+          </div>
+          <pre class="console-box" id="json-console" style="color: #9ec1e6;">// Select an action to view the serialized Decision & DecisionContext payload.</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+  <section class="section shell" id="architecture">
+    <div class="section-header">
+      <div class="eyebrow">Design & Rationale</div>
+      <h2 class="section-title">Core Architecture & Design Principles</h2>
+      <p class="section-subtitle">Built on explicit governance boundaries rather than implicit LLM prompts.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="card-icon">⚡</div>
+        <h3>Rules Before Models</h3>
+        <p>Policy Advisor, Risk Evaluator, Intent Guardian, and Budget Guardian run deterministically with zero LLM latency or API costs. LLM Judges are strictly opt-in.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">🔌</div>
+        <h3>Framework Independence</h3>
+        <p>The Sidecar runtime (<code style="color:var(--cyan)">core/</code>) has zero dependencies on specific framework adapters. It attaches to LangGraph, CrewAI, or custom loops seamlessly.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">🛡️</div>
+        <h3>Fail-Safe Failure Modes</h3>
+        <p>Requires an explicit <code style="color:var(--cyan)">on_sidecar_failure</code> setting (<code style="color:var(--cyan)">fail_closed</code> or <code style="color:var(--cyan)">fail_open</code>). If evaluation errors, governance is guaranteed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capabilities Section -->
+  <section class="section shell" id="modules">
+    <div class="section-header">
+      <div class="eyebrow">Modules & Capabilities</div>
+      <h2 class="section-title">Composable Decision Gate Modules</h2>
+      <p class="section-subtitle">Enable only the evaluation components your application requires.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="card-icon">📋</div>
+        <h3>Policy Advisor</h3>
+        <p>YAML-driven allow/deny permission rules matching tool names via glob patterns (<code style="color:var(--cyan)">delete_*</code>).</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">⚖️</div>
+        <h3>Risk Evaluator</h3>
+        <p>Classifies actions into LOW, MEDIUM, or HIGH risk using tool argument pattern checks.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">🎯</div>
+        <h3>Intent Guardian</h3>
+        <p>Validates tool parameters against structured user <code style="color:var(--cyan)">IntentEnvelope</code> constraints and detects drift.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">💰</div>
+        <h3>Budget Guardian</h3>
+        <p>Enforces per-task spend (USD) and token ceilings, returning <code style="color:var(--amber)">PAUSE</code> for human approval when exceeded.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">🗺️</div>
+        <h3>Plan Evaluator</h3>
+        <p>Evaluates entire agent plans to detect unnecessary steps, overreach, or contradictory operations.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">🔍</div>
+        <h3>Critic & Judge Evaluators</h3>
+        <p>Challenges decisions for unsupported assumptions and provides model-agnostic LLM decision review.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Observe vs Govern Modes -->
+  <section class="section shell" id="modes">
+    <div class="section-header">
+      <div class="eyebrow">Operating Modes</div>
+      <h2 class="section-title">Observe Mode vs. Govern Mode</h2>
+      <p class="section-subtitle">Gradually transition from monitoring to active policy enforcement.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th>Behavior</th>
+            <th>Tool Execution</th>
+            <th>Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong style="color: var(--cyan);">Observe Mode</strong></td>
+            <td>Evaluates tool calls, computes decision verdicts, and logs audit trails.</td>
+            <td><span class="verdict-badge badge-allow">Always Executes</span></td>
+            <td>Initial deployment, shadow auditing, and baseline evaluation.</td>
+          </tr>
+          <tr>
+            <td><strong style="color: var(--green);">Govern Mode</strong></td>
+            <td>Actively enforces decisions. A <code style="color:var(--red)">BLOCK</code> status stops execution.</td>
+            <td><span class="verdict-badge badge-block">Blocked via Exception</span></td>
+            <td>Production enforcement, financial boundary control, and safety gating.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Quickstart & API Code -->
+  <section class="section shell" id="quickstart">
+    <div class="section-header">
+      <div class="eyebrow">Developer Quickstart</div>
+      <h2 class="section-title">Integration Code Snippets</h2>
+      <p class="section-subtitle">Simple, pythonic integration with LangGraph and agent frameworks.</p>
+    </div>
+
+    <div class="code-box">
+      <div class="code-header">
+        <button class="tab-btn active" data-tab="langgraph">LangGraph Adapter</button>
+        <button class="tab-btn" data-tab="intent">Intent Guardian</button>
+        <button class="tab-btn" data-tab="budget">Budget Guardian</button>
+        <button class="tab-btn" data-tab="govern">Govern Exception Handling</button>
+      </div>
+      <pre class="code-content" id="code-display"># Wrap tools for LangGraph agent
+from agentic_sidecar import Sidecar
+from agentic_sidecar.adapters.langgraph import attach
+from agentic_sidecar.gate.policy import PolicyAdvisor, PolicyRule
+
+sidecar = Sidecar(
+    on_sidecar_failure="fail_closed",
+    mode="govern",
+    policy=PolicyAdvisor([PolicyRule(tool="delete_*", effect="deny")])
+)
+
+# Intercept tools before passing to react agent
+tools = attach(sidecar, [read_order, issue_refund, delete_customer])
+agent = create_react_agent(model, tools=tools)</pre>
+    </div>
+  </section>
+
+  <!-- DeepAgentLabs Ecosystem & Footer -->
+  <footer id="ecosystem">
+    <div class="shell">
+      <div class="footer-grid">
+        <div>
+          <div class="brand" style="margin-bottom: 12px;">
+            <span class="brand-mark"></span> DeepAgentLabs Ecosystem
+          </div>
+          <p style="color: var(--text-muted); font-size: 14px; max-width: 400px;">
+            Open-source infrastructure for autonomous AI systems: Trace (AgenticLens), Supervise (Agentic Sidecar), Connect (Agentic MCP), Test (Agentic Chaos).
+          </p>
+        </div>
+        <div>
+          <h4 style="color: var(--text); margin-bottom: 12px;">Ecosystem</h4>
+          <ul style="list-style: none; display: grid; gap: 8px; font-size: 13px;">
+            <li><a href="https://github.com/DeepAgentLabs/agenticlens" style="color: var(--cyan);">AgenticLens (Observe)</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/agentic-sidecar" style="color: var(--cyan);">Agentic Sidecar (Govern)</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/mcp-server" style="color: var(--cyan);">Agentic MCP (Connect)</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/agentic-chaos" style="color: var(--cyan);">Agentic Chaos (Test)</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="color: var(--text); margin-bottom: 12px;">Resources</h4>
+          <ul style="list-style: none; display: grid; gap: 8px; font-size: 13px;">
+            <li><a href="https://github.com/CHANDU-M05/agentic-sidecar">GitHub Repository</a></li>
+            <li><a href="https://pypi.org/project/agentic-sidecar/">PyPI Package</a></li>
+            <li><a href="https://github.com/CHANDU-M05/agentic-sidecar/blob/main/CHANGELOG.md">Changelog</a></li>
+            <li><a href="https://github.com/CHANDU-M05/agentic-sidecar/blob/main/SECURITY.md">Security Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div style="border-top: 1px solid var(--line); padding-top: 24px; text-align: center; font-size: 12px; color: var(--text-dim);">
+        © 2026 DeepAgentLabs & Chandu M. Open-source under MIT License.
+      </div>
+    </div>
+  </footer>
+
+  <script src="site.js"></script>
+</body>
+</html>

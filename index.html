@@ -3,9 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Companion intelligence and real-time decision supervision layer for autonomous AI agents.">
+  <meta name="description" content="Companion intelligence and real-time decision supervision layer for autonomous AI agents. Evaluates every tool call against policy, risk, intent, and budget before execution.">
   <meta property="og:title" content="Agentic Sidecar — Runtime Governance for AI Agents">
   <meta property="og:description" content="Evaluate agent decisions against policy, risk, intent, and budget limits before execution.">
+  <meta property="og:image" content="https://deepagentlabs.io/agentic-sidecar/og.png">
+  <meta property="og:url" content="https://deepagentlabs.io/agentic-sidecar/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Agentic Sidecar — Runtime Governance for AI Agents">
+  <meta name="twitter:description" content="Evaluate agent decisions against policy, risk, intent, and budget limits before execution.">
+  <meta name="twitter:image" content="https://deepagentlabs.io/agentic-sidecar/og.png">
   <title>Agentic Sidecar — Runtime Governance for AI Agents</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,36 +22,44 @@
 <body>
 
   <!-- Navigation Bar -->
-  <header class="nav shell">
-    <a class="brand" href="#top">
+  <header class="nav shell" id="top">
+    <a class="brand" href="https://deepagentlabs.io" aria-label="DeepAgentLabs home">
       <span class="brand-mark"></span>
-      Agentic Sidecar
+      DeepAgentLabs
     </a>
     <nav class="nav-links" aria-label="Main navigation">
+      <a href="docs/">Docs</a>
       <a href="#playground">Live Demo</a>
       <a href="#architecture">Architecture</a>
       <a href="#modules">Capabilities</a>
-      <a href="#modes">Observe vs Govern</a>
       <a href="#quickstart">Quickstart</a>
       <a href="#ecosystem">Ecosystem</a>
     </nav>
-    <a class="button button-small button-ghost" href="https://github.com/CHANDU-M05/agentic-sidecar" target="_blank" rel="noopener">
+
+    <a class="button button-small button-ghost" href="https://github.com/DeepAgentLabs/agentic-sidecar" target="_blank" rel="noopener">
       GitHub <span>↗</span>
     </a>
   </header>
 
   <!-- Hero Section -->
-  <section class="hero shell" id="top">
+  <section class="hero shell" id="agentic-sidecar-top">
     <div class="hero-copy">
       <div class="eyebrow">
         <span class="live-dot"></span> Open-source · Local-first · Real-time Decision Supervision
       </div>
-      <h1>Runtime Governance for <span>Agentic AI</span></h1>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <h1 style="margin-bottom:0">Agentic Sidecar — <span>Runtime Governance</span></h1>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <span class="maturity-badge">Pre-Alpha</span>
+        <span style="font-family:var(--font-mono); font-size:13px; color:var(--cyan);">v0.6.0</span>
+        <a href="https://pypi.org/project/agentic-sidecar/" style="font-size:12px; color:var(--text-dim); border:1px solid var(--line); padding:2px 8px; border-radius:4px; font-family:var(--font-mono);" target="_blank" rel="noopener">PyPI</a>
+      </div>
       <p class="hero-lead">
         Agentic Sidecar attaches to your agent harness and evaluates every proposed tool call against policy, risk, intent, and budget limits <em>before</em> execution—without taking over the agent loop.
       </p>
       <div class="hero-actions">
-        <a class="button button-primary" href="#playground">Explore Live Demo <span>↓</span></a>
+        <a class="button button-primary" href="docs/">Read Docs <span>→</span></a>
         <button class="copy-command" id="copy-install" title="Copy install command">
           <code>pip install agentic-sidecar</code>
           <span>⧉</span>
@@ -292,10 +307,74 @@ agent = create_react_agent(model, tools=tools)</pre>
   <!-- DeepAgentLabs Ecosystem & Footer -->
   <footer id="ecosystem">
     <div class="shell">
+
+      <!-- Integrations strip -->
+      <div class="section-header" style="margin-bottom:32px;">
+        <div class="eyebrow" style="display:inline-flex;">Integrations</div>
+        <h2 class="section-title" style="font-size:28px; margin-top:12px;">LangGraph adapter — stable today</h2>
+        <p class="section-subtitle">The LangGraph adapter is production-ready. Additional framework adapters are planned for future releases.</p>
+      </div>
+      <div class="grid-3" style="margin-bottom:60px;">
+        <div class="feature-card" style="padding:20px 24px;">
+          <div class="card-icon" style="font-size:16px;">🦜</div>
+          <h3 style="font-size:15px;">LangGraph <span class="tag tag-green" style="font-size:10px; vertical-align:middle;">Stable</span></h3>
+          <p>Wrap tool lists with <code style="color:var(--cyan)">attach(sidecar, tools)</code> — works with <code style="color:var(--cyan)">create_react_agent</code>.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px; opacity:0.7;">
+          <div class="card-icon" style="font-size:16px;">🤖</div>
+          <h3 style="font-size:15px;">AutoGen <span class="tag tag-purple" style="font-size:10px; vertical-align:middle;">Planned</span></h3>
+          <p>Adapter planned for a future release.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px; opacity:0.7;">
+          <div class="card-icon" style="font-size:16px;">⚓</div>
+          <h3 style="font-size:15px;">CrewAI <span class="tag tag-purple" style="font-size:10px; vertical-align:middle;">Planned</span></h3>
+          <p>Adapter planned for a future release.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px; opacity:0.7;">
+          <div class="card-icon" style="font-size:16px;">🔷</div>
+          <h3 style="font-size:15px;">OpenAI Agents SDK <span class="tag tag-purple" style="font-size:10px; vertical-align:middle;">Planned</span></h3>
+          <p>Adapter planned for a future release.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px; opacity:0.7;">
+          <div class="card-icon" style="font-size:16px;">🌐</div>
+          <h3 style="font-size:15px;">Google ADK <span class="tag tag-purple" style="font-size:10px; vertical-align:middle;">Planned</span></h3>
+          <p>Adapter planned for a future release.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px;">
+          <div class="card-icon" style="font-size:16px;">🔧</div>
+          <h3 style="font-size:15px;">Any Python Agent <span class="tag tag-green" style="font-size:10px; vertical-align:middle;">Stable</span></h3>
+          <p>Use <code style="color:var(--cyan)">sidecar.evaluate(context)</code> directly in any custom agent loop.</p>
+        </div>
+      </div>
+
+      <!-- Who is it for -->
+      <div class="section-header" style="margin-bottom:32px;">
+        <div class="eyebrow" style="display:inline-flex;">Intended Users</div>
+        <h2 class="section-title" style="font-size:28px; margin-top:12px;">Built for agent engineers and platform teams</h2>
+      </div>
+      <div class="grid-3" style="margin-bottom:60px;">
+        <div class="feature-card" style="padding:20px 24px;">
+          <div class="card-icon" style="font-size:16px;">🧑‍💻</div>
+          <h3 style="font-size:15px;">AI Agent Developers</h3>
+          <p>Add governance to LangGraph or any custom Python agent with a few lines of code.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px;">
+          <div class="card-icon" style="font-size:16px;">🏗️</div>
+          <h3 style="font-size:15px;">Platform Safety Engineers</h3>
+          <p>Define and enforce policy, risk, and budget boundaries without modifying the agent model itself.</p>
+        </div>
+        <div class="feature-card" style="padding:20px 24px;">
+          <div class="card-icon" style="font-size:16px;">📊</div>
+          <h3 style="font-size:15px;">ML / Ops Teams</h3>
+          <p>Audit every agent decision with full provenance before moving from shadow-mode to production enforcement.</p>
+        </div>
+      </div>
+
       <div class="footer-grid">
         <div>
           <div class="brand" style="margin-bottom: 12px;">
-            <span class="brand-mark"></span> DeepAgentLabs Ecosystem
+            <span class="brand-mark"></span>
+            <a href="https://deepagentlabs.io" style="color:inherit;">DeepAgentLabs</a>
           </div>
           <p style="color: var(--text-muted); font-size: 14px; max-width: 400px;">
             Open-source infrastructure for autonomous AI systems: Trace (AgenticLens), Supervise (Agentic Sidecar), Connect (Agentic MCP), Test (Agentic Chaos).
@@ -304,24 +383,26 @@ agent = create_react_agent(model, tools=tools)</pre>
         <div>
           <h4 style="color: var(--text); margin-bottom: 12px;">Ecosystem</h4>
           <ul style="list-style: none; display: grid; gap: 8px; font-size: 13px;">
-            <li><a href="https://github.com/DeepAgentLabs/agenticlens" style="color: var(--cyan);">AgenticLens (Observe)</a></li>
-            <li><a href="https://github.com/DeepAgentLabs/agentic-sidecar" style="color: var(--cyan);">Agentic Sidecar (Govern)</a></li>
-            <li><a href="https://github.com/DeepAgentLabs/mcp-server" style="color: var(--cyan);">Agentic MCP (Connect)</a></li>
-            <li><a href="https://github.com/DeepAgentLabs/agentic-chaos" style="color: var(--cyan);">Agentic Chaos (Test)</a></li>
+            <li><a href="https://deepagentlabs.io/agenticlens/" style="color: var(--cyan);">AgenticLens (Observe)</a></li>
+            <li><a href="https://deepagentlabs.io/agentic-sidecar/" style="color: var(--cyan);">Agentic Sidecar (Govern)</a></li>
+            <li><a href="https://deepagentlabs.io/deep-agenticcore-mcp/" style="color: var(--cyan);">Agentic MCP (Connect)</a></li>
+            <li><a href="https://deepagentlabs.io/agentic-chaos/" style="color: var(--cyan);">Agentic Chaos (Test)</a></li>
           </ul>
         </div>
         <div>
           <h4 style="color: var(--text); margin-bottom: 12px;">Resources</h4>
           <ul style="list-style: none; display: grid; gap: 8px; font-size: 13px;">
-            <li><a href="https://github.com/CHANDU-M05/agentic-sidecar">GitHub Repository</a></li>
-            <li><a href="https://pypi.org/project/agentic-sidecar/">PyPI Package</a></li>
-            <li><a href="https://github.com/CHANDU-M05/agentic-sidecar/blob/main/CHANGELOG.md">Changelog</a></li>
-            <li><a href="https://github.com/CHANDU-M05/agentic-sidecar/blob/main/SECURITY.md">Security Policy</a></li>
+            <li><a href="docs/">Documentation</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/agentic-sidecar">GitHub</a></li>
+            <li><a href="https://pypi.org/project/agentic-sidecar/">PyPI</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/agentic-sidecar/tree/main/examples">Examples</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/CONTRIBUTING.md">Contributing</a></li>
+            <li><a href="https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/LICENSE">License (MIT)</a></li>
           </ul>
         </div>
       </div>
       <div style="border-top: 1px solid var(--line); padding-top: 24px; text-align: center; font-size: 12px; color: var(--text-dim);">
-        © 2026 DeepAgentLabs & Chandu M. Open-source under MIT License.
+        © 2026 <a href="https://deepagentlabs.io" style="color:var(--text-muted);">DeepAgentLabs</a>. Open-source under MIT License.
       </div>
     </div>
   </footer>

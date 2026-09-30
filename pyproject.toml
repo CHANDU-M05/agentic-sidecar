@@ -63,6 +63,9 @@ dev = [
   "twine>=5.1",
   "types-PyYAML>=6.0",
 ]
+docs = [
+  "mkdocs-material>=9.0",
+]
 
 [project.scripts]
 agentic-sidecar = "agentic_sidecar.cli.main:main"

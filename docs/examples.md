@@ -116,3 +116,10 @@ Jupyter notebook demonstrating the Sidecar concept end-to-end in an interactive 
 pip install jupyter
 jupyter notebook examples/sidecar_purpose_demo.ipynb
 ```
+
+---
+
+## End-to-End Use Cases
+
+For complete, step-by-step walkthroughs solving real-world production problems end-to-end (including multi-layer guardrails, LangGraph integration, and policy enforcement), visit the [Agentic Sidecar Use Cases Site](https://deepagentlabs.io/agentic-sidecar/usecases/).
+

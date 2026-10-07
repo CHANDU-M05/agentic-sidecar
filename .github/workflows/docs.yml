@@ -3,6 +3,8 @@ name: Docs
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -40,6 +42,9 @@ jobs:
       - name: Build docs
         run: uv run mkdocs build --strict --site-dir site/docs
 
+      - name: Build use cases
+        run: uv run mkdocs build --strict -f mkdocs.usecases.yml --site-dir site/usecases
+
       - name: Add product website
         run: |
           cp index.html site/index.html
@@ -47,6 +52,12 @@ jobs:
           cp site.js site/site.js
           cp og.png site/og.png
           touch site/.nojekyll
+
+      - name: Check site layout
+        run: |
+          test -f site/index.html
+          test -f site/docs/index.html
+          test -f site/usecases/index.html
 
       - name: Upload artifact
         if: github.event_name != 'pull_request'

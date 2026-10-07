@@ -1,0 +1,13 @@
+INHERIT: mkdocs.yml
+site_name: Agentic Sidecar Use Cases
+site_url: https://deepagentlabs.io/agentic-sidecar/usecases/
+edit_uri: edit/main/usecases/
+docs_dir: usecases
+
+nav:
+  - Overview: index.md
+  - Prevent unauthorized high-value refunds: prevent-unauthorized-refunds.md
+  - Governed customer support agent: governed-customer-support-agent.md
+  - Govern LangGraph agent workflows: govern-langgraph-agent-workflows.md
+  - Back to docs: https://deepagentlabs.io/agentic-sidecar/docs/
+  - Back to Agentic Sidecar: https://deepagentlabs.io/agentic-sidecar/

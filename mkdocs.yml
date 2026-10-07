@@ -39,6 +39,7 @@ nav:
   - CLI reference: cli-reference.md
   - Integrations: integrations.md
   - Examples: examples.md
+  - Use cases: https://deepagentlabs.io/agentic-sidecar/usecases/
   - Troubleshooting: troubleshooting.md
   - Limitations: limitations.md
   - Roadmap: roadmap.md

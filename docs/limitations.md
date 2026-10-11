@@ -64,8 +64,11 @@ for the recorded live-smoke status.
 
 Failure policy covers injection, evaluator/provider errors, malformed verdicts,
 logging/recording and approvals. A failed recorder returns the configured
-fallback but cannot guarantee an audit entry. A custom before_tool_call hook
-replaces all built-in stages, including plan checks, budget and evaluators.
+fallback but cannot guarantee an audit entry -- the already-computed verdict
+is discarded, so with `fail_open` a recorder failure after a genuine BLOCK
+resolves to ALLOW; `fail_closed` resolves the same failure to BLOCK instead.
+A custom before_tool_call hook replaces all built-in stages, including plan
+checks, budget and evaluators.
 
 Decision IDs and approval causal links are available. In-memory contexts are
 deep-copied at recording time; the public list, its contexts and nested decision

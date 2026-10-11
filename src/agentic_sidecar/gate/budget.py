@@ -30,6 +30,9 @@ class BudgetGuardian:
     """Tracks cumulative cost and token usage for a task, enforcing per-task
     ceilings.
 
+    Not internally locked: use one `BudgetGuardian` per task, not one shared
+    across concurrently-dispatched tool calls, or `record_invocation` can race.
+
     Attributes:
         max_cost: Maximum spend (USD) allowed for this task. Required.
         max_tokens: Maximum tokens (input + output) allowed. Optional.

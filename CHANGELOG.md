@@ -49,9 +49,16 @@ All notable changes to this project are documented here.
   reaches the model only through the separately serialized untrusted context.
 - `JudgeProvider.cost_tracking_available()` now defaults to `False`; a custom
   provider must opt in explicitly before cost limits/budget accounting trust it.
+- `PlanEvaluator._analyze_plan()` no longer takes an unused `intent` parameter.
+- `tests/test_critic.py` passes a `str` for `CriticChallenge.evidence`, matching
+  its declared type instead of a `list`.
 
 ### Documentation
 
+- Clarified that a recorder failure discards the already-computed verdict, so
+  `fail_open` resolves it to ALLOW and `fail_closed` resolves it to BLOCK.
+- Documented that `BudgetGuardian` is not internally locked and is meant for
+  one task at a time, not shared across concurrently-dispatched tool calls.
 - Updated the canonical and docs roadmaps with release history through 0.6.0,
   current capabilities, and acceptance criteria for upcoming stages.
 - Prioritized 0.6.x governance/evaluator enhancements, followed by live operations,

@@ -13,10 +13,8 @@ import fnmatch
 from dataclasses import dataclass
 from typing import Any
 
-from agentic_sidecar.core.context import IntentSnapshot
 from agentic_sidecar.core.operators import compare
 from agentic_sidecar.evaluators.base import EvaluatorBase, EvaluatorResult
-from agentic_sidecar.intent import IntentEnvelope
 from agentic_sidecar.intent.alignment import ConstraintBinding
 
 
@@ -98,7 +96,7 @@ class PlanEvaluator(EvaluatorBase):
             )
 
         # Analyze plan for issues
-        issues = self._analyze_plan(plan, intent, goal)
+        issues = self._analyze_plan(plan, goal)
         constraints = context.get("constraints", {})
         if intent:
             constraints = (
@@ -143,12 +141,7 @@ class PlanEvaluator(EvaluatorBase):
             },
         )
 
-    def _analyze_plan(
-        self,
-        plan: Any,
-        intent: IntentEnvelope | IntentSnapshot | dict[str, Any] | None,
-        goal: str,
-    ) -> list[dict[str, Any]]:
+    def _analyze_plan(self, plan: Any, goal: str) -> list[dict[str, Any]]:
         """Analyze plan for alignment issues."""
         issues: list[dict[str, Any]] = []
 

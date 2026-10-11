@@ -34,6 +34,22 @@ All notable changes to this project are documented here.
 - Pages deployment is restricted to main; provider credentials remain optional
   in CI. Authenticated provider smoke evidence is pending credentialed validation.
 
+### Fixed
+
+- `evaluate_plan()` no longer re-checks Policy/Risk/Intent Guardian against the
+  synthetic `"__plan__"` marker after every real step already passed; a
+  default-deny policy or high default risk could otherwise false-BLOCK an
+  already-valid plan.
+- A plan step's `WARN`-severity `ConstraintBinding` finding is now aggregated
+  into the plan's final verdict instead of being silently dropped.
+- Custom governance-loop docs now call `sidecar.enforce()` so PAUSE/ESCALATE/
+  CHALLENGE/REPLAN are handled the same as the adapter, not just BLOCK.
+- Judge's internal question no longer interpolates caller-controlled
+  `goal`/`tool_name` into the privileged provider prompt; that data still
+  reaches the model only through the separately serialized untrusted context.
+- `JudgeProvider.cost_tracking_available()` now defaults to `False`; a custom
+  provider must opt in explicitly before cost limits/budget accounting trust it.
+
 ### Documentation
 
 - Updated the canonical and docs roadmaps with release history through 0.6.0,

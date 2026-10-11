@@ -28,3 +28,6 @@ class MockJudge(JudgeProvider):
 
     def evaluate(self, question: str, context: dict[str, Any]) -> dict[str, Any]:
         return deepcopy(self.response)
+
+    def cost_tracking_available(self) -> bool:
+        return True

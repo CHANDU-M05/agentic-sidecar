@@ -7,7 +7,15 @@ These examples run without a model, framework installation, or API key.
 
 ## Installation
 
-Requires Python 3.10 or newer:
+Requires Python 3.10 or newer. Until 0.6.1 is published to PyPI, install this
+checkout so the API on this page matches what you have installed:
+
+```bash
+pip install -e .
+agentic-sidecar version
+```
+
+Once 0.6.1 is published, install normally:
 
 ```bash
 pip install agentic-sidecar

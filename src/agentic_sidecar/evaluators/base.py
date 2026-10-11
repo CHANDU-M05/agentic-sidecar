@@ -150,8 +150,13 @@ class JudgeProvider(ABC):
         return self.evaluate(question, context)
 
     def cost_tracking_available(self) -> bool:
-        """Whether this provider is configured to return cost in its usage."""
-        return True
+        """Whether this provider is configured to return cost in its usage.
+
+        Defaults to False: an arbitrary provider cannot be assumed to report cost,
+        and defaulting to True would defeat the cost-limit/budget preflight check.
+        Providers that do report cost must override this to return True.
+        """
+        return False
 
     def validate(self) -> bool:
         """Validate that the provider is properly configured.

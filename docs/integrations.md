@@ -102,16 +102,15 @@ The `adapters/google_adk.py` module exists as a placeholder stub and is not func
 For any agent that doesn't use a specific framework, call `sidecar.evaluate()` directly:
 
 ```python
-from agentic_sidecar import Sidecar, DecisionContext, SidecarBlockedError
+from agentic_sidecar import Sidecar, DecisionContext
 
 sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="govern")
 
 def my_tool(param: str) -> str:
     context = DecisionContext(tool_name="my_tool", tool_args={"param": param})
     decision = sidecar.evaluate(context)
-
-    if sidecar.mode == "govern" and decision.status == "BLOCK":
-        raise SidecarBlockedError(decision, context)
+    # enforce() raises for BLOCK/PAUSE/ESCALATE/CHALLENGE/REPLAN, not just BLOCK.
+    sidecar.enforce(context, decision)
 
     return f"processed {param}"
 ```

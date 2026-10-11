@@ -407,7 +407,9 @@ class Sidecar:
         context.history = history
 
     def _default_evaluate(self, context: DecisionContext) -> Decision:
-        if context.boundary == "plan":
+        is_plan = context.boundary == "plan"
+        plan_warnings: list[str] = []
+        if is_plan:
             if not context.plan:
                 raise ValueError("Plan boundary requires at least one step")
             for step in context.plan:
@@ -444,8 +446,15 @@ class Sidecar:
                             reason=alignment.reason,
                             decision_point="plan",
                         )
+                    if alignment.status == "WARN":
+                        plan_warnings.append(alignment.reason)
+
+        # Each real step was already checked above against its own tool_name; the
+        # synthetic "__plan__" marker itself has no policy/risk/binding rule to match,
+        # so re-running these generic per-call checks against it would only produce
+        # false BLOCKs (default-deny policy, high default risk) for an already-valid plan.
         policy_result = None
-        if "policy" in self.roles:
+        if not is_plan and "policy" in self.roles:
             policy_result = self.policy.evaluate(context)
             if policy_result.effect == "deny":
                 return Decision(
@@ -460,7 +469,7 @@ class Sidecar:
                 )
 
         risk_result = None
-        if "risk" in self.roles:
+        if not is_plan and "risk" in self.roles:
             risk_result = self.risk.evaluate(context)
             if RISK_ORDER[risk_result.risk] >= RISK_ORDER[self.risk_block_threshold]:
                 return Decision(
@@ -478,7 +487,7 @@ class Sidecar:
                 )
 
         alignment_result: AlignmentResult | None = None
-        if "intent_guardian" in self.roles and self.intent is not None:
+        if not is_plan and "intent_guardian" in self.roles and self.intent is not None:
             alignment_result = self.intent.evaluate(context)
             if alignment_result.status == "BLOCK":
                 return Decision(
@@ -491,6 +500,10 @@ class Sidecar:
                         "arguments": context.tool_args,
                     },
                 )
+        elif plan_warnings:
+            # Surface the WARN findings collected per-step above; they would
+            # otherwise be lost since the synthetic context matches no binding.
+            alignment_result = AlignmentResult(status="WARN", reason="; ".join(plan_warnings))
 
         budget_result = None
         if "budget" in self.roles and self.budget is not None:

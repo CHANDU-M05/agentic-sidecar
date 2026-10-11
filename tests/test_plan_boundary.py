@@ -8,6 +8,7 @@ from agentic_sidecar import (
     PlanEvaluator,
     Sidecar,
 )
+from agentic_sidecar.gate import PolicyAdvisor, PolicyRule
 from agentic_sidecar.intent import ConstraintBinding, IntentEnvelope, IntentGuardian
 
 
@@ -33,6 +34,39 @@ def test_full_plan_checks_constraints_on_every_step():
     decision = sidecar.evaluate_plan([{"tool_name": "issue_refund", "arguments": {"amount": 120}}])
     assert decision.status == "ALLOW"
     assert decision.decision_point == "plan"
+
+
+def test_plan_boundary_does_not_recheck_synthetic_marker_against_policy_or_risk():
+    # A default-deny policy allowlisting only the real steps must not BLOCK the
+    # plan via the synthetic "__plan__" marker, which matches no allow rule.
+    sidecar = Sidecar(
+        on_sidecar_failure="fail_closed",
+        roles=["policy", "risk"],
+        policy=PolicyAdvisor([PolicyRule(tool="read", effect="allow")], default_effect="deny"),
+    )
+    decision = sidecar.evaluate_plan([{"tool_name": "read"}])
+    assert decision.status == "ALLOW"
+    assert decision.decision_point == "plan"
+
+
+def test_plan_boundary_preserves_warn_from_a_step_constraint():
+    guardian = IntentGuardian(
+        IntentEnvelope(
+            goal="Refund customer", requested_by={"id": "u"}, constraints={"maximum_refund": 500}
+        ),
+        [
+            ConstraintBinding(
+                constraint="maximum_refund",
+                tool="issue_refund",
+                arg_name="amount",
+                severity="WARN",
+            )
+        ],
+    )
+    sidecar = Sidecar(on_sidecar_failure="fail_closed", roles=["intent_guardian"], intent=guardian)
+    decision = sidecar.evaluate_plan([{"tool_name": "issue_refund", "arguments": {"amount": 850}}])
+    assert decision.status == "WARN"
+    assert "maximum_refund" in decision.reason
 
 
 def test_plan_goal_language_and_contradictions():

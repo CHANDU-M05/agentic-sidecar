@@ -5,7 +5,7 @@ from agentic_sidecar.core.sidecar import Sidecar
 from agentic_sidecar.evaluators.critic import CriticEvaluator
 from agentic_sidecar.evaluators.judge import JudgeEvaluator
 from agentic_sidecar.evaluators.planner import PlanEvaluator
-from agentic_sidecar.evaluators.providers import OpenAIJudge
+from agentic_sidecar.evaluators.providers import MockJudge
 
 
 class TestSidecarWithEvaluators:
@@ -40,7 +40,7 @@ class TestSidecarWithEvaluators:
 
     def test_sidecar_with_judge(self):
         """Test Sidecar with Judge enabled."""
-        provider = OpenAIJudge(model="gpt-4")
+        provider = MockJudge(model="gpt-4")
         sidecar = Sidecar(
             on_sidecar_failure="fail_closed",
             judge=JudgeEvaluator(provider=provider, enabled=True),
@@ -59,7 +59,7 @@ class TestSidecarWithEvaluators:
             on_sidecar_failure="fail_closed",
             planner=PlanEvaluator(enabled=True),
             critic=CriticEvaluator(enabled=True),
-            judge=JudgeEvaluator(provider=OpenAIJudge(model="gpt-4")),
+            judge=JudgeEvaluator(provider=MockJudge(model="gpt-4")),
             roles=["policy", "risk", "planner", "critic", "judge"],
         )
 

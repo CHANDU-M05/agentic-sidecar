@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | **Package** | `agentic-sidecar` |
-| **Version** | `0.6.0` |
+| **Checkout version** | `0.6.1` (release preparation) |
 | **Maturity** | Pre-Alpha |
 | **License** | MIT |
 | **Python** | ≥ 3.10 |
@@ -25,11 +25,11 @@ Agentic Sidecar evaluates agent decisions before they execute. Instead of hoping
 1. **Checks policy** — YAML-driven allow/deny rules matched against tool names
 2. **Classifies risk** — LOW / MEDIUM / HIGH based on argument patterns
 3. **Validates intent** — ensures tool arguments stay within user-declared constraints
-4. **Enforces budget** — halts execution if cost or token ceilings are reached
-5. **Evaluates plans** — checks multi-step plans for unnecessary steps or overreach
-6. **Challenges decisions** — LLM-based critic and judge evaluators (opt-in)
+4. **Checks recorded budget** — suspends Govern dispatch at a ceiling or invokes an approval handler
+5. **Provides plan heuristics** — full-plan boundary checks goal, constraints and selected contradictions
+6. **Offers optional evaluators** — heuristic Critic plus explicit MockJudge and optional live SDK providers
 
-All of this runs in either **Observe mode** (log decisions, never block) or **Govern mode** (BLOCK decisions raise `SidecarBlockedError` and stop execution).
+All of this runs in either **Observe mode** (log decisions, never block) or **Govern mode** (only ALLOW/WARN proceed; other outcomes resolve or suspend).
 
 ---
 
@@ -39,7 +39,8 @@ All of this runs in either **Observe mode** (log decisions, never block) or **Go
 |---|---|
 | [Getting started](getting-started.md) | Install, minimal setup, first governed agent |
 | [Architecture](architecture.md) | Core design, Decision Gate pipeline, module boundaries |
-| [Features](features.md) | All implemented capabilities with status labels |
+| [Governance](governance.md) | Approval flow, live providers and 0.6.1 validation evidence |
+| [Features](features.md) | Current capabilities and supported usage |
 | [Configuration](configuration.md) | `Sidecar` constructor, YAML policy/risk files, all options |
 | [API reference](api-reference.md) | Full Python API — classes, methods, types |
 | [CLI reference](cli-reference.md) | `agentic-sidecar status`, `version`, `demo` commands |
@@ -47,4 +48,4 @@ All of this runs in either **Observe mode** (log decisions, never block) or **Go
 | [Examples](examples.md) | Runnable example scripts from `examples/` |
 | [Troubleshooting](troubleshooting.md) | Common errors and how to fix them |
 | [Limitations](limitations.md) | Known constraints and current boundaries |
-| [Roadmap](roadmap.md) | Planned capabilities — not yet implemented |
+| [Roadmap](roadmap.md) | Release history and upcoming capability stages |

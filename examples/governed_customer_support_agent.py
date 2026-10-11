@@ -1,8 +1,9 @@
 """Governed Customer Support Agent — Practical Sidecar Governance Use Case.
 
 Demonstrates how Agentic Sidecar adds policy enforcement, risk controls,
-intent constraints, budget ceilings, and decision provenance to an AI-agent
-workflow.
+intent constraints, a configured budget tracker, and an in-memory decision
+log to a scripted support workflow. The demo does not record spending; use
+v0_4_budget_and_escalation.py for budget verdict and approval types.
 
 Run:
     python examples/governed_customer_support_agent.py
@@ -170,7 +171,7 @@ def run_use_case_demo() -> None:
     res2 = gov_refund("ORD-999", 300.0)
     print(f"  -> Result: {res2}")
 
-    print("\n2.3 Agent calls issue_refund('ORD-999', amount=850.0) [Intent Violation]:")
+    print("\n2.3 Agent calls issue_refund('ORD-999', amount=850.0) [Over-Limit Refund]:")
     try:
         gov_refund("ORD-999", 850.0)
     except SidecarBlockedError as exc:
@@ -182,7 +183,7 @@ def run_use_case_demo() -> None:
     except SidecarBlockedError as exc:
         print(f"  🛑 BLOCKED BY SIDECAR: {exc}")
 
-    print("\nSidecar Audit Summary:")
+    print("\nIn-memory Decision Summary:")
     print(f"Total Interceptions: {len(sidecar_govern.decisions)}")
     blocked_count = sum(1 for _, d in sidecar_govern.decisions if d.status == "BLOCK")
     allowed_count = sum(1 for _, d in sidecar_govern.decisions if d.status == "ALLOW")

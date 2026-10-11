@@ -1,0 +1,14 @@
+[
+  {
+    "provider": "openai",
+    "timestamp": "2026-10-11T00:48:01.382542+00:00",
+    "status": "not_run",
+    "reason": "Requires API credentials and an explicit model"
+  },
+  {
+    "provider": "anthropic",
+    "timestamp": "2026-10-11T00:48:01.382559+00:00",
+    "status": "not_run",
+    "reason": "Requires API credentials and an explicit model"
+  }
+]

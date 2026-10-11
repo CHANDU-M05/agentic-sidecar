@@ -17,7 +17,7 @@ class EvaluatorResult:
     """Result from an evaluator (Planner, Critic, or Judge).
 
     Attributes:
-        status: Decision status (ALLOW, CHALLENGE, REPLAN, BLOCK, WARN, PAUSE)
+        status: Decision status (ALLOW, CHALLENGE, REPLAN, BLOCK, WARN, PAUSE, ESCALATE)
         rationale: Human-readable explanation of the decision
         confidence: Confidence score (0.0-1.0) for LLM-based evaluators
         metadata: Additional context-specific fields
@@ -148,6 +148,10 @@ class JudgeProvider(ABC):
         Default implementation calls sync evaluate. Override for true async.
         """
         return self.evaluate(question, context)
+
+    def cost_tracking_available(self) -> bool:
+        """Whether this provider is configured to return cost in its usage."""
+        return True
 
     def validate(self) -> bool:
         """Validate that the provider is properly configured.

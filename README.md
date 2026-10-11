@@ -6,55 +6,25 @@
 
 ## Status
 
-**v0.1, v0.2, v0.3, v0.4, and v0.5 implemented and on PyPI.**
+**Current checkout version: 0.6.1 (release preparation).** The runtime brings together deterministic
+intent/policy/risk supervision, optional evaluators, budget accounting,
+narration, and the CLI. See the [roadmap](ROADMAP.md) for release history
+and upcoming capability stages.
 
-### v0.3.0 (Evaluators: Planner, Critic, Judge)
-- **Planner**: Plan-level intent alignment evaluation
-  - Detects unnecessary steps (cancel, refund, delete not in original request)
-  - Identifies contradictions (create + delete, enable + disable patterns)
-  - Checks against `IntentEnvelope` constraints
-  - Returns ALLOW or REPLAN decisions
-- **Critic**: Challenges decisions for assumptions and risks
-  - Detects risky operations (delete, refund, cancel without supporting context)
-  - Flags large financial amounts (> $1000)
-  - Identifies contradictions with prior actions
-  - Identifies unsupported assumptions (refund without policy check)
-  - Validates reasoning completeness (backup before delete)
-  - Returns CHALLENGE when issues found
-- **Judge**: LLM-based decision evaluation (model-agnostic)
-  - Pluggable provider interface (OpenAI, Anthropic, future implementations)
-  - Model-agnostic design: Main Agent Model A ≠ Sidecar Judge Model B
-  - Confidence scoring from LLM evaluation
-  - Async/sync LLM evaluation paths
-  - Cost tracking integrated with BudgetGuardian
-  - Provider implementations: OpenAI (GPT-4, GPT-3.5), Anthropic (Claude 3)
-- Composable, optional evaluators (don't impact existing v0.4 agents)
-- Seven-outcome Decision Gate: ALLOW, WARN, BLOCK, CHALLENGE, REPLAN, PAUSE, ESCALATE
-- Example: `examples/v0_3_planner_critic_judge.py`, `examples/v0_3_judge_providers.py`
+| Capability | Current behavior |
+| --- | --- |
+| Runtime, policy/risk, Intent Guardian | Deterministic rules, constraint bindings, expiry warnings, intent/history injection |
+| Observe / Govern modes | Observe records; Govern executes ALLOW/WARN and resolves or suspends other outcomes |
+| Budget | Validated manual accounting plus automatic Judge usage; ceilings produce PAUSE |
+| Human escalation and provenance | Local approval handler/prompt, ID-correlated approval decisions, and caller-created audit exports; durable lifecycle planned for 0.7 |
+| Planner / Critic | Full-plan boundary, bound constraints, selected plan/history heuristics and supplied evidence flags |
+| Judge | Explicit MockJudge; optional live OpenAI/Anthropic SDK providers, validated verdicts, timeouts and usage accounting |
+| Narration / CLI | Manually populated narrator and `status`, `demo`, `version`, `approval-demo` commands; CLI status creates a fresh local narrator |
+| Frameworks / integrations | LangGraph callable wrapper; additional adapters and optional exports planned for 0.8 |
 
-### v0.4.0 (Decision Gate + Budget + Escalation)
-- Sidecar runtime with rule-based Decision Gate (Policy Advisor + Risk Evaluator)
-- Intent Guardian (`IntentEnvelope` + constraint validation)
-- Budget Guardian (cost/token ceilings with PAUSE escalation)
-- Human Escalation flow (structured approval workflows)
-- Decision Provenance (audit trails with JSON serialization)
-- Seven-outcome decision system: ALLOW, WARN, BLOCK, CHALLENGE, REPLAN, PAUSE, ESCALATE
-- Observe mode (logs only) and Govern mode (BLOCK enforcement) both operational
-- LangGraph adapter integration
-- Example: `examples/v0_4_budget_and_escalation.py`
-
-### v0.5.0 (Live Status Narration + CLI)
-- **StatusNarrator**: Translates raw tool calls into human-readable narration
-  - Emoji-based narration patterns for 12+ common tool types (search, retrieve, refund, etc.)
-  - Tracks objectives, decisions, risk levels, and intent compliance
-  - Complete status snapshots with budget/token remaining
-- **CLI with Rich formatting**: `agentic-sidecar` command-line tool
-  - `status` command: live agent monitoring with `--follow`, `--json`, `--interval` options
-  - `demo` command: interactive StatusNarrator showcase
-  - `version` command: display package version
-- Dependencies: `typer>=0.9` (CLI framework), `rich>=13.0` (terminal formatting)
-- Integration: StatusNarrator exported in main module for easy API access
-- Example: `examples/v0_5_status_narration.py`
+Next: **0.7 live status/audit/Control Room →
+0.8 adapters/integrations → 0.9 evaluation/authority → 1.0 stable schemas**.
+See [supported scope and limitations](docs/limitations.md) for operational details.
 
 ### Installation & Usage
 ```bash
@@ -62,14 +32,15 @@
 pip install agentic-sidecar
 
 # With LangGraph adapter (v0.4 features)
-pip install agentic-sidecar[langgraph]
+pip install "agentic-sidecar[langgraph]"
 
 # CLI usage (v0.5)
 agentic-sidecar status              # Single status snapshot
-agentic-sidecar status --follow     # Live stream (Ctrl+C to stop)
+agentic-sidecar status --follow     # Repeat local snapshot (Ctrl+C to stop)
 agentic-sidecar status --json       # JSON output
 agentic-sidecar demo                # Interactive demo
 agentic-sidecar version             # Show version
+agentic-sidecar approval-demo       # Try the local approval prompt
 ```
 
 See [Python API (implemented)](#python-api-implemented) below and [`examples/`](examples/) 
@@ -114,7 +85,7 @@ Three things go wrong in that chain that permission checks alone don't catch:
 
 `agentic-sidecar` is designed to attach to any agent framework, but the first
 release proves that against one framework only — LangGraph — before claiming
-the rest (see [Design Constraints](ROADMAP.md#design-constraints-read-before-building-v01v02)
+the rest (see [Design Constraints](ROADMAP.md#design-constraints)
 in ROADMAP.md). Either way, it answers a different question than permission
 checks or observability tools do:
 
@@ -238,9 +209,9 @@ Plan → Sidecar Check → Act
           └── ESCALATE
 ```
 
-That's primarily a reliability and control win, not a speed win — the
-Sidecar doesn't make the underlying model faster, it reduces unnecessary
-actions, unsafe retries, and repeated context reconstruction. Full treatment:
+This architecture focuses on decision reliability and control. Comparative
+reliability and inference-overhead measurements are planned in the roadmap.
+Architecture rationale:
 [concept.md § 23](concept.md#23-sidecar-vs-agent-harness).
 
 ## Main Agent vs. Sidecar
@@ -252,7 +223,7 @@ actions, unsafe retries, and repeated context reconstruction. Full treatment:
 | Selects and calls tools | Challenges questionable decisions |
 | Interacts with MCP servers / APIs | Evaluates risk and checks policy |
 | Executes actions | Decides when human approval is required |
-| Produces the final result | Explains live execution; recommends replanning; pauses or blocks when configured |
+| Produces the final result | Reports supplied execution state and verdicts; adapters enforce configured boundaries |
 
 ## How the Decision Gate evaluates a decision
 
@@ -301,19 +272,16 @@ meant" so far, via structured `IntentEnvelope` constraints rather than
 free-form judgment — full semantic understanding is further out on the
 roadmap.
 
-The diagram above shows the target outcome set. **v0.1 shipped a narrower
-slice** (`ALLOW`/`BLOCK` only, Observe mode: the Sidecar logs what it
-*would* have decided but cannot stop an action in practice). **v0.2 adds
-`WARN`** (an Intent Guardian finding worth surfacing but not severe enough
-to block, e.g. a stale envelope) **and Govern mode**, where a `BLOCK` is
-actually enforced by the attached adapter — see
-`agentic_sidecar.core.exceptions.SidecarBlockedError`. `CHALLENGE`,
-`REPLAN`, `PAUSE`, and `ESCALATE` remain v0.4. Version-by-version build
-order is in [ROADMAP.md](ROADMAP.md#build-order).
+The diagram shows the supervision model. The current `Decision` type supports
+all seven outcomes. Govern permits ALLOW/WARN, raises `SidecarBlockedError`
+for BLOCK, invokes approvals for PAUSE/ESCALATE, and raises `SidecarSuspendedError`
+for unresolved outcomes, CHALLENGE and REPLAN before dispatch.
+See [supported scope](docs/limitations.md) and the [roadmap](ROADMAP.md#build-order).
 
 ## Sidecar modules
 
-Users enable only what they need:
+The target architecture below includes partial and planned capabilities.
+See the Status table above for current behavior. Users enable only what they need:
 
 ```text
 Agentic Sidecar
@@ -358,145 +326,81 @@ sidecar:
 
 ## Python API (implemented)
 
-v0.1 (Policy Advisor + Risk Evaluator, Observe mode):
-
-```python
-from agentic_sidecar import Sidecar
-from agentic_sidecar.adapters.langgraph import attach
-from agentic_sidecar.gate.policy import PolicyAdvisor, PolicyRule
-from agentic_sidecar.gate.risk import RiskEvaluator, RiskRule
-
-sidecar = Sidecar(
-    on_sidecar_failure="fail_closed",  # required, no default -- see Design Constraints
-    policy=PolicyAdvisor([PolicyRule(tool="delete_*", effect="deny")]),
-    risk=RiskEvaluator(
-        [RiskRule(tool="issue_refund", arg_name="amount", arg_op="gt", arg_value=500, risk="HIGH")]
-    ),
-)
-
-# Wrap the tools you'd otherwise pass straight to
-# langgraph.prebuilt.create_react_agent(model, tools=...) -- every call is
-# evaluated by the Sidecar first.
-tools = attach(sidecar, [read_order, issue_refund, delete_customer_record])
-agent = create_react_agent(model, tools=tools)
-
-# mode="observe" is the default: agent.invoke(...) still executes every
-# tool call. Nothing is enforced -- inspect what the Sidecar would have
-# decided:
-for context, decision in sidecar.decisions:
-    print(decision.status, decision.risk, context.tool_name, decision.reason)
-```
-
-v0.2 adds Intent Guardian and Govern mode, where `BLOCK` is actually
-enforced -- the refund-limit scenario from concept.md §9:
+A runnable constraint example using plain callables, with no model or API key:
 
 ```python
 from agentic_sidecar import Sidecar, SidecarBlockedError
 from agentic_sidecar.adapters.langgraph import attach
-from agentic_sidecar.intent.alignment import ConstraintBinding, IntentGuardian
-from agentic_sidecar.intent.envelope import IntentEnvelope, Requester
+from agentic_sidecar.intent import ConstraintBinding, IntentEnvelope, IntentGuardian, Requester
+
+def issue_refund(order_id: str, amount: float) -> str:
+    """Issue a refund for an order."""
+    return f"refunded {amount} for {order_id}"
 
 envelope = IntentEnvelope(
-    goal="refund_customer",
-    requested_by=Requester(type="human", id="user123"),
+    goal="Refund order A100 up to $500",
+    requested_by=Requester(id="support_lead"),
     constraints={"maximum_refund": 500},
 )
-binding = ConstraintBinding(
-    constraint="maximum_refund", tool="issue_refund", arg_name="amount", op="lte"
-)
-
+guardian = IntentGuardian(envelope, [ConstraintBinding(
+    constraint="maximum_refund", tool="issue_refund", arg_name="amount", op="lte",
+)])
 sidecar = Sidecar(
-    on_sidecar_failure="fail_closed",
-    roles=["policy", "risk", "intent_guardian"],
-    intent=IntentGuardian(envelope, [binding]),
-    mode="govern",  # a BLOCK now actually stops the call
+    on_sidecar_failure="fail_closed", mode="govern",
+    intent=guardian, roles=["policy", "risk", "intent_guardian"],
 )
-tools = attach(sidecar, [issue_refund])
-agent = create_react_agent(model, tools=tools)
-
+(refund,) = attach(sidecar, [issue_refund])
+print(refund("A100", 120))  # refunded 120 for A100
 try:
-    agent.invoke({"messages": [("user", "Refund order A100 for $850.")]})
+    refund("A100", 850)
 except SidecarBlockedError as exc:
-    print(exc)  # "Sidecar blocked 'issue_refund'(...): Intent Guardian: ..."
+    print(exc.decision.status)  # BLOCK; refund function was not called
 ```
 
-`sidecar.set_intent(guardian)` swaps the active envelope between tasks --
-`IntentEnvelope`s are meant to be per-task (concept.md §6), not fixed for a
-Sidecar's whole lifetime.
+Use `mode="observe"` to record verdicts while permitting wrapped calls.
+`evaluate(DecisionContext(...))` computes a verdict without dispatching tools.
+`set_intent(guardian)` changes the active task envelope; budget reset is separate.
 
-`Sidecar.before_tool_call` registers a custom hook that fully replaces the
-default Policy + Risk + Intent Guardian evaluation:
+For full-plan review, supply the plan explicitly:
 
 ```python
-@sidecar.before_tool_call
-def evaluate_action(context):
-    if context.tool_name == "delete_customer_record":
-        return Decision(status="BLOCK", risk="HIGH", reason="never allowed")
-    return Decision(status="ALLOW", risk="LOW", reason="ok")
+from agentic_sidecar import PlanEvaluator, Sidecar
+
+reviewer = Sidecar(on_sidecar_failure="fail_closed", planner=PlanEvaluator(), roles=["planner"])
+result = reviewer.evaluate_plan(
+    [{"tool_name": "read_charge"}, {"tool_name": "issue_refund"}],
+    goal="Explain the disputed charge",
+)
+print(result.status)  # REPLAN
 ```
 
-Note the shape: `agentic_sidecar.adapters.langgraph.attach(sidecar, tools)`,
-not `sidecar.attach(my_agent)`. `core/` intentionally has zero dependency on
-`adapters/` (see AGENTS.md's Package Boundaries), so wrapping a specific
-framework's decision boundaries is the adapter's job, not a generic method
-on `Sidecar`. The "Planned Python API" below is the longer-term target this
-is expected to grow toward once framework independence has actually been
-proven (ROADMAP.md's Design Constraint 1) — not a regression.
+A `before_tool_call` hook replaces the entire built-in pipeline, including
+budget and evaluators. See [API reference](docs/api-reference.md),
+[configuration](docs/configuration.md), and [runnable examples](examples/README.md).
 
 ## Planned Python API
 
-This is the longer-term target developer experience once a second framework
-adapter exists and `roles` covers Planner/Critic too (v0.3) —
-**not yet implemented**. `roles=["intent_guardian", "policy", "risk"]` and
-`Sidecar(...)` construction already work today (see [Python API
-(implemented)](#python-api-implemented) above); what's still aspirational
-here is specifically `sidecar.attach(my_agent)` wrapping the *whole* agent
-generically (today it's per-adapter, e.g.
-`agentic_sidecar.adapters.langgraph.attach`) and `sidecar.evaluate(intent=,
-action=, risk=)`'s keyword-argument call shape:
-
-```python
-from agentic_sidecar import Sidecar
-
-sidecar = Sidecar(roles=["intent_guardian", "policy", "risk", "planner", "critic"])
-agent = sidecar.attach(my_agent)
-
-agent.run("Investigate the production issue but do not modify production.")
-```
-
-```python
-@sidecar.before_tool_call
-def evaluate_action(context):
-    return sidecar.evaluate(
-        intent=context.intent,
-        action=context.tool_call,
-        risk=context.risk,
-    )
-```
-
-```python
-Decision(
-    status="REPLAN",
-    risk="HIGH",
-    reason="Action exceeds original user intent",
-)
-```
+The roadmap adds live status/audit/operator interfaces in 0.7 and framework adapters in 0.8.
+Today `attach(sidecar, tools)` is adapter-specific and `evaluate()` accepts
+`DecisionContext`. Generic whole-agent attachment will be considered when
+multiple integrations demonstrate a useful shared boundary.
 
 ## Operating modes
 
-| Mode | Behavior |
+| Mode | Current behavior |
 | --- | --- |
-| **Observe** | Sidecar monitors and logs; cannot affect execution. **Implemented (v0.1).** |
-| **Advise** | Sidecar returns a recommendation; the agent decides whether to follow it. **Not implemented, no target version yet** (see [`concept.md`](concept.md#advise-mode)) — Observe and Govern are the two modes v0.1/v0.2 actually ship. |
-| **Govern** | Sidecar's Decision Gate can allow, warn, or block for real. **Implemented (v0.2)** — `replan`/`pause` outcomes arrive at v0.4. |
-| **Human-supervised** | High-risk decisions route to a human for approve/reject. Planned v0.4. |
+| **Observe** | Computes/logs decisions; wrapped calls execute regardless of verdict |
+| **Govern** | ALLOW/WARN execute; BLOCK stops; PAUSE/ESCALATE invoke approvals or suspend; CHALLENGE/REPLAN suspend |
 
-Modes are meant to be adopted in that order — organizations start in Observe
-and move to Govern once they trust the signal.
+Catch `SidecarSuspendedError` to return control to your agent loop. Configure
+`escalation_handler=CLIApprovalHandler()` or register `on_escalation_required`
+for local approval. Approve-once applies to the current call; modify-intent
+reevaluates with a complete envelope; stop persists on that Sidecar instance.
+Live operator controls follow in 0.7. See [0.6.1 usage and validation](docs/governance.md).
 
 ## Long-term: an intent propagation layer
 
-The nearer-term modules above are the whole of what v0.1–v0.8 ship. But the
+The nearer-term stages above focus on runtime supervision. The
 `IntentEnvelope` (§ [Sidecar modules](#sidecar-modules)) is designed to
 survive being handed off — not just checked once and discarded:
 
@@ -564,7 +468,7 @@ in the roadmap).
 
 ## Roadmap
 
-Full build plan, version sequencing, and design constraints:
+Canonical release history, capability status, completion checklists, and future sequencing:
 [ROADMAP.md](ROADMAP.md).
 
 Original architecture proposal: [concept.md](concept.md).
@@ -572,3 +476,20 @@ Original architecture proposal: [concept.md](concept.md).
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
+
+## Control Tower integration boundary
+
+AgenticOps Control Tower owns deployment registration, heartbeat, fleet
+inventory and operator workflows. AgenticLens owns observability and analysis;
+Agentic Evals owns scoring and release-gate computation; Agentic Sidecar owns
+decision supervision (SUPERVISE); Agentic Chaos owns fault injection and
+resilience experiments. AI Operations Specification owns shared semantics and
+is currently draft.
+
+Tower's native artifact readers consume existing producer outputs using an
+explicit deployment/evidence link. They do not change producer behavior or
+convert a failed run, failed gate, blocked action or injected fault into fleet
+health. This link is a Tower-local contract, not a normative AIOS schema.
+See [Control Tower's evidence contract](https://github.com/DeepAgentLabs/agenticops-control-tower/blob/main/docs/ecosystem-alignment.md).
+Remote collection and operator posture views remain planned; these local
+readers do not establish end-to-end integration or stable AIOS conformance.

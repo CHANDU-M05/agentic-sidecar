@@ -24,6 +24,8 @@ class CriticEvaluator(EvaluatorBase):
 
     def __init__(self, enabled: bool = True, threshold: float = 0.7):
         super().__init__(enabled=enabled, name="CriticEvaluator")
+        if not 0 <= threshold <= 1:
+            raise ValueError("threshold must be between zero and one")
         self.threshold = threshold
 
     def evaluate(self, context: dict[str, Any]) -> EvaluatorResult:
@@ -41,8 +43,19 @@ class CriticEvaluator(EvaluatorBase):
         history = context.get("history", [])
 
         challenges = self._analyze_decision(tool_name, arguments, goal, history)
+        metadata = context.get("metadata", {})
+        if metadata.get("authorized") is True:
+            challenges = [c for c in challenges if c.category != "risky"]
+        if metadata.get("eligibility_verified") is True:
+            challenges = [c for c in challenges if c.category != "assumption"]
+        if metadata.get("backup_verified") is True:
+            challenges = [c for c in challenges if c.category != "reasoning"]
+        for step in context.get("plan", []):
+            name = step.get("tool_name", "") if isinstance(step, dict) else step.tool_name
+            args = step.get("arguments", {}) if isinstance(step, dict) else (step.arguments or {})
+            challenges.extend(self._analyze_decision(name, args or {}, goal, history))
 
-        if not challenges:
+        if not challenges or self.threshold > 0.85:
             return EvaluatorResult(
                 status="ALLOW",
                 rationale="Decision passes critical review",
@@ -94,6 +107,27 @@ class CriticEvaluator(EvaluatorBase):
 
     def _check_contradictions(self, tool_name: str, history: list[Any]) -> list[CriticChallenge]:
         """Check for contradictions."""
+        opposites = {
+            "approve": "reject",
+            "reject": "approve",
+            "enable_feature": "disable_feature",
+            "disable_feature": "enable_feature",
+        }
+        opposite = opposites.get(tool_name.lower())
+        if opposite is None:
+            return []
+        for entry in history:
+            name = entry.get("tool_name") if isinstance(entry, dict) else entry.tool_name
+            status = entry.get("status") if isinstance(entry, dict) else entry.status
+            if name == opposite and status in ("ALLOW", "WARN"):
+                return [
+                    CriticChallenge(
+                        "contradiction",
+                        "high",
+                        f"Proposed {tool_name} reverses previously permitted {opposite}",
+                        suggestion="Explain the change in intent",
+                    )
+                ]
         return []
 
     def _check_assumptions(

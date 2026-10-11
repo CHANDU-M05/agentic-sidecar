@@ -11,6 +11,7 @@ Planned for v0.4 -- fully implemented.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 
 
@@ -39,6 +40,17 @@ class BudgetGuardian:
     current_cost: float = field(default=0.0)
     current_tokens: int = field(default=0)
 
+    def __post_init__(self) -> None:
+        self._validate(self.max_cost, self.max_tokens)
+        self._validate(self.current_cost, self.current_tokens)
+
+    @staticmethod
+    def _validate(cost: float, tokens: int | None) -> None:
+        if isinstance(cost, bool) or not math.isfinite(cost) or cost < 0:
+            raise ValueError("cost must be finite and nonnegative")
+        if tokens is not None and (type(tokens) is not int or tokens < 0):
+            raise ValueError("tokens must be a nonnegative integer")
+
     def record_invocation(
         self,
         cost: float,
@@ -50,6 +62,8 @@ class BudgetGuardian:
             cost: Cost in USD for this invocation.
             tokens: Total tokens (input + output) for this invocation.
         """
+        self._validate(cost, tokens)
+        self._validate(self.current_cost + cost, self.current_tokens)
         self.current_cost += cost
         if tokens is not None:
             self.current_tokens += tokens
@@ -60,6 +74,8 @@ class BudgetGuardian:
         Returns:
             BudgetResult with exceeded flag and remaining budget.
         """
+        self._validate(self.max_cost, self.max_tokens)
+        self._validate(self.current_cost, self.current_tokens)
         cost_exceeded = self.current_cost >= self.max_cost
         tokens_exceeded = self.max_tokens is not None and self.current_tokens >= self.max_tokens
 
@@ -73,7 +89,9 @@ class BudgetGuardian:
                 exceeded=True,
                 remaining_cost=max(0.0, self.max_cost - self.current_cost),
                 remaining_tokens=(
-                    max(0, self.max_tokens - self.current_tokens) if self.max_tokens else None
+                    max(0, self.max_tokens - self.current_tokens)
+                    if self.max_tokens is not None
+                    else None
                 ),
                 reason="; ".join(reasons),
             )
@@ -81,7 +99,9 @@ class BudgetGuardian:
         return BudgetResult(
             exceeded=False,
             remaining_cost=self.max_cost - self.current_cost,
-            remaining_tokens=(self.max_tokens - self.current_tokens if self.max_tokens else None),
+            remaining_tokens=(
+                self.max_tokens - self.current_tokens if self.max_tokens is not None else None
+            ),
         )
 
     def is_at_capacity(self) -> bool:

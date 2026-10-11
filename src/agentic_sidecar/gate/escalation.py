@@ -1,8 +1,8 @@
 """Human-in-the-loop escalation flow for PAUSE and ESCALATE outcomes.
 
 Provides structured request/response types for pausing execution and requesting
-human approval on consequential decisions. v0.4 implements the data structures;
-actual UI/CLI integration comes in v0.5 and v0.7.
+human approval on consequential decisions. Govern invokes registered handlers;
+CLIApprovalHandler provides a local prompt. Runtime-connected operator UI is v0.7.
 
 See concept.md §16 for the use case walkthrough.
 """
@@ -64,11 +64,9 @@ class ApprovalResponse:
 class EscalationHandler:
     """Handles paused decisions and collects human approval.
 
-    This is a placeholder interface for v0.4. Actual implementation (CLI
-    prompt, UI dialog) is scoped to v0.5 (CLI) and v0.7 (Control Room dashboard).
-
-    For now, a Sidecar can register a custom handler via
-    @sidecar.on_escalation_required, or the default raises NotImplementedError.
+    Implement handle_escalation, register an on_escalation_required hook,
+    or use agentic_sidecar.cli.approval.CLIApprovalHandler. The base interface
+    raises NotImplementedError. Govern invokes handlers for PAUSE/ESCALATE.
     """
 
     def handle_escalation(self, request: EscalationRequest) -> ApprovalResponse:
@@ -86,5 +84,6 @@ class EscalationHandler:
         raise NotImplementedError(
             "No EscalationHandler registered. Register one via "
             "@sidecar.on_escalation_required or pass escalation_handler= "
-            "to Sidecar.__init__. See ROADMAP.md v0.5 for CLI support."
+            "to Sidecar.__init__. Use agentic_sidecar.cli.approval.CLIApprovalHandler "
+            "for a local prompt."
         )

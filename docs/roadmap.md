@@ -1,51 +1,69 @@
 # Roadmap
 
-This page documents **planned** capabilities that are not yet implemented. Nothing on this page should be treated as a committed delivery date.
+Updated **2026-10-10 · Current version: 0.6.1 (release preparation)**.
+The [root ROADMAP.md](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md)
+is the canonical plan with detailed deliverables and acceptance criteria.
+Future version targets describe priorities, not committed delivery dates.
 
-For implemented capabilities, see [Features](features.md).
+## Release history
 
----
+| Version | Focus |
+| --- | --- |
+| 0.2.0 | Runtime, policy/risk, Intent Guardian, and LangGraph Govern BLOCK |
+| 0.3.0 | Planner/Critic heuristics, Judge interface, and provider examples |
+| 0.4.0 | Budget accounting, seven outcome types, escalation/provenance types |
+| 0.5.0 | Narration and status/demo/version CLI |
+| 0.6.0 | Combined runtime with optional evaluator pipeline and public exports |
 
-## v0.7 — Control Room & Live Status
+See [Features](features.md) for current capabilities and
+[Limitations](limitations.md) for their supported scope.
 
-- **Live agent connection for CLI:** `agentic-sidecar status --follow` will connect to a running `Sidecar` instance via IPC/HTTP rather than creating a demo narrator.
-- **AgenticLens integration:** Forward `Decision` events as spans to AgenticLens for unified tracing across the DeepAgentLabs stack.
-- **Persistent audit log:** Option to write `sidecar.decisions` to a SQLite database or JSONL file on disk.
+## v0.6.x — Governance & Evaluator Enhancements
 
----
+**0.6.1 implementation prepared**, with [usage and validation evidence](governance.md).
 
-## v0.8 — LLM-Backed Risk and Critic
+- [x] Govern suspension for PAUSE/ESCALATE/CHALLENGE/REPLAN and real LangGraph tests.
+- [x] Five approval actions, response IDs, missing-handler suspension and local CLI prompt.
+- [x] Failure policy across injection, providers, timeouts, malformed results and recording.
+- [x] Explicit full-plan boundary and goal/constraints/history/metadata context.
+- [x] Explicit MockJudge plus optional live OpenAI/Anthropic SDK backends and contract tests.
+- [x] Judge limits, sync/async accounting and validated shared BudgetGuardian usage.
+- [x] Four-scenario deterministic intent benchmark with guardian off/on and clean controls.
+- [x] Release tag/source/changelog/distribution validation before publication.
+- [ ] Authenticated live smoke evidence for both providers; local status is recorded separately.
 
-- **LLM-based Risk Evaluator:** Small local model option for semantic risk classification beyond tool name and argument patterns.
-- **LLM-backed Critic Evaluator:** Full model-based assumption checking rather than heuristic rule matching.
-- **LLM-backed Plan Evaluator:** Model reasoning over multi-step plans for unnecessary or unsafe sequences.
+## v0.7 — Live Status, Audit Lifecycle & Control Room
 
----
+- Connect CLI status to actual runtime events through documented local IPC/HTTP.
+- Distinguish proposed, executed, completed, blocked, and paused actions.
+- Create causally linked audit snapshots and approval records with optional persistence.
+- Build real pause/resume/stop/approval/intent/replan controls on the shared interface.
+- Validate native evidence with Control Tower and provide an end-to-end operator demo.
 
-## v0.9 — Authority Enforcement
+## v0.8 — Framework Adapters & Optional Integrations
 
-- **`IntentEnvelope.authority` binding:** Enforce the `authority` dict (e.g. `{"can_delete": False}`) against tool calls, with a defined `AuthorityBinding` shape parallel to `ConstraintBinding`.
-- **Multi-agent boundary enforcement:** Documentation and tested adapter patterns for multi-agent topologies (supervisor + worker).
+- Prove a second adapter, then ship CrewAI, AutoGen, OpenAI Agents, and Google ADK incrementally.
+- Test outcome, mode, failure, and approval conformance across supported frameworks.
+- Add optional AgenticLens export and a shared, versioned correlation-ID contract.
+- Add Semantica export after contract validation; define optional Chaos coordination.
+- Validate real MCP tool calls and cross-agent setups with supported-version evidence.
 
----
+## v0.9 — Evaluation Evidence & Authority Boundaries
 
-## v1.0 — Stability and Ecosystem
+- Compare Agent Alone vs. Agent + Sidecar using reproducible supervision scenarios.
+- Publish success, unsafe-action, false-intervention, latency, token, and cost results.
+- Coordinate standalone scoring/reporting with Agentic Evals.
+- Implement task-authority bindings from a concrete use case and test delegation/handoff.
+- Add model-backed plan/critic reasoning only where evidence supports it.
 
-- **API stability guarantee:** Public API frozen until v2.0.
-- **Automatic budget tracking:** Extract cost/token data from LangGraph callbacks, OpenAI usage metadata, and Anthropic response headers — removing the need to call `record_invocation()` manually.
-- **Agentic Chaos integration:** Receive chaos signals (latency injection, tool failure simulation) and factor them into risk decisions.
-- **AI Operations Spec alignment:** Publish `IntentEnvelope` as a versioned schema aligned with the AIOS operational-intent standard.
+## v1.0 — Stable Interoperability Contract
 
----
+- Publish versioned Intent Envelope and Decision/audit schemas with AI Operations Specification.
+- Test cross-instance/agent propagation, schema compatibility, and migration behavior.
+- Define public API stability and document supported sibling/framework versions.
 
-## Cross-package dependencies
+## Conditional follow-ups
 
-| Capability | Depends on |
-|---|---|
-| AgenticLens trace forwarding | [AgenticLens](https://deepagentlabs.io/agenticlens/) v0.2+ |
-| Agentic Chaos integration | [agentic-chaos](https://deepagentlabs.io/agentic-chaos/) v0.1+ |
-| MCP tool call interception | [deep-agenticcore-mcp](https://deepagentlabs.io/deep-agenticcore-mcp/) v0.1+ |
-
----
-
-> **Note:** This roadmap reflects intent as of v0.6.0. Priorities may shift based on real-world usage feedback. Contributions to any planned capability are welcome — see [CONTRIBUTING.md](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/CONTRIBUTING.md).
+Local-model risk classification, automatic framework usage extraction, caching,
+and sampling require measured need before scheduling. Core runtime remains
+independent of sibling packages; integrations and provider SDKs stay optional.

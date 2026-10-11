@@ -12,7 +12,7 @@ hook or future evaluator wants to attach without a breaking change here.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -65,3 +65,6 @@ class DecisionContext(BaseModel):
     intent: IntentSnapshot | None = None
     history: list[HistoryEntry] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+    boundary: Literal["tool_call", "plan"] = "tool_call"
+    goal: str = ""
+    plan: list[dict[str, Any]] = Field(default_factory=list)

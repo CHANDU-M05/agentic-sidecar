@@ -6,7 +6,7 @@ Agentic Sidecar attaches to your agent framework via adapter modules in `agentic
 
 ## LangGraph
 
-**Status: Stable**  
+**Status: Available — callable wrapping and Govern BLOCK**
 **Install:** `pip install "agentic-sidecar[langgraph]"`
 
 The `langgraph` adapter is the primary supported integration. It wraps a list of tool callables before passing them to `create_react_agent`.
@@ -37,6 +37,7 @@ def delete_customer(customer_id: str) -> dict:
 
 # Wrap tools — pass result directly to create_react_agent
 tools = attach(sidecar, [read_order, delete_customer])
+# Supply your configured chat model; scripted examples include an offline model.
 agent = create_react_agent(model, tools=tools)
 
 try:
@@ -49,45 +50,50 @@ except SidecarBlockedError as exc:
 
 In **Observe mode**: the wrapped tool always calls through regardless of the verdict. Use `sidecar.decisions` to review after the run.
 
-In **Govern mode**: `BLOCK` raises `SidecarBlockedError`. `ALLOW` and `WARN` both pass through.
+In **Govern mode**: ALLOW/WARN execute; BLOCK raises SidecarBlockedError;
+PAUSE/ESCALATE invoke approvals or suspend; CHALLENGE/REPLAN suspend. Catch
+SidecarSuspendedError to return control to the agent loop. Plain async functions
+are supported. See [Governance](governance.md) for approval configuration.
 
 ### Notes
 
 - The adapter doesn't require `@tool` decorators — it works with plain Python callables
 - It uses `inspect.signature` to bind call arguments into `DecisionContext.tool_args`
-- Positional args are bound to parameter names; keyword args are passed as-is
+- Positional args are bound to parameter names; defaults are applied
+- The examples use `create_react_agent` within the supported LangGraph major version; it emits a deprecation notice
+- Additional frameworks and optional ecosystem bridges target 0.8
 
 ---
 
 ## CrewAI
 
-**Status: Planned — not yet implemented**
+**Status: Planned for 0.8**
 
-The `adapters/crewai.py` module exists as a placeholder stub (no `attach()` function) and is not functional in v0.6.0. See [Roadmap](roadmap.md).
+The `adapters/crewai.py` module exists as a placeholder stub (no `attach()` function) and is not functional in v0.6.1. See [Roadmap](roadmap.md).
 
 ---
 
 ## AutoGen
 
-**Status: Planned — not yet implemented**
+**Status: Planned for 0.8**
 
-The `adapters/autogen.py` module exists as a placeholder stub and is not functional in v0.6.0. See [Roadmap](roadmap.md).
+The `adapters/autogen.py` module exists as a placeholder stub and is not functional in v0.6.1. See [Roadmap](roadmap.md).
 
 ---
 
 ## OpenAI Agents SDK
 
-**Status: Planned — not yet implemented**
+**Status: Planned for 0.8**
 
-The `adapters/openai_agents.py` module exists as a placeholder stub and is not functional in v0.6.0. See [Roadmap](roadmap.md).
+The `adapters/openai_agents.py` module exists as a placeholder stub and is not functional in v0.6.1. See [Roadmap](roadmap.md).
 
 ---
 
 ## Google ADK
 
-**Status: Planned — not yet implemented**
+**Status: Planned for 0.8**
 
-The `adapters/google_adk.py` module exists as a placeholder stub and is not functional in v0.6.0. See [Roadmap](roadmap.md).
+The `adapters/google_adk.py` module exists as a placeholder stub and is not functional in v0.6.1. See [Roadmap](roadmap.md).
 
 ---
 
@@ -98,7 +104,7 @@ For any agent that doesn't use a specific framework, call `sidecar.evaluate()` d
 ```python
 from agentic_sidecar import Sidecar, DecisionContext, SidecarBlockedError
 
-sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="govern", ...)
+sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="govern")
 
 def my_tool(param: str) -> str:
     context = DecisionContext(tool_name="my_tool", tool_args={"param": param})
@@ -107,21 +113,18 @@ def my_tool(param: str) -> str:
     if sidecar.mode == "govern" and decision.status == "BLOCK":
         raise SidecarBlockedError(decision, context)
 
-    # ... actual tool logic
-    return result
+    return f"processed {param}"
 ```
 
 ---
 
 ## AgenticLens integration
 
-**Status: Placeholder — not yet implemented**
+**Status: Planned for 0.8**
 
 An optional bridge to [AgenticLens](https://deepagentlabs.io/agenticlens/) for unified tracing is declared in the package:
 
-```python
-from agentic_sidecar.integrations.agenticlens import ...  # placeholder
-```
+The reserved module is `agentic_sidecar.integrations.agenticlens`.
 
 Install with: `pip install "agentic-sidecar[agenticlens]"`
 
@@ -131,12 +134,19 @@ This module is a placeholder. Actual trace forwarding from Sidecar to AgenticLen
 
 ## Agentic Chaos integration
 
-**Status: Placeholder — not yet implemented**
+**Status: Planned for 0.8**
 
-```python
-from agentic_sidecar.integrations.agentic_chaos import ...  # placeholder
-```
+The reserved module is `agentic_sidecar.integrations.agentic_chaos`.
 
 Install with: `pip install "agentic-sidecar[agentic-chaos]"`
 
-Also a placeholder. See [Roadmap](roadmap.md).
+The extra reserves a dependency boundary; install it when a compatible
+integration becomes available. See [Roadmap](roadmap.md).
+
+## Ecosystem coordination
+
+AgenticLens export, Chaos coordination, and Semantica provenance export target
+0.8, with a shared correlation contract before cross-project export. Control
+Tower consumes decision/status evidence while retaining deployment-health
+semantics. Authority/delegation work targets 0.9; published AI Operations
+Specification schemas target 1.0. See the [canonical plan](roadmap.md).

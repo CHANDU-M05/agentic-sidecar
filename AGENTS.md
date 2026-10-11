@@ -23,16 +23,23 @@ practice, the package covers both supervision and governance.
 
 ### Does Not Own
 
+- Standalone output scoring and release-gate computation — those belong in
+  `agentic-evals`; Lens owns the observability and evaluation workflows
+
 - The shared operational contract or normative object model — that belongs in
   `ai-operations-spec`
 - Core workflow instrumentation, profiling, or retrospective evaluation — those
   belong in `agenticlens`
 - Failure injection and resilience experiments — those belong in
   `agentic-chaos`
-- The main ecosystem control surface or remote tool interface — that belongs in
-  `deep-agentic-core-mcp`
+- Fleet control-plane workflows — those belong in `agenticops-control-tower`
+- MCP-native remote tool access — that belongs in `deep-agentic-core-mcp`
 
 ### Integrates With
+
+- `agenticops-control-tower` as a consumer of explicitly attributed native
+  evidence; its deployment health remains separate from producer outcomes
+- `agentic-evals` for standalone scoring/report and release-gate boundaries
 
 - `ai-operations-spec` for export-compatible decision artifacts and shared
   terminology
@@ -45,12 +52,20 @@ practice, the package covers both supervision and governance.
 
 ### Current Roadmap Focus
 
-v0.1 (Sidecar runtime, LangGraph adapter, deterministic policy/risk Decision
-Gate, Observe mode) and v0.2 (Intent Guardian, Govern mode) have shipped.
-The current build focus is v0.2.x, the narrow Early Validation Benchmark
-(see ROADMAP.md). Work in this repo should reinforce that sequencing rather
-than jumping ahead to Planner/Critic/Judge (v0.3) or multi-framework
-features (v0.6).
+The checkout targets v0.6.1 release preparation. Runtime code includes Decision Gate outcomes,
+Intent Guardian, evaluator modules, budget/escalation handling, narration and
+CLI commands. Additional framework adapters remain docstring placeholders;
+use the actual source and tests to distinguish implementation from roadmap
+claims. Ecosystem consumers must preserve decision/risk meaning separately
+from deployment health.
+
+The canonical roadmap was realigned on 2026-10-10: v0.6.x governance/evaluator enhancements,
+v0.7 live status/audit/Control Room, v0.8 adapters/integrations, v0.9 evaluation
+and authority, then v1.0 stable schemas. Release tags do not imply milestone
+completion. Governance outcomes, local approvals, full-plan context and judge
+limits/accounting are implemented in 0.6.1; explicit MockJudge is offline, and
+OpenAI/Anthropic providers use optional live SDKs. Live smoke evidence remains
+pending credentials. Read docs/governance.md for supported scope and validation.
 
 ### Before You Build Here
 
@@ -64,15 +79,14 @@ features (v0.6).
 
 ## Status
 
-v0.1 and v0.2 are implemented: `core/` (`Sidecar`, `Decision`,
-`DecisionContext`, `operators.py`, `exceptions.py`), `gate/policy.py`,
-`gate/risk.py`, `intent/` (`IntentEnvelope`, `IntentGuardian`,
-`ConstraintBinding`), and `adapters/langgraph.py` (both Observe and Govern
-mode) have real code and tests. Everything else under
-`src/agentic_sidecar/` (`evaluators/`, `status/`, `cli/`, `gate/budget.py`,
-the remaining `adapters/*.py`, `integrations/*.py`) is still a placeholder
-(docstring only) until its version lands. See [ROADMAP.md](ROADMAP.md) for
-the build order before adding real logic to any of those.
+The current runtime includes `core/`, policy/risk, intent supervision,
+`evaluators/`, budget/escalation logic, `status/narrate.py`, and `cli/main.py`.
+The LangGraph adapter is implemented; CrewAI, AutoGen, OpenAI Agents SDK and
+Google ADK adapter files remain placeholders. `integrations/*.py` remain
+placeholders. The CLI status command currently creates a local narrator rather
+than connecting to a running agent, so it is not a remote monitoring feed.
+Control Tower can read serialized `Decision` artifacts without executing the
+Sidecar or treating a BLOCK outcome as an unhealthy deployment.
 
 ## Build and Run
 
@@ -80,8 +94,8 @@ the build order before adding real logic to any of those.
 - Test: `make test` or `make check` (lint + format + typecheck + test)
 - Lint: `make lint`
 - Type check: `make typecheck`
-- CLI: not implemented yet — `[project.scripts]` is intentionally absent
-  from `pyproject.toml` until `cli/main.py` has a real Typer `app` (v0.5)
+- CLI: `agentic-sidecar` is registered and has status/demo commands;
+  status currently uses a fresh local narrator, not a remote agent connection.
 
 ## Code Style
 
@@ -95,7 +109,7 @@ the build order before adding real logic to any of those.
 ## Design Constraints
 
 These are load-bearing, not preferences — see
-[ROADMAP.md § Design Constraints](ROADMAP.md#design-constraints-read-before-building-v01v02)
+[ROADMAP.md § Design Constraints](ROADMAP.md#design-constraints)
 for the full rationale on each:
 
 1. **One framework adapter first.** `adapters/langgraph.py` before any of
@@ -109,7 +123,7 @@ for the full rationale on each:
    handle `fail_open` and `fail_closed` explicitly — this is a governance
    property, not an implementation detail.
 4. **A risk classifier is not a free lunch.** Keep `gate/risk.py` rule-based
-   until there's measured evidence (see the v0.2.x benchmark in
+   until there's measured evidence (see the deferred validation benchmark in
    [ROADMAP.md](ROADMAP.md)) that a model-based classifier is actually
    needed.
 5. **Policy, Risk, and Intent ask different questions.** A change that adds
@@ -124,16 +138,16 @@ for the full rationale on each:
 | `src/agentic_sidecar/core/` | `Sidecar` class (`evaluate()`, `before_tool_call` hook), `Decision` type, `DecisionContext`. `attach()` is *not* here — see AGENTS.md's Package Boundaries, adapters own it | v0.1 (implemented) |
 | `src/agentic_sidecar/gate/policy.py` | Policy Advisor — deterministic YAML allow/deny rules | v0.1 (implemented) |
 | `src/agentic_sidecar/gate/risk.py` | Risk Evaluator — rule-based classification | v0.1 (implemented) |
-| `src/agentic_sidecar/gate/budget.py` | Budget Guardian — cost/token ceilings | v0.4 |
-| `src/agentic_sidecar/adapters/langgraph.py` | LangGraph interception adapter, incl. `attach(sidecar, tools)`; enforces `BLOCK` in Govern mode (v0.2) | v0.1/v0.2 (implemented) |
+| `src/agentic_sidecar/gate/budget.py` | Budget Guardian — cost/token ceilings | v0.4 (implemented) |
+| `src/agentic_sidecar/adapters/langgraph.py` | LangGraph interception adapter, incl. `attach(sidecar, tools)`; Govern outcome resolution and sync/async interception | v0.6.1 (implemented) |
 | `src/agentic_sidecar/intent/` | `IntentEnvelope`, `IntentGuardian`, `ConstraintBinding` — constraint validation only, no `authority` enforcement yet | v0.2 (implemented) |
-| `src/agentic_sidecar/evaluators/planner.py` | Planner — evaluates the whole plan against intent | v0.3 |
-| `src/agentic_sidecar/evaluators/critic.py` | Critic mode — pre-decision challenge | v0.3 |
-| `src/agentic_sidecar/evaluators/judge.py` | Model-agnostic LLM Judge interface | v0.3 |
-| `src/agentic_sidecar/gate/` (remaining outcomes) | `CHALLENGE` / `REPLAN` / `PAUSE` / `ESCALATE`, human-in-the-loop escalation (`ALLOW`/`WARN`/`BLOCK` shipped in v0.1/v0.2) | v0.4 |
-| `src/agentic_sidecar/status/narrate.py` | Human-readable status narration | v0.5 |
-| `src/agentic_sidecar/cli/` | CLI entry point (`agentic-sidecar status --follow`) | v0.5 |
-| `src/agentic_sidecar/adapters/{crewai,autogen,openai_agents,google_adk}.py` | Additional framework adapters | v0.6 |
+| `src/agentic_sidecar/evaluators/planner.py` | Planner — evaluates the whole plan against intent | v0.3 (runtime present) |
+| `src/agentic_sidecar/evaluators/critic.py` | Critic mode — pre-decision challenge | v0.3 (runtime present) |
+| `src/agentic_sidecar/evaluators/judge.py` | Model-agnostic LLM Judge interface | v0.3 (runtime present) |
+| `src/agentic_sidecar/gate/` (remaining outcomes) | `CHALLENGE` / `REPLAN` / `PAUSE` / `ESCALATE`, human-in-the-loop escalation (`ALLOW`/`WARN`/`BLOCK` shipped in v0.1/v0.2) | v0.4 (runtime present) |
+| `src/agentic_sidecar/status/narrate.py` | Human-readable status narration | v0.5 (implemented) |
+| `src/agentic_sidecar/cli/` | CLI status/demo/version and local approval prompt | v0.6.1 (implemented) |
+| `src/agentic_sidecar/adapters/{crewai,autogen,openai_agents,google_adk}.py` | Additional framework adapters | v0.8 (planned) |
 | `src/agentic_sidecar/integrations/agenticlens.py` | Optional AgenticLens adapter (surfaces Sidecar decisions in `agenticlens analyze`) | optional, coordinate with `agenticlens` |
 | `src/agentic_sidecar/integrations/agentic_chaos.py` | Optional Agentic Chaos coordination (recovery-decision evaluation, chaos-testing the Sidecar's own gate) | optional, coordinate with `agentic-chaos` |
 | `tests/` | Pytest test suite | ongoing |
@@ -141,7 +155,7 @@ for the full rationale on each:
 
 Full architecture and build order: [ROADMAP.md](ROADMAP.md).
 
-## Entry Points (planned)
+## Entry Points
 
 - Injection API: `from agentic_sidecar import Sidecar`
 - CLI: `agentic-sidecar status --follow` (v0.5)

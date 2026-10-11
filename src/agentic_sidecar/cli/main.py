@@ -1,8 +1,4 @@
-"""`agentic-sidecar status --follow` -- live status stream backed by
-`status/narrate.py`.
-
-v0.5 implements the CLI status command with real-time streaming support.
-"""
+"""Local status reporting and interactive approval commands."""
 
 from __future__ import annotations
 
@@ -15,17 +11,33 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
+from agentic_sidecar.cli.approval import CLIApprovalHandler
+from agentic_sidecar.core.context import DecisionContext
+from agentic_sidecar.core.decision import Decision
+from agentic_sidecar.gate.escalation import ApprovalAction, EscalationRequest
 from agentic_sidecar.status.narrate import StatusNarrative, StatusNarrator
 
-app = typer.Typer(help="Agentic Sidecar CLI - Live supervision and monitoring")
+app = typer.Typer(help="Agentic Sidecar CLI - Status reporting and local approvals")
 console = Console()
 
 
 @app.command()
+def approval_demo() -> None:
+    """Try the local approval prompt without executing a tool or changing a task."""
+    decision = Decision(status="PAUSE", risk=None, reason="Demonstration approval request")
+    request = EscalationRequest(
+        decision.decision_id,
+        decision.reason,
+        DecisionContext(tool_name="demo").model_dump(mode="json"),
+        list(ApprovalAction),
+    )
+    response = CLIApprovalHandler(console).handle_escalation(request)
+    console.print(f"Selected {response.action.value}; no tool executed.")
+
+
+@app.command()
 def status(
-    follow: bool = typer.Option(
-        False, "--follow", "-f", help="Follow live status stream (refresh every second)"
-    ),
+    follow: bool = typer.Option(False, "--follow", "-f", help="Repeat the local status snapshot"),
     json_output: bool = typer.Option(
         False, "--json", "-j", help="Output as JSON instead of human-readable format"
     ),
@@ -35,7 +47,7 @@ def status(
 ) -> None:
     """Display sidecar status: current objective, decisions, risk, and budget.
 
-    With --follow, streams live updates as the agent executes.
+    With --follow, repeats a local narrator snapshot.
     Use Ctrl+C to stop.
 
     Examples:
@@ -55,8 +67,7 @@ def status(
 def _get_narrator_instance() -> StatusNarrator:
     """Get the active StatusNarrator instance.
 
-    In v0.5, this creates a demo narrator. In v0.6+, this will connect to
-    a running Sidecar instance via IPC or HTTP.
+    Runtime connection via IPC or HTTP is planned for v0.7.
     """
     return StatusNarrator()
 

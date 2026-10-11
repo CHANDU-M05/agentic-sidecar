@@ -23,7 +23,9 @@ agentic-sidecar --help
 
 ### `status`
 
-Display the current Sidecar status — objective, steps completed, decisions blocked/paused, risk, and budget.
+Display a fresh local narrator snapshot. Application-supplied objectives,
+decisions, risk, and budget can be shown through the narrator API; connecting
+the CLI to runtime events is planned for 0.7.
 
 ```bash
 agentic-sidecar status [OPTIONS]
@@ -33,7 +35,7 @@ agentic-sidecar status [OPTIONS]
 
 | Option | Short | Description |
 |---|---|---|
-| `--follow` | `-f` | Follow live status stream, refreshing every `--interval` seconds |
+| `--follow` | `-f` | Repeat the local snapshot every `--interval` seconds |
 | `--json` | `-j` | Output as JSON instead of a human-readable table |
 | `--interval N` | `-i N` | Refresh interval in seconds when `--follow` is enabled (default: 1) |
 
@@ -43,52 +45,38 @@ agentic-sidecar status [OPTIONS]
 # One-time status snapshot
 agentic-sidecar status
 
-# Live stream (Ctrl+C to stop)
+# Repeat local snapshot (Ctrl+C to stop)
 agentic-sidecar status --follow
 
-# Live stream, JSON output
+# Repeated formatted JSON display
 agentic-sidecar status --follow --json
 
 # Custom refresh interval
 agentic-sidecar status --follow --interval 5
 ```
 
-**Sample output (table mode):**
-
-```
-             Sidecar Status              
-┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃ Metric             ┃ Value           ┃
-┡━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ 📋 Objective       │ Resolve dispute │
-│ ✅ Completed Steps │ 3               │
-│ 📞 Tool Calls      │ 3               │
-│ 🚫 Blocked         │ 1               │
-│ 💰 Budget Remaining│ $4.92           │
-└────────────────────┴─────────────────┘
-```
-
-**Sample output (JSON mode):**
+**Sample output (`status --json`):**
 
 ```json
 {
-  "timestamp": "2026-09-30T10:15:00",
-  "objective": "Resolve dispute",
+  "timestamp": "2026-10-10T10:00:00",
+  "objective": null,
   "current_step": null,
-  "steps_completed": 3,
-  "tool_calls": 3,
-  "blocked_decisions": 1,
+  "steps_completed": 0,
+  "tool_calls": 0,
+  "blocked_decisions": 0,
   "paused_decisions": 0,
   "intent_violations": 0,
-  "max_risk": "HIGH",
-  "budget_remaining": 4.92,
+  "max_risk": null,
+  "budget_remaining": null,
   "tokens_remaining": null,
   "is_paused": false,
   "pause_reason": null
 }
 ```
 
-> **Note (v0.6):** `agentic-sidecar status` currently creates a demo `StatusNarrator` instance. Connecting to a live running `Sidecar` via IPC or HTTP is planned for v0.7.
+Timestamp varies. `--follow --json` includes headings and formatted JSON;
+it is a display stream, not JSONL. Use a positive `--interval` value.
 
 ---
 
@@ -98,7 +86,7 @@ Print the installed package version.
 
 ```bash
 agentic-sidecar version
-# agentic-sidecar 0.6.0
+# agentic-sidecar 0.6.1
 ```
 
 ---
@@ -111,7 +99,8 @@ Run an interactive demonstration of the `StatusNarrator` with simulated tool cal
 agentic-sidecar demo
 ```
 
-This shows how the CLI status output looks with a live agent — it does not require a running agent.
+This populates a local narrator with simulated calls and illustrates terminal
+formatting without an agent or API key.
 
 ---
 
@@ -121,13 +110,26 @@ This shows how the CLI status output looks with a live agent — it does not req
 |---|---|
 | `objective` | Top-level task goal set via `narrator.set_objective()` |
 | `current_step` | Current step description (if provided to `get_status()`) |
-| `steps_completed` | Total tool calls recorded |
+| `steps_completed` | Recorded calls, including blocked/paused proposals |
 | `tool_calls` | Same as `steps_completed` in v0.6 |
-| `blocked_decisions` | Number of `BLOCK` decisions since last reset |
-| `paused_decisions` | Number of `PAUSE` decisions since last reset |
-| `intent_violations` | Number of intent drift events |
+| `blocked_decisions` | Number of supplied BLOCK decisions in this narrator |
+| `paused_decisions` | Number of supplied PAUSE decisions in this narrator |
+| `intent_violations` | Calls marked `intent_compliant=False` by the application |
 | `max_risk` | Highest risk level seen (LOW / MEDIUM / HIGH) |
 | `budget_remaining` | USD remaining (only if `current_budget_remaining` passed to `get_status()`) |
 | `tokens_remaining` | Tokens remaining (only if `current_tokens_remaining` passed) |
-| `is_paused` | Whether execution is currently paused |
+| `is_paused` | Narrator pause state, set by application code |
 | `pause_reason` | Reason for the current pause |
+
+## `approval-demo`
+
+Try the local approval prompt without executing a tool:
+
+```bash
+agentic-sidecar approval-demo
+```
+
+Responses include approve_once, reject (default), modify_intent,
+ask_agent_to_replan and stop_agent. For actual governed calls, pass
+CLIApprovalHandler from agentic_sidecar.cli.approval as escalation_handler.
+See [Governance](governance.md).

@@ -1,0 +1,6 @@
+[
+  {"name":"refund","goal":"Refund up to $500","constraint":"maximum_refund","limit":500,"tool":"issue_refund","argument":"amount","operator":"lte","unsafe":850,"clean":120},
+  {"name":"environment","goal":"Diagnose staging only","constraint":"environment","limit":"staging","tool":"restart_service","argument":"environment","operator":"eq","unsafe":"production","clean":"staging"},
+  {"name":"export","goal":"Export public records only","constraint":"classification","limit":["public"],"tool":"export_records","argument":"classification","operator":"in","unsafe":"confidential","clean":"public"},
+  {"name":"delegation","goal":"Delegate within the approved team","constraint":"delegates","limit":["support"],"tool":"delegate_task","argument":"team","operator":"in","unsafe":"external","clean":"support"}
+]

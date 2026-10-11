@@ -52,7 +52,7 @@
       </div>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
         <span class="maturity-badge">Pre-Alpha</span>
-        <span style="font-family:var(--font-mono); font-size:13px; color:var(--cyan);">v0.6.0</span>
+        <span style="font-family:var(--font-mono); font-size:13px; color:var(--cyan);">v0.6.1</span>
         <a href="https://pypi.org/project/agentic-sidecar/" style="font-size:12px; color:var(--text-dim); border:1px solid var(--line); padding:2px 8px; border-radius:4px; font-family:var(--font-mono);" target="_blank" rel="noopener">PyPI</a>
       </div>
       <p class="hero-lead">
@@ -67,16 +67,16 @@
       </div>
       <div class="hero-stats">
         <div class="stat-item">
-          <strong>218</strong>
+          <strong>361</strong>
           <span>Tests Passing</span>
         </div>
         <div class="stat-item">
-          <strong>89%</strong>
+          <strong>94%</strong>
           <span>Code Coverage</span>
         </div>
         <div class="stat-item">
-          <strong>v0.6.0</strong>
-          <span>PyPI Release</span>
+          <strong>v0.6.1</strong>
+          <span>Release Preparation</span>
         </div>
         <div class="stat-item">
           <strong>0</strong>
@@ -263,7 +263,7 @@
           </tr>
           <tr>
             <td><strong style="color: var(--green);">Govern Mode</strong></td>
-            <td>Actively enforces decisions. A <code style="color:var(--red)">BLOCK</code> status stops execution.</td>
+            <td>ALLOW/WARN proceed. BLOCK stops; other outcomes resolve through approval or suspend execution.</td>
             <td><span class="verdict-badge badge-block">Blocked via Exception</span></td>
             <td>Production enforcement, financial boundary control, and safety gating.</td>
           </tr>
@@ -311,13 +311,13 @@ agent = create_react_agent(model, tools=tools)</pre>
       <!-- Integrations strip -->
       <div class="section-header" style="margin-bottom:32px;">
         <div class="eyebrow" style="display:inline-flex;">Integrations</div>
-        <h2 class="section-title" style="font-size:28px; margin-top:12px;">LangGraph adapter — stable today</h2>
-        <p class="section-subtitle">The LangGraph adapter is production-ready. Additional framework adapters are planned for future releases.</p>
+        <h2 class="section-title" style="font-size:28px; margin-top:12px;">LangGraph adapter — available today</h2>
+        <p class="section-subtitle">LangGraph supports sync/async callable interception and governed outcome handling. Additional framework adapters target v0.8.</p>
       </div>
       <div class="grid-3" style="margin-bottom:60px;">
         <div class="feature-card" style="padding:20px 24px;">
           <div class="card-icon" style="font-size:16px;">🦜</div>
-          <h3 style="font-size:15px;">LangGraph <span class="tag tag-green" style="font-size:10px; vertical-align:middle;">Stable</span></h3>
+          <h3 style="font-size:15px;">LangGraph <span class="tag tag-green" style="font-size:10px; vertical-align:middle;">Available</span></h3>
           <p>Wrap tool lists with <code style="color:var(--cyan)">attach(sidecar, tools)</code> — works with <code style="color:var(--cyan)">create_react_agent</code>.</p>
         </div>
         <div class="feature-card" style="padding:20px 24px; opacity:0.7;">
@@ -342,7 +342,7 @@ agent = create_react_agent(model, tools=tools)</pre>
         </div>
         <div class="feature-card" style="padding:20px 24px;">
           <div class="card-icon" style="font-size:16px;">🔧</div>
-          <h3 style="font-size:15px;">Any Python Agent <span class="tag tag-green" style="font-size:10px; vertical-align:middle;">Stable</span></h3>
+          <h3 style="font-size:15px;">Any Python Agent <span class="tag tag-green" style="font-size:10px; vertical-align:middle;">Available</span></h3>
           <p>Use <code style="color:var(--cyan)">sidecar.evaluate(context)</code> directly in any custom agent loop.</p>
         </div>
       </div>

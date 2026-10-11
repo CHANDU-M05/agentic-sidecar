@@ -1,6 +1,7 @@
 # API Reference
 
-Full Python API for `agentic-sidecar` v0.6.0. All public symbols are importable from the top-level package.
+Python API for `agentic-sidecar` **0.6.1**. Imports below identify the supported
+module for each symbol; intent and policy/risk types live in their subpackages.
 
 ```python
 import agentic_sidecar
@@ -22,7 +23,11 @@ See [Configuration](configuration.md) for the full parameter reference.
 
 ### `evaluate(context: DecisionContext) -> Decision`
 
-Evaluate one proposed tool call. Injects active intent and decision history into `context` before evaluation. Always returns a `Decision` — never raises (errors resolve via `on_sidecar_failure`). Records the result in `sidecar.decisions`.
+Evaluate one proposed tool call. Injects intent/history into the caller's context,
+computes a verdict, and stores a deep context copy in `sidecar.decisions`. Errors
+from injection, dispatch, validation or recording resolve via `on_sidecar_failure`. This method does
+not dispatch tools or raise merely because a verdict is BLOCK. See
+[Failure handling](architecture.md#failure-configuration) for scope.
 
 ```python
 from agentic_sidecar import DecisionContext
@@ -48,7 +53,9 @@ def my_hook(context: DecisionContext) -> Decision:
 
 ### `on_escalation_required(func: Callable) -> Callable`
 
-Decorator. Register a custom escalation handler for PAUSE/ESCALATE decisions.
+Decorator. Register an approval hook invoked by `enforce()` or the Govern
+adapter for PAUSE/ESCALATE. Responses must match the decision ID and use an
+ApprovalAction. See [Governance](governance.md) for resolution semantics.
 
 ```python
 @sidecar.on_escalation_required
@@ -58,7 +65,8 @@ def handle_escalation(request: EscalationRequest) -> ApprovalResponse:
 
 ### `sidecar.decisions: list[tuple[DecisionContext, Decision]]`
 
-Audit trail of every (context, decision) pair evaluated since construction.
+In-memory log of evaluated context/decision pairs. Contexts and nested data
+are deep-copied when recorded but remain mutable; caller-created `AuditRecord` objects are a separate export API.
 
 ### `sidecar.mode: str`
 
@@ -72,16 +80,19 @@ Current mode — `"observe"` or `"govern"`.
 from agentic_sidecar import Decision, DecisionStatus, RiskLevel
 ```
 
-Immutable result of one Decision Gate evaluation.
+Frozen Pydantic result of a Decision Gate evaluation; nested dictionary values
+are not deeply immutable.
 
 | Field | Type | Description |
 |---|---|---|
+| `decision_id` | `str` | Generated UUID; approval correlation ID |
 | `status` | `DecisionStatus` | ALLOW / WARN / BLOCK / CHALLENGE / REPLAN / PAUSE / ESCALATE |
-| `risk` | `RiskLevel` \| `None` | LOW / MEDIUM / HIGH, or None if Risk Evaluator not enabled |
+| `risk` | `RiskLevel` \| `None` | LOW / MEDIUM / HIGH; None when no classification was produced, including early policy returns and failure fallback |
 | `reason` | `str` | Human-readable verdict explanation |
-| `decision_point` | `str` | Always `"tool_call"` in v0.6 |
-| `trigger_details` | `dict` | `{"tool_name": ..., "arguments": ...}` |
-| `escalation_required` | `bool` | True for PAUSE/ESCALATE decisions |
+| `decision_point` | `str` \| `None` | Boundary name, commonly `"tool_call"` for built-in verdicts; optional for hooks/fallback |
+| `trigger_details` | `dict` \| `None` | Optional tool name and argument snapshot |
+| `escalation_required` | `bool` | Explicit escalation marker (default False); built-in budget/Judge PAUSE sets it |
+| `causal_link` | `str` \| `None` | Optional caller-supplied causal identifier |
 
 ---
 
@@ -99,6 +110,10 @@ The input to `sidecar.evaluate()`. Build one per tool call.
 | `tool_args` | `dict[str, Any]` | Arguments for the tool call |
 | `intent` | `IntentSnapshot` \| `None` | Injected by `evaluate()` — do not set manually |
 | `history` | `list[HistoryEntry]` | Injected by `evaluate()` — do not set manually |
+| `metadata` | `dict[str, Any]` | Caller metadata forwarded to evaluators |
+| `boundary` | `"tool_call"` / `"plan"` | Evaluation boundary |
+| `goal` | `str` | Goal when no active envelope exists |
+| `plan` | `list[dict]` | Explicit plan steps |
 
 ---
 
@@ -108,11 +123,11 @@ The input to `sidecar.evaluate()`. Build one per tool call.
 from agentic_sidecar import SidecarBlockedError
 ```
 
-Raised by the LangGraph adapter (and other adapters) in Govern mode when `decision.status == "BLOCK"`.
+Raised by the LangGraph callable wrapper in Govern mode when `decision.status == "BLOCK"`.
 
 ```python
 try:
-    tools = attach(sidecar, [my_tool])
+    (my_tool_wrapped,) = attach(sidecar, [my_tool])
     my_tool_wrapped()
 except SidecarBlockedError as exc:
     print(exc.decision.reason)
@@ -228,7 +243,8 @@ Record a tool invocation and generate its narrative.
 
 ### `StatusNarrator.get_status(...) -> StatusNarrative`
 
-Build a complete live status snapshot with all tracked metrics.
+Build a snapshot of application-supplied records and reporting state. This
+does not fetch data from a running agent. `steps_completed` counts recorded calls.
 
 ### `StatusNarrator.get_narrative() -> str`
 
@@ -236,7 +252,7 @@ Return the full execution narrative as a human-readable string.
 
 ### `StatusNarrator.pause(reason: str) -> None` / `resume() -> None`
 
-Record pause and resume state.
+Record narrator pause/resume state; application code owns actual execution.
 
 ---
 
@@ -257,9 +273,78 @@ agent = create_react_agent(model, tools=tools)
 
 ---
 
+## Evaluators
+
+```python
+from agentic_sidecar import PlanEvaluator, CriticEvaluator, JudgeEvaluator
+from agentic_sidecar.evaluators import EvaluatorResult, JudgeProvider
+```
+
+### `PlanEvaluator.evaluate(context: dict) -> EvaluatorResult`
+
+Accepts plan dictionaries/PlanStep objects, goal, intent, constraints and
+constraint_bindings. Selected tool/goal patterns and opposing tool pairs yield
+REPLAN. Supplied bindings check plan arguments deterministically. min_confidence
+filters the fixed 0.9 intervention score. No automatic natural-language bindings.
+
+### `CriticEvaluator.evaluate(context: dict) -> EvaluatorResult`
+
+Selected risky tool patterns, assumptions and permitted-action contradictions
+yield CHALLENGE. Metadata authorized/eligibility_verified/backup_verified flags
+can satisfy corresponding tool-call checks. threshold filters the fixed 0.85
+score. These assertions are caller-supplied; full-plan checks are conservative.
+
+### `JudgeEvaluator(provider, enabled=True, cost_limit=0.50, timeout_ms=5000, budget=None)`
+
+Sync/async return validated EvaluatorResult with usage, provider, confidence and
+latency. Errors propagate to Sidecar's failure policy. Returned usage is charged
+once, including valid usage attached to an invalid verdict. cost_limit is a
+post-response ceiling; exceeding it returns PAUSE. get_cost/reset_cost manage
+tracked cost. See [Limitations](limitations.md) for late sync responses and async
+cancellation. Choose MockJudge for offline examples; live OpenAIJudge and
+AnthropicJudge require an explicit model, optional SDK and credentials.
+
+### `JudgeProvider`
+
+Implement evaluate(question, context) returning decision, reasoning, confidence
+and usage with cost and total_tokens. Supported decisions are all seven statuses;
+confidence must be finite in [0, 1], cost finite/nonnegative and tokens a
+nonnegative integer. Override validate/evaluate_async as appropriate.
+Without known cost, only cost_limit=None with no task budget is supported.
+
+### `Sidecar.evaluate_plan(plan, *, goal="", metadata=None) -> Decision`
+
+Requires a nonempty list of dictionaries with tool_name and optional arguments.
+Checks policy/risk/intent per step, then enabled evaluators with full context.
+Computes a verdict without executing steps. An active intent supplies the goal.
+
+### `Sidecar.enforce(context, decision) -> Decision`
+
+Adapter dispatch boundary: Observe returns unchanged; Govern resolves
+PAUSE/ESCALATE and only returns ALLOW/WARN. BLOCK raises SidecarBlockedError;
+other unresolved statuses raise SidecarSuspendedError. Both expose decision and
+context. Applications must call enforce before dispatch in custom loops.
+
+### `CLIApprovalHandler`
+
+Import from agentic_sidecar.cli.approval and pass as escalation_handler.
+Provides a local prompt for approve-once/reject/modify-intent/replan/stop.
+The `approval-demo` CLI command tries the prompt without executing tools.
+
+## Provenance exports
+
+```python
+from agentic_sidecar import AuditRecord, CausalLink, DecisionRationale, DecisionTrigger
+```
+
+Construct a caller-managed `AuditRecord` with decision ID, timestamp, outcome,
+trigger, rationale, and optional causal/execution context. `to_dict()` serializes
+the record, including ISO timestamp and structured causal links. Persistence
+and automatic runtime record generation are planned for 0.7.
+
 ## Top-level `__version__`
 
 ```python
 from agentic_sidecar import __version__
-print(__version__)  # "0.6.0"
+print(__version__)  # "0.6.1"
 ```

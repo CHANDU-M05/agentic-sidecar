@@ -16,7 +16,7 @@ def test_version_command() -> None:
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
     assert "agentic-sidecar" in result.stdout
-    assert "0.6.0" in result.stdout
+    assert "0.6.1" in result.stdout
 
 
 def test_status_command_once() -> None:

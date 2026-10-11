@@ -28,3 +28,15 @@ class SidecarBlockedError(RuntimeError):
         super().__init__(
             f"Sidecar blocked '{context.tool_name}'({context.tool_args}): {decision.reason}"
         )
+
+
+class SidecarSuspendedError(RuntimeError):
+    """Return control to the caller for PAUSE, ESCALATE, CHALLENGE or REPLAN.
+
+    The proposed tool has not executed. The caller may revise and resubmit it.
+    """
+
+    def __init__(self, decision: Decision, context: DecisionContext) -> None:
+        self.decision = decision
+        self.context = context
+        super().__init__(f"Sidecar {decision.status}: {decision.reason}")

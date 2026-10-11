@@ -25,6 +25,7 @@ from agentic_sidecar.evaluators.planner import PlanEvaluator, PlanStep
 from agentic_sidecar.evaluators.providers import AnthropicJudge, OpenAIJudge
 
 __all__ = [
+    "MockJudge",
     "EvaluatorBase",
     "EvaluatorResult",
     "JudgeProvider",
@@ -36,3 +37,5 @@ __all__ = [
     "OpenAIJudge",
     "AnthropicJudge",
 ]
+
+from agentic_sidecar.evaluators.providers.mock import MockJudge

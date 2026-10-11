@@ -10,4 +10,6 @@ Design: Swap providers without changing Sidecar code.
 from agentic_sidecar.evaluators.providers.anthropic import AnthropicJudge
 from agentic_sidecar.evaluators.providers.openai import OpenAIJudge
 
-__all__ = ["OpenAIJudge", "AnthropicJudge"]
+__all__ = ["MockJudge", "OpenAIJudge", "AnthropicJudge"]
+
+from agentic_sidecar.evaluators.providers.mock import MockJudge

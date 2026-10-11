@@ -3,19 +3,14 @@ supervision layer for autonomous AI agents.
 
     The Main Agent acts. The Sidecar observes, thinks, advises, and governs.
 
-v0.1 shipped the Sidecar runtime and a rule-based, LLM-free Decision Gate
-(Policy Advisor + Risk Evaluator), attached via the LangGraph adapter, in
-Observe mode. v0.2 adds Intent Guardian (`agentic_sidecar.intent`) and
-Govern mode, where a `BLOCK` decision is actually enforced. v0.4 adds the
-full Decision Gate outcomes (CHALLENGE, REPLAN, PAUSE, ESCALATE), Budget
-Guardian for cost/token ceilings, and Human Escalation primitives. See
-ROADMAP.md for the full build order and README.md for the architecture and
-Python API.
+0.6.1 adds governed outcome resolution, local approvals, full-plan review,
+optional live Judge SDK providers and validated task usage accounting. See
+ROADMAP.md and docs/governance.md for supported scope and acceptance evidence.
 """
 
 from agentic_sidecar.core.context import DecisionContext
 from agentic_sidecar.core.decision import Decision, DecisionStatus, RiskLevel
-from agentic_sidecar.core.exceptions import SidecarBlockedError
+from agentic_sidecar.core.exceptions import SidecarBlockedError, SidecarSuspendedError
 from agentic_sidecar.core.provenance import (
     AuditRecord,
     CausalLink,
@@ -49,9 +44,10 @@ from agentic_sidecar.status import (
     ToolCallNarrative,
 )
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 __all__ = [
+    "MockJudge",
     "AnthropicJudge",
     "ApprovalAction",
     "ApprovalResponse",
@@ -78,8 +74,11 @@ __all__ = [
     "RiskLevel",
     "Sidecar",
     "SidecarBlockedError",
+    "SidecarSuspendedError",
     "StatusNarrative",
     "StatusNarrator",
     "ToolCallNarrative",
     "__version__",
 ]
+
+from agentic_sidecar.evaluators.providers.mock import MockJudge

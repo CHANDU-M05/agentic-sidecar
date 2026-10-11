@@ -1,11 +1,14 @@
-"""v0.5.0 StatusNarrator example: Live agent execution narration.
+"""StatusNarrator examples for 0.6.1 (introduced in 0.5).
+
+All decisions, risk/compliance, and budget values are supplied locally.
+Pause/resume changes narrator state; no agent is controlled or API called.
 
 Demonstrates:
 - StatusNarrator for tracking agent execution
 - Human-readable narration of tool calls
 - Decision tracking (ALLOW, WARN, BLOCK, PAUSE)
 - Risk level monitoring
-- Intent compliance validation
+- Application-supplied intent compliance reporting
 - Budget/token tracking
 """
 
@@ -20,7 +23,6 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 from agentic_sidecar import (
     Decision,
     StatusNarrator,
-    StatusNarrative,
 )
 
 
@@ -56,9 +58,7 @@ def example_with_decisions() -> None:
 
     # Allowed decision
     decision_allow = Decision(status="ALLOW", risk="LOW", reason="Within policy")
-    call1 = narrator.record_tool_call(
-        "validate_refund", {"amount": 50}, decision=decision_allow
-    )
+    call1 = narrator.record_tool_call("validate_refund", {"amount": 50}, decision=decision_allow)
     print(f"✓ {call1.narrative} (ALLOW)")
 
     # Warning decision
@@ -72,9 +72,7 @@ def example_with_decisions() -> None:
 
     # Blocked decision
     decision_block = Decision(status="BLOCK", risk="HIGH", reason="Refund exceeds limit")
-    call3 = narrator.record_tool_call(
-        "process_refund", {"amount": 1000}, decision=decision_block
-    )
+    call3 = narrator.record_tool_call("process_refund", {"amount": 1000}, decision=decision_block)
     print(f"✗ {call3.narrative} (BLOCK)")
 
     # Paused decision (requires escalation)
@@ -84,17 +82,12 @@ def example_with_decisions() -> None:
         reason="Budget limit reached",
         escalation_required=True,
     )
-    call4 = narrator.record_tool_call(
-        "process_refund", {"amount": 500}, decision=decision_pause
-    )
+    call4 = narrator.record_tool_call("process_refund", {"amount": 500}, decision=decision_pause)
     print(f"⏸ {call4.narrative} (PAUSE)")
 
     # Status summary
     status = narrator.get_status()
-    print(
-        f"\nDecisions: {status.decisions_blocked} blocked, "
-        f"{status.decisions_paused} paused"
-    )
+    print(f"\nDecisions: {status.decisions_blocked} blocked, {status.decisions_paused} paused")
 
 
 def example_with_budget_tracking() -> None:
@@ -140,9 +133,7 @@ def example_intent_compliance() -> None:
     )
     print(f"✓ {call1.narrative} (intent compliant)")
 
-    call2 = narrator.record_tool_call(
-        "send_sms", {"phone": "+1234567890"}, intent_compliant=True
-    )
+    call2 = narrator.record_tool_call("send_sms", {"phone": "+1234567890"}, intent_compliant=True)
     print(f"✓ {call2.narrative} (intent compliant)")
 
     # Non-compliant call (drifted from intent)
@@ -152,9 +143,7 @@ def example_intent_compliance() -> None:
     print(f"⚠ {call3.narrative} (INTENT DRIFT)")
 
     # Another non-compliant call
-    call4 = narrator.record_tool_call(
-        "delete_account", {"user_id": "u123"}, intent_compliant=False
-    )
+    call4 = narrator.record_tool_call("delete_account", {"user_id": "u123"}, intent_compliant=False)
     print(f"⚠ {call4.narrative} (INTENT DRIFT)")
 
     status = narrator.get_status()
@@ -173,7 +162,7 @@ def example_pause_and_resume() -> None:
     narrator.record_tool_call("check_fraud_score", {})
 
     # Pause for human approval
-    print("⏸ Pausing for human approval...")
+    print("⏸ Reporting a simulated approval wait...")
     narrator.pause("Awaiting manager approval for $10,000 transaction")
 
     status = narrator.get_status()
@@ -181,7 +170,7 @@ def example_pause_and_resume() -> None:
     print(f"Reason: {status.pause_reason}")
 
     # Simulate approval
-    print("\n✓ Manager approved. Resuming...")
+    print("\n✓ Simulated manager approval; updating narrator state...")
     narrator.resume()
 
     # Continue with remaining calls
@@ -190,7 +179,7 @@ def example_pause_and_resume() -> None:
 
     status = narrator.get_status()
     print(f"Status: {'PAUSED' if status.is_paused else 'ACTIVE'}")
-    print(f"Total steps completed: {status.steps_completed}")
+    print(f"Total recorded calls: {status.steps_completed}")
 
 
 def example_complete_workflow() -> None:
@@ -201,9 +190,9 @@ def example_complete_workflow() -> None:
 
     # 1. Set objective
     narrator.set_objective("Process customer order #12345")
-    print(f"📋 Objective: Process customer order #12345\n")
+    print("📋 Objective: Process customer order #12345\n")
 
-    # 2. Execute tool calls with decisions
+    # 2. Record simulated tool calls with supplied decisions
     steps = [
         ("lookup_order", {}, Decision(status="ALLOW", risk="LOW", reason="ok")),
         ("verify_payment", {}, Decision(status="ALLOW", risk="LOW", reason="ok")),
@@ -212,13 +201,17 @@ def example_complete_workflow() -> None:
         (
             "process_shipment",
             {},
-            Decision(status="PAUSE", risk="HIGH", reason="needs approval", escalation_required=True),
+            Decision(
+                status="PAUSE", risk="HIGH", reason="needs approval", escalation_required=True
+            ),
         ),
     ]
 
     for tool, args, decision in steps:
         call = narrator.record_tool_call(tool, args, decision=decision)
-        status_char = "✓" if decision.status == "ALLOW" else "⚠" if decision.status == "WARN" else "⏸"
+        status_char = (
+            "✓" if decision.status == "ALLOW" else "⚠" if decision.status == "WARN" else "⏸"
+        )
         print(f"{status_char} {call.narrative} ({decision.status})")
 
     # 3. Get final status
@@ -248,5 +241,5 @@ if __name__ == "__main__":
     example_complete_workflow()
 
     print("\n" + "=" * 50)
-    print("✅ All v0.5.0 StatusNarrator examples completed!")
+    print("StatusNarrator examples completed (0.6.1 API).")
     print("=" * 50)

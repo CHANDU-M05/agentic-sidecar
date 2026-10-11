@@ -9,11 +9,13 @@ Useful for: "Does this plan actually accomplish what the user asked for?"
 
 from __future__ import annotations
 
+import fnmatch
 from dataclasses import dataclass
 from typing import Any
 
+from agentic_sidecar.core.operators import compare
 from agentic_sidecar.evaluators.base import EvaluatorBase, EvaluatorResult
-from agentic_sidecar.intent import IntentEnvelope
+from agentic_sidecar.intent.alignment import ConstraintBinding
 
 
 @dataclass
@@ -52,6 +54,8 @@ class PlanEvaluator(EvaluatorBase):
     ):
         """Initialize Planner."""
         super().__init__(enabled=enabled, name="PlanEvaluator")
+        if not 0 <= min_confidence <= 1:
+            raise ValueError("min_confidence must be between zero and one")
         self.min_confidence = min_confidence
 
     def evaluate(self, context: dict[str, Any]) -> EvaluatorResult:
@@ -66,6 +70,23 @@ class PlanEvaluator(EvaluatorBase):
         plan = context.get("plan", [])
         intent = context.get("intent")
         goal = context.get("goal", "")
+        if not goal and intent:
+            goal = intent.get("goal", "") if isinstance(intent, dict) else intent.goal
+        if not isinstance(plan, list):
+            raise ValueError("plan must be a list")
+        for step in plan:
+            name = (
+                step.get("tool_name")
+                if isinstance(step, dict)
+                else getattr(step, "tool_name", None)
+            )
+            args = step.get("arguments", {}) if isinstance(step, dict) else step.arguments
+            if (
+                not isinstance(name, str)
+                or not name
+                or (args is not None and not isinstance(args, dict))
+            ):
+                raise ValueError("Plan steps require a tool_name and argument mapping")
 
         if not plan:
             return EvaluatorResult(
@@ -75,9 +96,32 @@ class PlanEvaluator(EvaluatorBase):
             )
 
         # Analyze plan for issues
-        issues = self._analyze_plan(plan, intent, goal)
+        issues = self._analyze_plan(plan, goal)
+        constraints = context.get("constraints", {})
+        if intent:
+            constraints = (
+                intent.get("constraints", {}) if isinstance(intent, dict) else intent.constraints
+            )
+        for raw_binding in context.get("constraint_bindings", []):
+            binding = ConstraintBinding.model_validate(raw_binding)
+            if binding.constraint not in constraints:
+                continue
+            for step in plan:
+                name = step.get("tool_name", "") if isinstance(step, dict) else step.tool_name
+                arguments = step.get("arguments") if isinstance(step, dict) else step.arguments
+                if (
+                    fnmatch.fnmatch(name, binding.tool)
+                    and arguments
+                    and binding.arg_name in arguments
+                    and not compare(
+                        arguments[binding.arg_name], binding.op, constraints[binding.constraint]
+                    )
+                ):
+                    issues.append(
+                        {"type": "constraint", "message": f"{name}: {binding.constraint}"}
+                    )
 
-        if not issues:
+        if not issues or self.min_confidence > 0.9:
             return EvaluatorResult(
                 status="ALLOW",
                 rationale="Plan aligns with stated intent",
@@ -97,12 +141,7 @@ class PlanEvaluator(EvaluatorBase):
             },
         )
 
-    def _analyze_plan(
-        self,
-        plan: Any,
-        intent: IntentEnvelope | None,
-        goal: str,
-    ) -> list[dict[str, Any]]:
+    def _analyze_plan(self, plan: Any, goal: str) -> list[dict[str, Any]]:
         """Analyze plan for alignment issues."""
         issues: list[dict[str, Any]] = []
 
@@ -119,12 +158,6 @@ class PlanEvaluator(EvaluatorBase):
         if contradictions:
             issues.extend(contradictions)
 
-        # Check against intent constraints if available
-        if intent:
-            constraint_issues = self._check_intent_constraints(plan, intent)
-            if constraint_issues:
-                issues.extend(constraint_issues)
-
         return issues
 
     def _detect_unnecessary_steps(
@@ -136,10 +169,10 @@ class PlanEvaluator(EvaluatorBase):
         issues = []
 
         unnecessary_patterns = {
-            "cancel_subscription": "cancellation not requested",
-            "delete_account": "account deletion not requested",
-            "refund": "refund not requested",
-            "close_case": "closure not requested",
+            "cancel_subscription": ("cancel", "cancellation", "cancellation not requested"),
+            "delete_account": ("delete", "deletion", "account deletion not requested"),
+            "refund": ("refund", "reimburse", "refund not requested"),
+            "close_case": ("close", "closure", "closure not requested"),
         }
 
         for step in plan:
@@ -149,8 +182,11 @@ class PlanEvaluator(EvaluatorBase):
                 else getattr(step, "tool_name", "")
             )
 
-            for pattern, msg in unnecessary_patterns.items():
-                if pattern in tool_name.lower() and pattern not in goal.lower():
+            for pattern, (verb, noun, msg) in unnecessary_patterns.items():
+                normalized_goal = goal.lower().replace("_", " ")
+                if pattern in tool_name.lower() and not any(
+                    word in normalized_goal for word in (verb, noun)
+                ):
                     issues.append(
                         {
                             "type": "unnecessary_step",
@@ -195,14 +231,6 @@ class PlanEvaluator(EvaluatorBase):
                 )
 
         return issues
-
-    def _check_intent_constraints(
-        self,
-        plan: list[Any],
-        intent: IntentEnvelope,
-    ) -> list[dict[str, Any]]:
-        """Check if plan respects intent constraints."""
-        return []
 
     def _format_issues(self, issues: list[dict[str, Any]]) -> str:
         """Format issues as human-readable rationale."""

@@ -3,9 +3,8 @@ supervision layer for autonomous AI agents.
 
     The Main Agent acts. The Sidecar observes, thinks, advises, and governs.
 
-0.6.1 adds governed outcome resolution, local approvals, full-plan review,
-optional live Judge SDK providers and validated task usage accounting. See
-ROADMAP.md and docs/governance.md for supported scope and acceptance evidence.
+0.7.0 adds runtime events, immutable durable audit evidence, authenticated local
+operator controls and the Control Room. See docs/live-operations.md for scope.
 """
 
 from agentic_sidecar.core.context import DecisionContext
@@ -38,15 +37,21 @@ from agentic_sidecar.gate import (
     EscalationHandler,
     EscalationRequest,
 )
+from agentic_sidecar.operations import EventJournal, RuntimeEvent, TaskRuntime
+from agentic_sidecar.operations.server import OperatorServer
 from agentic_sidecar.status import (
     StatusNarrative,
     StatusNarrator,
     ToolCallNarrative,
 )
 
-__version__ = "0.6.1"
+__version__ = "0.7.0"
 
 __all__ = [
+    "EventJournal",
+    "OperatorServer",
+    "RuntimeEvent",
+    "TaskRuntime",
     "MockJudge",
     "AnthropicJudge",
     "ApprovalAction",

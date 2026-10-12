@@ -4,6 +4,34 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-11
+
+### Added
+
+- TaskRuntime and immutable runtime events for proposals, decisions, actual
+  dispatch, completion/failure, actor-attributed approvals and stop receipts.
+- Optional fsynced JSONL journal with hash/sequence/task validation on restore,
+  decision-time context, findings, policy fingerprints and causal plan links.
+- Authenticated task-scoped loopback HTTP status/events/control/approval interface
+  and embedded Control Room for objective, plan, intent, risk, budget and calls.
+- Connected `status --endpoint ... --follow`, remote `control` and `approve` CLI
+  commands; measured execution narration separates proposals from completions.
+- Independent stop latch, stale/consumed verdict rejection, pause/resume/replan,
+  explicit restart, owned async-tool cancellation and harness revocation receipts.
+- Runnable HTTP approval/rejection demo and recorded lifecycle evidence; optional
+  Control Tower readback tests preserve supervision outcomes separately from health.
+
+### Changed
+
+- LangGraph wrapped sync/async tools report actual execution lifecycle; operator
+  stop prevents dispatch in both modes and cannot be bypassed by fail_open.
+- Restored runtimes start stopped; incomplete execution/revocation prevents restart.
+
+### Validation limitation
+
+- Authenticated OpenAI/Anthropic live smoke from v0.6.1 remains pending credentials
+  by user request. Deterministic SDK contract validation remains available.
+
 ## [0.6.1] - 2026-10-10
 
 ### Added

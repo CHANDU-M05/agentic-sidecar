@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | **Package** | `agentic-sidecar` |
-| **Checkout version** | `0.6.1` (release preparation) |
+| **Checkout version** | `0.7.0` (release preparation) |
 | **Maturity** | Pre-Alpha |
 | **License** | MIT |
 | **Python** | ≥ 3.10 |
@@ -39,7 +39,7 @@ All of this runs in either **Observe mode** (log decisions, never block) or **Go
 |---|---|
 | [Getting started](getting-started.md) | Install, minimal setup, first governed agent |
 | [Architecture](architecture.md) | Core design, Decision Gate pipeline, module boundaries |
-| [Governance](governance.md) | Approval flow, live providers and 0.6.1 validation evidence |
+| [Governance](governance.md) | Approval flow, live providers and 0.7.0 validation evidence |
 | [Features](features.md) | Current capabilities and supported usage |
 | [Configuration](configuration.md) | `Sidecar` constructor, YAML policy/risk files, all options |
 | [API reference](api-reference.md) | Full Python API — classes, methods, types |

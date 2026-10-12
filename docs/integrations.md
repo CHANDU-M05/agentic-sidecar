@@ -69,7 +69,7 @@ are supported. See [Governance](governance.md) for approval configuration.
 
 **Status: Planned for 0.8**
 
-The `adapters/crewai.py` module exists as a placeholder stub (no `attach()` function) and is not functional in v0.6.1. See [Roadmap](roadmap.md).
+The `adapters/crewai.py` module exists as a placeholder stub (no `attach()` function) and is not functional in v0.7.0. See [Roadmap](roadmap.md).
 
 ---
 
@@ -77,7 +77,7 @@ The `adapters/crewai.py` module exists as a placeholder stub (no `attach()` func
 
 **Status: Planned for 0.8**
 
-The `adapters/autogen.py` module exists as a placeholder stub and is not functional in v0.6.1. See [Roadmap](roadmap.md).
+The `adapters/autogen.py` module exists as a placeholder stub and is not functional in v0.7.0. See [Roadmap](roadmap.md).
 
 ---
 
@@ -85,7 +85,7 @@ The `adapters/autogen.py` module exists as a placeholder stub and is not functio
 
 **Status: Planned for 0.8**
 
-The `adapters/openai_agents.py` module exists as a placeholder stub and is not functional in v0.6.1. See [Roadmap](roadmap.md).
+The `adapters/openai_agents.py` module exists as a placeholder stub and is not functional in v0.7.0. See [Roadmap](roadmap.md).
 
 ---
 
@@ -93,7 +93,7 @@ The `adapters/openai_agents.py` module exists as a placeholder stub and is not f
 
 **Status: Planned for 0.8**
 
-The `adapters/google_adk.py` module exists as a placeholder stub and is not functional in v0.6.1. See [Roadmap](roadmap.md).
+The `adapters/google_adk.py` module exists as a placeholder stub and is not functional in v0.7.0. See [Roadmap](roadmap.md).
 
 ---
 

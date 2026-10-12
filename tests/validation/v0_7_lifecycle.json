@@ -1,0 +1,916 @@
+{
+  "task_id": "refund-demo",
+  "effects": [
+    120
+  ],
+  "status": {
+    "task_id": "refund-demo",
+    "mode": "govern",
+    "objective": "Review a customer refund",
+    "intent": {
+      "id": "bafc64dd-2fde-4d1f-b266-fa281aeb7782",
+      "goal": "Review a customer refund",
+      "requested_by": {
+        "type": "human",
+        "id": "customer"
+      },
+      "constraints": {},
+      "authority": {},
+      "expires": null,
+      "metadata": {}
+    },
+    "plan": [],
+    "budget": {
+      "exceeded": true,
+      "remaining_cost": 0.0,
+      "remaining_tokens": null,
+      "reason": "cost $1.0000 >= $1.0000"
+    },
+    "stopped": false,
+    "paused": false,
+    "pending": [],
+    "running": [],
+    "completed": 1,
+    "executed": 1,
+    "audit_errors": [],
+    "decisions": [
+      {
+        "decision": {
+          "decision_id": "e079f339-3269-4810-9cc4-40f0e39148a6",
+          "status": "PAUSE",
+          "risk": null,
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": true,
+          "causal_link": null
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "8890040e-c26c-46dc-bcc6-e0811d7b1cb0",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      {
+        "decision": {
+          "decision_id": "41c50b33-ed79-4f4f-b23b-2de417c2f0a8",
+          "status": "ALLOW",
+          "risk": null,
+          "reason": "Approval: approve_once. ",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": false,
+          "causal_link": "e079f339-3269-4810-9cc4-40f0e39148a6"
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Approval: approve_once. ",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "8890040e-c26c-46dc-bcc6-e0811d7b1cb0",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      {
+        "decision": {
+          "decision_id": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab",
+          "status": "PAUSE",
+          "risk": null,
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": true,
+          "causal_link": null
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "PAUSE"
+            },
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "ALLOW"
+            }
+          ],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "a9fc16a5-63bc-4a9b-97ee-7d81233ea260",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      {
+        "decision": {
+          "decision_id": "acdac62d-e8e0-4cfc-b2f4-50435ca0abf5",
+          "status": "BLOCK",
+          "risk": null,
+          "reason": "Approval: reject. ",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": false,
+          "causal_link": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab"
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Approval: reject. ",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "PAUSE"
+            },
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "ALLOW"
+            }
+          ],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "a9fc16a5-63bc-4a9b-97ee-7d81233ea260",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      }
+    ],
+    "actions": [
+      {
+        "decision_id": "e079f339-3269-4810-9cc4-40f0e39148a6",
+        "tool_name": "refund",
+        "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+        "state": "resolved"
+      },
+      {
+        "decision_id": "41c50b33-ed79-4f4f-b23b-2de417c2f0a8",
+        "tool_name": "refund",
+        "reason": "Approval: approve_once. ",
+        "state": "completed"
+      },
+      {
+        "decision_id": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab",
+        "tool_name": "refund",
+        "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+        "state": "resolved"
+      },
+      {
+        "decision_id": "acdac62d-e8e0-4cfc-b2f4-50435ca0abf5",
+        "tool_name": "refund",
+        "reason": "Approval: reject. ",
+        "state": "blocked"
+      }
+    ],
+    "sequence": 12,
+    "risk": null,
+    "alignment": {
+      "status": "ALLOW",
+      "reason": "No intent constraints violated for 'refund'",
+      "findings": []
+    },
+    "revocation_failed": false
+  },
+  "events": [
+    {
+      "sequence": 1,
+      "event_id": "8890040e-c26c-46dc-bcc6-e0811d7b1cb0",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.551198+00:00",
+      "kind": "proposed",
+      "payload": {
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "epoch": 0
+      },
+      "previous_hash": "",
+      "digest": "33baba8cec0d8723140deea93f8193ca37e27bfd17db4c569b11a2215b3264c2"
+    },
+    {
+      "sequence": 2,
+      "event_id": "9a3e9c29-db5a-4d24-976f-d7c8d766392a",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.555280+00:00",
+      "kind": "decision",
+      "payload": {
+        "decision": {
+          "decision_id": "e079f339-3269-4810-9cc4-40f0e39148a6",
+          "status": "PAUSE",
+          "risk": null,
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": true,
+          "causal_link": null
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "8890040e-c26c-46dc-bcc6-e0811d7b1cb0",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      "previous_hash": "33baba8cec0d8723140deea93f8193ca37e27bfd17db4c569b11a2215b3264c2",
+      "digest": "244a2cbfe857fb63171ec47c617db99ec3ef72e063a7488c61e9b4c29fbec16e"
+    },
+    {
+      "sequence": 3,
+      "event_id": "5933aae7-1919-477a-b3ad-10becf58b035",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.558122+00:00",
+      "kind": "paused",
+      "payload": {
+        "request": {
+          "decision_id": "e079f339-3269-4810-9cc4-40f0e39148a6",
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "context": {
+            "tool_name": "refund",
+            "tool_args": {
+              "amount": 120
+            },
+            "intent": {
+              "goal": "Review a customer refund",
+              "constraints": {}
+            },
+            "history": [],
+            "metadata": {},
+            "boundary": "tool_call",
+            "parent_decision_id": null,
+            "parent_plan_step": null,
+            "goal": "",
+            "plan": []
+          },
+          "available_actions": [
+            "approve_once",
+            "reject",
+            "modify_intent",
+            "ask_agent_to_replan",
+            "stop_agent"
+          ]
+        }
+      },
+      "previous_hash": "244a2cbfe857fb63171ec47c617db99ec3ef72e063a7488c61e9b4c29fbec16e",
+      "digest": "46178b23ab85f13e7832c7b9821bdff4c4a9f68dbd6bcf9b7894ae3c569a1717"
+    },
+    {
+      "sequence": 4,
+      "event_id": "7884d973-753c-4bce-b5eb-82967690f81e",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.563814+00:00",
+      "kind": "approval",
+      "payload": {
+        "actor": "demo-operator",
+        "decision_id": "e079f339-3269-4810-9cc4-40f0e39148a6",
+        "action": "approve_once",
+        "modified_intent": null,
+        "explanation": ""
+      },
+      "previous_hash": "46178b23ab85f13e7832c7b9821bdff4c4a9f68dbd6bcf9b7894ae3c569a1717",
+      "digest": "62d4e70fd262a2505436d2da19800b540c0d715a35fdda7c7eebf0aa797e831d"
+    },
+    {
+      "sequence": 5,
+      "event_id": "4fd743ef-d554-46cb-91d0-9daef17cd813",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.566008+00:00",
+      "kind": "decision",
+      "payload": {
+        "decision": {
+          "decision_id": "41c50b33-ed79-4f4f-b23b-2de417c2f0a8",
+          "status": "ALLOW",
+          "risk": null,
+          "reason": "Approval: approve_once. ",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": false,
+          "causal_link": "e079f339-3269-4810-9cc4-40f0e39148a6"
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Approval: approve_once. ",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "8890040e-c26c-46dc-bcc6-e0811d7b1cb0",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      "previous_hash": "62d4e70fd262a2505436d2da19800b540c0d715a35fdda7c7eebf0aa797e831d",
+      "digest": "69f3bab37ed1d2d5c08eeecc603d91123d1c22d2863486392e84a1e9f2e033dd"
+    },
+    {
+      "sequence": 6,
+      "event_id": "bd5e0892-3535-43ac-a83f-aff3d332d5db",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.568257+00:00",
+      "kind": "executed",
+      "payload": {
+        "invocation_id": "c59ed3f8-c2bc-4eef-9cbe-187787f7b8f5",
+        "decision_id": "41c50b33-ed79-4f4f-b23b-2de417c2f0a8",
+        "tool_name": "refund",
+        "arguments": {
+          "amount": 120
+        }
+      },
+      "previous_hash": "69f3bab37ed1d2d5c08eeecc603d91123d1c22d2863486392e84a1e9f2e033dd",
+      "digest": "aa18d8ea494074636deb504091d264ae5b026315d71457151f6d522834c6664f"
+    },
+    {
+      "sequence": 7,
+      "event_id": "3a634fa1-8789-4cfd-99ed-cc7548c121cf",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.570306+00:00",
+      "kind": "completed",
+      "payload": {
+        "invocation_id": "c59ed3f8-c2bc-4eef-9cbe-187787f7b8f5",
+        "decision_id": "41c50b33-ed79-4f4f-b23b-2de417c2f0a8",
+        "tool_name": "refund",
+        "arguments": {
+          "amount": 120
+        },
+        "error_type": null
+      },
+      "previous_hash": "aa18d8ea494074636deb504091d264ae5b026315d71457151f6d522834c6664f",
+      "digest": "adb2f426632de6c9d981d263be03b5fea65f84bedfdc7fc71a84e339535ab8f6"
+    },
+    {
+      "sequence": 8,
+      "event_id": "a9fc16a5-63bc-4a9b-97ee-7d81233ea260",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.572739+00:00",
+      "kind": "proposed",
+      "payload": {
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "PAUSE"
+            },
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "ALLOW"
+            }
+          ],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "epoch": 0
+      },
+      "previous_hash": "adb2f426632de6c9d981d263be03b5fea65f84bedfdc7fc71a84e339535ab8f6",
+      "digest": "4a9b62870cd7eeb39a21006b25b156662c9a21988f34b5da0f7b2ae2f695a427"
+    },
+    {
+      "sequence": 9,
+      "event_id": "4f3789bc-c758-4af3-a853-a8d7f7c29370",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.575321+00:00",
+      "kind": "decision",
+      "payload": {
+        "decision": {
+          "decision_id": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab",
+          "status": "PAUSE",
+          "risk": null,
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": true,
+          "causal_link": null
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "PAUSE"
+            },
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "ALLOW"
+            }
+          ],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "a9fc16a5-63bc-4a9b-97ee-7d81233ea260",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      "previous_hash": "4a9b62870cd7eeb39a21006b25b156662c9a21988f34b5da0f7b2ae2f695a427",
+      "digest": "2697177004df047c1bbc610cad6a153333c83f1552111f3e562f8d37dc94739d"
+    },
+    {
+      "sequence": 10,
+      "event_id": "07f087ce-3eb4-4902-8893-88a87d206f98",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.577774+00:00",
+      "kind": "paused",
+      "payload": {
+        "request": {
+          "decision_id": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab",
+          "reason": "Budget Guardian: cost $1.0000 >= $1.0000",
+          "context": {
+            "tool_name": "refund",
+            "tool_args": {
+              "amount": 120
+            },
+            "intent": {
+              "goal": "Review a customer refund",
+              "constraints": {}
+            },
+            "history": [
+              {
+                "tool_name": "refund",
+                "tool_args": {
+                  "amount": 120
+                },
+                "status": "PAUSE"
+              },
+              {
+                "tool_name": "refund",
+                "tool_args": {
+                  "amount": 120
+                },
+                "status": "ALLOW"
+              }
+            ],
+            "metadata": {},
+            "boundary": "tool_call",
+            "parent_decision_id": null,
+            "parent_plan_step": null,
+            "goal": "",
+            "plan": []
+          },
+          "available_actions": [
+            "approve_once",
+            "reject",
+            "modify_intent",
+            "ask_agent_to_replan",
+            "stop_agent"
+          ]
+        }
+      },
+      "previous_hash": "2697177004df047c1bbc610cad6a153333c83f1552111f3e562f8d37dc94739d",
+      "digest": "f65832d6db95f278d3b5a8a43427e75a1545db8de77d75020909b1bb6821b794"
+    },
+    {
+      "sequence": 11,
+      "event_id": "524478e5-2e8d-4330-a27a-e2f8a09cde82",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.587864+00:00",
+      "kind": "approval",
+      "payload": {
+        "actor": "demo-operator",
+        "decision_id": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab",
+        "action": "reject",
+        "modified_intent": null,
+        "explanation": ""
+      },
+      "previous_hash": "f65832d6db95f278d3b5a8a43427e75a1545db8de77d75020909b1bb6821b794",
+      "digest": "9f5ca9d4192066bef1fc954e6a7b01d907c0ff6a702b6a9870696a85ac5747fc"
+    },
+    {
+      "sequence": 12,
+      "event_id": "76ef505a-3e1f-4756-959d-bce5202c4646",
+      "task_id": "refund-demo",
+      "timestamp": "2026-10-12T04:41:11.590145+00:00",
+      "kind": "decision",
+      "payload": {
+        "decision": {
+          "decision_id": "acdac62d-e8e0-4cfc-b2f4-50435ca0abf5",
+          "status": "BLOCK",
+          "risk": null,
+          "reason": "Approval: reject. ",
+          "decision_point": "tool_call",
+          "trigger_details": {
+            "tool_name": "refund",
+            "arguments": {
+              "amount": 120
+            }
+          },
+          "escalation_required": false,
+          "causal_link": "8fc6a2b7-2cd4-4661-928a-0918fc1891ab"
+        },
+        "trigger": {
+          "boundary_type": "tool_call",
+          "tool_name": "refund",
+          "arguments": {
+            "amount": 120
+          }
+        },
+        "rationale": {
+          "reason": "Approval: reject. ",
+          "risk": null,
+          "findings": {
+            "alignment": {
+              "status": "ALLOW",
+              "reason": "No intent constraints violated for 'refund'",
+              "findings": []
+            },
+            "budget": {
+              "exceeded": true,
+              "reason": "cost $1.0000 >= $1.0000"
+            }
+          }
+        },
+        "context": {
+          "tool_name": "refund",
+          "tool_args": {
+            "amount": 120
+          },
+          "intent": {
+            "goal": "Review a customer refund",
+            "constraints": {}
+          },
+          "history": [
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "PAUSE"
+            },
+            {
+              "tool_name": "refund",
+              "tool_args": {
+                "amount": 120
+              },
+              "status": "ALLOW"
+            }
+          ],
+          "metadata": {},
+          "boundary": "tool_call",
+          "parent_decision_id": null,
+          "parent_plan_step": null,
+          "goal": "",
+          "plan": []
+        },
+        "proposal_id": "a9fc16a5-63bc-4a9b-97ee-7d81233ea260",
+        "epoch": 0,
+        "policy_version": "7341c7cef110f8960e17db3cbb6e527ff5cae3c2b0aa73753ee848787b98fee6",
+        "policy": {
+          "default": "allow",
+          "rules": []
+        },
+        "parent_plan_step": null
+      },
+      "previous_hash": "9f5ca9d4192066bef1fc954e6a7b01d907c0ff6a702b6a9870696a85ac5747fc",
+      "digest": "47a152a3903467a4bee940f1faea76e95bbc539a9cccef50fc533759a0c783b0"
+    }
+  ]
+}

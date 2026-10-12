@@ -1,6 +1,6 @@
 # Features
 
-Current **0.6.1** capabilities and their supported usage. Upcoming extensions
+Current **0.7.0** capabilities and their supported usage. Upcoming extensions
 are described in [Roadmap](roadmap.md); execution boundaries are summarized in
 [Limitations](limitations.md).
 
@@ -135,8 +135,9 @@ print(narrator.get_status(current_budget_remaining=4.50).tool_calls_made)  # 1
 ```
 
 Narration matches common tool-name patterns. `pause()` / `resume()` report
-state; application code controls execution. CLI status uses a new narrator;
-live runtime connection and richer execution states target 0.7.
+state; application code controls execution. CLI status with --endpoint reads the
+runtime journal and distinguishes proposed, blocked, paused, executed and completed
+actions. See [Live operations](live-operations.md) for the Control Room and controls.
 
 ## Human Escalation
 

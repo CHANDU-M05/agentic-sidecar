@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentic-sidecar"
-version = "0.6.1"
+version = "0.7.0"
 description = "Companion intelligence and real-time decision supervision for autonomous AI agents."
 readme = "README.md"
 license = { file = "LICENSE" }

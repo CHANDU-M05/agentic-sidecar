@@ -23,9 +23,8 @@ agentic-sidecar --help
 
 ### `status`
 
-Display a fresh local narrator snapshot. Application-supplied objectives,
-decisions, risk, and budget can be shown through the narrator API; connecting
-the CLI to runtime events is planned for 0.7.
+With --endpoint, display actual task state and lifecycle events from OperatorServer.
+Without --endpoint, display the standalone narrator snapshot.
 
 ```bash
 agentic-sidecar status [OPTIONS]
@@ -37,6 +36,7 @@ agentic-sidecar status [OPTIONS]
 |---|---|---|
 | `--follow` | `-f` | Repeat the local snapshot every `--interval` seconds |
 | `--json` | `-j` | Output as JSON instead of a human-readable table |
+| `--endpoint URL` | Runtime HTTP task endpoint (or SIDECAR_ENDPOINT) |
 | `--interval N` | `-i N` | Refresh interval in seconds when `--follow` is enabled (default: 1) |
 
 **Examples:**
@@ -86,7 +86,7 @@ Print the installed package version.
 
 ```bash
 agentic-sidecar version
-# agentic-sidecar 0.6.1
+# agentic-sidecar 0.7.0
 ```
 
 ---
@@ -133,3 +133,12 @@ Responses include approve_once, reject (default), modify_intent,
 ask_agent_to_replan and stop_agent. For actual governed calls, pass
 CLIApprovalHandler from agentic_sidecar.cli.approval as escalation_handler.
 See [Governance](governance.md).
+
+## Runtime connection and controls
+
+Use `--endpoint` (or `SIDECAR_ENDPOINT`) to connect `status --follow` to a real
+TaskRuntime/OperatorServer. Set `SIDECAR_OPERATOR_TOKEN` in the operator terminal.
+`control ACTION` supports pause, resume, stop, restart and replan.
+`approve DECISION_ID ACTION` resolves a pending request; `--intent-file FILE`
+supplies a complete JSON envelope for modify_intent. See
+[Live operations](live-operations.md) for setup, protocol and access scope.

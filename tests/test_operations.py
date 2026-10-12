@@ -580,3 +580,151 @@ def test_audit_failure_cannot_prevent_emergency_access_revocation(tmp_path):
     assert receipt["access_revocation"] == "acknowledged"
     assert revoked == [runtime.task_id]
     assert sidecar.stopped
+
+
+@pytest.mark.parametrize("changed_field", ["tool_name", "tool_args", "metadata", "plan"])
+def test_dispatch_binds_verdict_to_evaluated_context(changed_field):
+    sidecar, runtime = make_task()
+    context = DecisionContext(tool_name="read", tool_args={"id": 1}, metadata={"nested": [1]})
+    decision = sidecar.evaluate(context)
+    if changed_field == "tool_name":
+        context.tool_name = "delete"
+    elif changed_field == "tool_args":
+        context.tool_args["id"] = 2
+    elif changed_field == "metadata":
+        context.metadata["nested"].append(2)
+    else:
+        context.plan.append({"tool_name": "delete"})
+    with pytest.raises(SidecarBlockedError, match="changed"):
+        runtime.dispatch(context, decision)
+    assert runtime.snapshot()["executed"] == 0
+
+
+def test_context_fingerprint_accepts_equivalent_mapping_order():
+    sidecar, runtime = make_task()
+    context = DecisionContext(tool_name="read", tool_args={"a": 1, "b": 2})
+    decision = sidecar.evaluate(context)
+    context.tool_args = {"b": 2, "a": 1}
+    invocation = runtime.dispatch(context, decision)
+    runtime.complete(invocation)
+    assert runtime.snapshot()["completed"] == 1
+
+
+@pytest.mark.parametrize("newer_intent", [False, True])
+def test_intent_approval_is_effective_and_attributed_before_waiter_continues(newer_intent):
+    from agentic_sidecar.gate.escalation import EscalationHandler
+
+    received, release = threading.Event(), threading.Event()
+    guardian = IntentGuardian(IntentEnvelope(goal="Old goal", requested_by={"id": "u"}))
+    sidecar, runtime = make_task(intent=guardian, roles=["intent_guardian"])
+
+    class DelayedHandler(EscalationHandler):
+        def handle_escalation(self, request):
+            response = runtime.handle_escalation(request)
+            received.set()
+            assert release.wait(3)
+            return response
+
+    sidecar.escalation_handler = DelayedHandler()
+    sidecar.before_tool_call(
+        lambda context: Decision(
+            status="PAUSE"
+            if context.tool_name == "review" and context.intent.goal == "Old goal"
+            else "ALLOW",
+            risk="LOW",
+            reason="Review goal",
+        )
+    )
+    old_context = DecisionContext(tool_name="read")
+    old_verdict = sidecar.evaluate(old_context)
+    initial_epoch = runtime.epoch
+
+    def review():
+        return "effect"
+
+    with ThreadPoolExecutor() as pool:
+        future = pool.submit(attach(sidecar, [review])[0])
+        try:
+            decision_id = wait_pending(runtime)
+            envelope = guardian.envelope.model_dump(mode="json")
+            envelope["goal"] = "New goal"
+            runtime.approve(
+                ApprovalResponse(decision_id, ApprovalAction.MODIFY_INTENT, envelope),
+                "actual-operator",
+            )
+            assert received.wait(3)
+            assert sidecar.intent.envelope.goal == "New goal"
+            assert runtime.epoch == initial_epoch + 1
+            with pytest.raises(SidecarBlockedError):
+                runtime.dispatch(old_context, old_verdict)
+            modifications = [e for e in runtime.journal.export() if e["kind"] == "intent_modified"]
+            assert len(modifications) == 1
+            assert modifications[0]["payload"]["actor"] == "actual-operator"
+            if newer_intent:
+                runtime.modify_intent({**envelope, "goal": "Latest goal"}, "newer-operator")
+        finally:
+            release.set()
+        assert future.result(timeout=3) == "effect"
+    assert sidecar.intent.envelope.goal == ("Latest goal" if newer_intent else "New goal")
+    assert runtime.epoch == initial_epoch + (2 if newer_intent else 1)
+
+
+@pytest.mark.parametrize("failure_mode", ["fail_open", "fail_closed"])
+@pytest.mark.parametrize("tool_error", [None, ValueError("tool failed")])
+def test_completion_sink_failure_always_cleans_live_execution(tmp_path, failure_mode, tool_error):
+    runtime = TaskRuntime()
+    sidecar = Sidecar(on_sidecar_failure=failure_mode, mode="govern", runtime=runtime)
+    context = DecisionContext(tool_name="read")
+    cancellations = []
+    invocation = runtime.dispatch(
+        context, sidecar.evaluate(context), cancel=lambda: cancellations.append(1)
+    )
+    runtime.journal.path = tmp_path / "missing" / "audit.jsonl"
+    if failure_mode == "fail_closed":
+        with pytest.raises(OSError):
+            runtime.complete(invocation, tool_error)
+    else:
+        runtime.complete(invocation, tool_error)
+    assert runtime.snapshot()["running"] == []
+    assert runtime.snapshot()["completed"] == int(tool_error is None)
+    assert runtime.snapshot()["audit_errors"]
+    runtime.journal.path = None
+    runtime.control("stop", "operator")
+    assert cancellations == []
+    runtime.control("restart", "operator")
+    assert not runtime.stopped
+
+
+def test_hash_chain_detects_partial_records_but_not_complete_tail_removal(tmp_path):
+    path = tmp_path / "audit.jsonl"
+    journal = EventJournal("task", path)
+    journal.append("first", {})
+    journal.append("second", {})
+    lines = path.read_text().splitlines()
+    path.write_text(lines[0] + "\n")
+    assert len(EventJournal("task", path).export()) == 1
+    path.write_text(lines[0] + "\n" + lines[1][: len(lines[1]) // 2])
+    with pytest.raises(json.JSONDecodeError):
+        EventJournal("task", path)
+
+
+def test_changed_paused_context_is_rejected_before_approval_can_reauthorize_it():
+    sidecar, runtime = make_task()
+    approvals = []
+    sidecar.before_tool_call(lambda context: Decision(status="PAUSE", risk="LOW", reason="Review"))
+    sidecar.on_escalation_required(
+        lambda request: (
+            approvals.append(request)
+            or ApprovalResponse(
+                request.decision_id,
+                ApprovalAction.APPROVE_ONCE,
+            )
+        )
+    )
+    context = DecisionContext(tool_name="read")
+    decision = sidecar.evaluate(context)
+    context.tool_name = "delete"
+    with pytest.raises(SidecarBlockedError):
+        sidecar.enforce(context, decision)
+    assert approvals == []
+    assert runtime.snapshot()["executed"] == 0

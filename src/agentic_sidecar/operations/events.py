@@ -48,7 +48,8 @@ def _digest(row: dict[str, Any]) -> str:
 class EventJournal:
     """Single writer per task/file. Persist before publishing; fail on sink errors.
 
-    Hash chaining detects corruption, not malicious rewriting by a file owner.
+    Hash chaining detects corruption within retained records, not removal of a
+    complete suffix or malicious rewriting by a file owner.
     Restore is evidence recovery, never authorization to resume an old task.
     """
 

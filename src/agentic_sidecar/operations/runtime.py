@@ -61,13 +61,14 @@ class TaskRuntime(EscalationHandler):
         self._stopped = bool(self.journal.export())
         self._revocation_failed = False
         self._revocation_pending = False
-        self._decisions: dict[str, tuple[int, str]] = {}
+        self._decisions: dict[str, tuple[int, str, str]] = {}
         self._stop_operation_lock = threading.Lock()
         self._dispatched: set[str] = set()
         self._running: dict[str, dict[str, Any]] = {}
         self._cancellers: dict[str, Callable[[], None]] = {}
         self._pending: dict[str, EscalationRequest] = {}
         self._responses: dict[str, ApprovalResponse] = {}
+        self._applied_intent_approvals: set[str] = set()
         self._audit_errors: list[str] = []
         self._executed = 0
         self._completed = 0
@@ -151,7 +152,36 @@ class TaskRuntime(EscalationHandler):
             self._decisions[decision.decision_id] = (
                 context._runtime_epoch,
                 decision.model_dump_json(),
+                self.context_fingerprint(context),
             )
+
+    @staticmethod
+    def context_fingerprint(context: DecisionContext) -> str:
+        """Bind authorization to a canonical immutable snapshot of all public fields."""
+        serialized = json.dumps(json.loads(context.model_dump_json()), sort_keys=True)
+        return hashlib.sha256(serialized.encode()).hexdigest()
+
+    def validate_authorization(self, context: DecisionContext, decision: Decision) -> None:
+        with self._condition:
+            expected = (self._epoch, decision.model_dump_json(), self.context_fingerprint(context))
+            if (
+                self._decisions.get(decision.decision_id) != expected
+                or decision.decision_id in self._dispatched
+            ):
+                raise SidecarBlockedError(
+                    Decision(
+                        status="BLOCK", risk=None, reason="Stale, changed or consumed proposal"
+                    ),
+                    context,
+                )
+
+    def consume_intent_approval(self, decision_id: str) -> bool:
+        """A runtime approval already applied its intent atomically, with the real actor."""
+        with self._condition:
+            if decision_id not in self._applied_intent_approvals:
+                return False
+            self._applied_intent_approvals.remove(decision_id)
+            return True
 
     def _emit_execution(self, kind: str, payload: dict[str, Any]) -> None:
         try:
@@ -183,15 +213,7 @@ class TaskRuntime(EscalationHandler):
                 raise SidecarSuspendedError(
                     Decision(status="PAUSE", risk=None, reason="Operator paused task"), context
                 )
-            if (
-                self._decisions.get(decision.decision_id)
-                != (self._epoch, decision.model_dump_json())
-                or decision.decision_id in self._dispatched
-            ):
-                raise SidecarBlockedError(
-                    Decision(status="BLOCK", risk=None, reason="Stale or consumed decision"),
-                    context,
-                )
+            self.validate_authorization(context, decision)
             invocation_id = str(uuid4())
             payload: dict[str, Any] = {
                 "invocation_id": invocation_id,
@@ -216,13 +238,16 @@ class TaskRuntime(EscalationHandler):
     def complete(self, invocation_id: str, error: BaseException | None = None) -> None:
         with self._condition:
             payload = self._running[invocation_id]
-            self._emit_execution(
-                "failed" if error else "completed",
-                {**payload, "error_type": type(error).__name__ if error else None},
-            )
-            self._completed += int(error is None)
-            del self._running[invocation_id]
-            self._cancellers.pop(invocation_id, None)
+            try:
+                self._emit_execution(
+                    "failed" if error else "completed",
+                    {**payload, "error_type": type(error).__name__ if error else None},
+                )
+            finally:
+                # The tool is finished even if durable evidence could not be written.
+                self._completed += int(error is None)
+                del self._running[invocation_id]
+                self._cancellers.pop(invocation_id, None)
 
     def is_running(self, invocation_id: str) -> bool:
         with self._condition:
@@ -269,6 +294,10 @@ class TaskRuntime(EscalationHandler):
                     raise ValueError("Active intent and a complete envelope required")
                 IntentEnvelope.model_validate(response.modified_intent)
             self.journal.append("approval", {"actor": actor, **asdict(response)})
+            if response.action == ApprovalAction.MODIFY_INTENT:
+                assert response.modified_intent is not None  # validated above
+                self.modify_intent(response.modified_intent, actor)
+                self._applied_intent_approvals.add(response.decision_id)
             if response.action == ApprovalAction.STOP_AGENT:
                 self._stopped = True
                 self._require_sidecar().stopped = True

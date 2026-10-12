@@ -83,9 +83,12 @@ All routes are prefixed by `/tasks/TASK_ID`:
 
 Unknown tasks are rejected. Approval IDs must identify an unresolved request in
 this runtime; duplicate/replayed answers are rejected. Approve-once authorizes
-one dispatch; the consumed decision cannot dispatch again. Modify-intent validates
+one dispatch; authorization is bound to an immutable fingerprint of the evaluated
+context, and changed or consumed proposals cannot dispatch. Modify-intent validates
 a complete envelope, preserves bindings, and reevaluates the paused proposal.
-Direct intent editing invalidates earlier verdicts. Approval waiting times out
+Runtime intent approvals apply the validated envelope, record the approving actor
+and invalidate earlier verdicts before acknowledgement. Direct intent editing also
+invalidates earlier verdicts. Approval waiting times out
 into REPLAN, including with fail_open. The harness handles replanning and retries;
 the operator replan control pauses further dispatch until explicit resume.
 
@@ -147,11 +150,17 @@ use mode 0600; use one writer per task/file. Sink failure follows the configured
 fail_open permits execution with missing evidence and reports audit_errors in
 status. Stop and stale/consumed decision guards remain enforced independently.
 `EventJournal(task_id, path)` restores and checks sequence, identity and hashes.
-Truncated/corrupt files fail restoration; no silent recovery discards evidence.
-Hash chaining detects corruption, not malicious rewriting by a file owner.
+Malformed partial records and corruption within the retained chain fail restoration.
+Removing complete trailing records leaves a valid chain and cannot be detected
+without an external trusted head/length checkpoint, which is not provided here.
+Hash chaining also cannot detect malicious rewriting by a file owner.
 Restored runtimes are stopped and require explicit restart. Uncompleted dispatches
 and partial/unacknowledged revocations remain visible and prevent restart;
 resolve them in the owning harness rather than claiming completion after a crash.
+In a live process, completion/failure always clears running state and cancellation
+callbacks, even if writing the final audit event fails. The sink error still
+propagates under fail_closed; a later restore may retain unresolved execution
+when that final event is missing.
 
 ### AI Operations Specification mapping
 

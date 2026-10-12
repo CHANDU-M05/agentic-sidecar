@@ -314,6 +314,7 @@ class Sidecar:
         if self.mode == "observe":
             return decision
         if decision.status in ("PAUSE", "ESCALATE"):
+            self.runtime.validate_authorization(context, decision)
             decision = self._resolve_approval(context, decision)
             self.runtime.authorize(context, decision)
         if decision.status == "BLOCK":
@@ -352,7 +353,10 @@ class Sidecar:
                 if self.intent is None or response.modified_intent is None:
                     raise ValueError("modify_intent requires an active intent and a full envelope")
                 envelope = IntentEnvelope.model_validate(response.modified_intent)
-                self.runtime.modify_intent(envelope.model_dump(mode="json"), "escalation_handler")
+                if not self.runtime.consume_intent_approval(decision.decision_id):
+                    self.runtime.modify_intent(
+                        envelope.model_dump(mode="json"), "escalation_handler"
+                    )
                 # Reevaluate once; another PAUSE returns to the caller without a prompt loop.
                 return self.evaluate(context, causal_link=decision.decision_id)
             if response.action == ApprovalAction.STOP_AGENT:

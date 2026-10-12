@@ -1,33 +1,19 @@
 # Getting Started
 
 Start with deterministic tool-call supervision using the **0.7.0** API.
-This release is prepared in the checkout; install from source until its tagged
-package is published.
 These examples run without a model, framework installation, or API key.
 
 ## Installation
 
-Requires Python 3.10 or newer. Until 0.7.0 is published to PyPI, install this
-checkout so the API on this page matches what you have installed:
+Requires Python 3.10 or newer. Install the v0.7.0 package from PyPI:
 
 ```bash
-pip install -e .
-agentic-sidecar version
+pip install agentic-sidecar==0.7.0
+# Optional live Judge SDKs:
+pip install "agentic-sidecar[openai,anthropic]==0.7.0"
 ```
 
-Once 0.7.0 is published, install normally:
-
-```bash
-pip install agentic-sidecar
-agentic-sidecar version
-```
-
-For the repository examples:
-
-```bash
-uv sync --extra dev --extra langgraph
-uv run agentic-sidecar version
-```
+For development from a checkout, run `uv sync --extra dev --extra langgraph --extra docs`.
 
 ## Observe a proposed action
 

@@ -6,7 +6,7 @@
 
 ## Status
 
-**Current checkout version: 0.7.0 (prepared for review; unpublished).** The runtime brings together deterministic
+**Current checkout version: 0.7.0.** The runtime brings together deterministic
 intent/policy/risk supervision, optional evaluators, budget accounting,
 narration, and the CLI. See the [roadmap](ROADMAP.md) for release history
 and upcoming capability stages.

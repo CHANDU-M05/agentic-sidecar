@@ -54,8 +54,15 @@ def _wrap_tool(sidecar: Sidecar, tool: F) -> F:
         )
         decision = sidecar.evaluate(context)
         # Resolve governance before invoking the original function.
-        sidecar.enforce(context, decision)
-        return tool(*args, **kwargs)
+        decision = sidecar.enforce(context, decision)
+        invocation = sidecar.runtime.dispatch(context, decision)
+        try:
+            result = tool(*args, **kwargs)
+        except BaseException as exc:
+            sidecar.runtime.complete(invocation, exc)
+            raise
+        sidecar.runtime.complete(invocation)
+        return result
 
     if inspect.iscoroutinefunction(tool):
 
@@ -66,8 +73,27 @@ def _wrap_tool(sidecar: Sidecar, tool: F) -> F:
                 tool_args=_bind_args(signature, args, kwargs),
             )
             decision = await asyncio.to_thread(sidecar.evaluate, context)
-            await asyncio.to_thread(sidecar.enforce, context, decision)
-            return await tool(*args, **kwargs)
+            decision = await asyncio.to_thread(sidecar.enforce, context, decision)
+            loop = asyncio.get_running_loop()
+            owned_task: asyncio.Task[Any] | None = None
+            invocation = ""
+
+            def cancel_on_loop() -> None:
+                if owned_task is not None and sidecar.runtime.is_running(invocation):
+                    owned_task.cancel()
+
+            def request_cancel() -> None:
+                loop.call_soon_threadsafe(cancel_on_loop)
+
+            invocation = sidecar.runtime.dispatch(context, decision, cancel=request_cancel)
+            try:
+                owned_task = asyncio.create_task(tool(*args, **kwargs))
+                result = await owned_task
+            except BaseException as exc:
+                sidecar.runtime.complete(invocation, exc)
+                raise
+            sidecar.runtime.complete(invocation)
+            return result
 
         return _async_wrapped_tool  # type: ignore[return-value]
     return _sidecar_wrapped_tool  # type: ignore[return-value]

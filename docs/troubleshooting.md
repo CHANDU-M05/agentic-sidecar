@@ -1,7 +1,7 @@
 # Troubleshooting
 
 Use the returned verdict, enabled roles, and configured bindings to inspect
-behavior before attaching real tools. These notes describe the **0.6.1** API.
+behavior before attaching real tools. These notes describe the **0.7.0** API.
 
 ## Required failure configuration
 
@@ -70,7 +70,9 @@ post-response cost ceilings and cancellation boundaries.
 
 `status` starts with a fresh narrator. Zero calls and no objective are expected.
 `demo` shows a populated simulated narrator. Creating a narrator in application
-code does not connect a separate CLI process; live connection is planned for 0.7.
+code does not connect a separate CLI process. For live status, run an OperatorServer
+in the task process and supply its URL through --endpoint or SIDECAR_ENDPOINT;
+set the same SIDECAR_OPERATOR_TOKEN in the operator terminal.
 Use a positive refresh interval for `--follow`.
 
 ## Rule matching

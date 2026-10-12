@@ -33,6 +33,7 @@ from agentic_sidecar.gate.policy import PolicyAdvisor
 from agentic_sidecar.gate.risk import RISK_ORDER, RiskEvaluator
 from agentic_sidecar.intent.alignment import AlignmentResult, IntentGuardian
 from agentic_sidecar.intent.envelope import IntentEnvelope
+from agentic_sidecar.operations.runtime import TaskRuntime
 
 logger = logging.getLogger("agentic_sidecar")
 
@@ -91,6 +92,7 @@ class Sidecar:
         risk_block_threshold: RiskLevel = "HIGH",
         mode: SidecarMode = "observe",
         roles: Sequence[str] | None = None,
+        runtime: TaskRuntime | None = None,
     ) -> None:
         if on_sidecar_failure not in ("fail_open", "fail_closed"):
             raise ValueError(
@@ -132,6 +134,9 @@ class Sidecar:
         self.roles = self._validate_roles(roles)
         self.decisions: list[tuple[DecisionContext, Decision]] = []
         self.stopped = False
+        self.runtime = runtime or TaskRuntime()
+        self.runtime.bind(self)
+        self.stopped = self.runtime.stopped
         self._hook: DecisionHook | None = None
         self._escalation_hook: EscalationHook | None = None
         self.intent: IntentGuardian | None = None
@@ -244,10 +249,13 @@ class Sidecar:
         enforced by the attached adapter in Govern mode, not by
         `evaluate()` (see `agentic_sidecar.core.exceptions.SidecarBlockedError`).
         """
+        context._runtime_epoch = self.runtime.epoch
+        context._findings = {}
         try:
             self._inject(context)
-            if self.stopped and self.mode == "govern":
-                decision = Decision(status="BLOCK", risk=None, reason="Agent stopped by approval")
+            self.runtime.propose(context)
+            if self.stopped:
+                decision = Decision(status="BLOCK", risk=None, reason="Task stopped")
             else:
                 evaluator = self._hook or self._default_evaluate
                 decision = evaluator(context)
@@ -257,7 +265,9 @@ class Sidecar:
             decision = Decision.model_validate(decision.model_dump()).model_copy(
                 update={
                     "decision_id": str(uuid4()),
-                    "causal_link": causal_link or decision.causal_link,
+                    "causal_link": causal_link
+                    or context.parent_decision_id
+                    or decision.causal_link,
                 }
             )
             self._record(context, decision)
@@ -268,9 +278,11 @@ class Sidecar:
             # A broken recorder must not bypass the configured failure policy.
             with suppress(Exception):
                 self._record(context, decision)
+        self.runtime.authorize(context, decision)
         return decision
 
     def _record(self, context: DecisionContext, decision: Decision) -> None:
+        self.runtime.record(context, decision)
         self._log_decision(context, decision)
         self.decisions.append((context.model_copy(deep=True), decision.model_copy(deep=True)))
 
@@ -302,7 +314,9 @@ class Sidecar:
         if self.mode == "observe":
             return decision
         if decision.status in ("PAUSE", "ESCALATE"):
+            self.runtime.validate_authorization(context, decision)
             decision = self._resolve_approval(context, decision)
+            self.runtime.authorize(context, decision)
         if decision.status == "BLOCK":
             raise SidecarBlockedError(decision, context)
         if decision.status not in ("ALLOW", "WARN"):
@@ -339,11 +353,15 @@ class Sidecar:
                 if self.intent is None or response.modified_intent is None:
                     raise ValueError("modify_intent requires an active intent and a full envelope")
                 envelope = IntentEnvelope.model_validate(response.modified_intent)
-                self.set_intent(IntentGuardian(envelope, self.intent.bindings))
+                if not self.runtime.consume_intent_approval(decision.decision_id):
+                    self.runtime.modify_intent(
+                        envelope.model_dump(mode="json"), "escalation_handler"
+                    )
                 # Reevaluate once; another PAUSE returns to the caller without a prompt loop.
                 return self.evaluate(context, causal_link=decision.decision_id)
             if response.action == ApprovalAction.STOP_AGENT:
-                self.stopped = True
+                if not self.stopped:
+                    self.runtime.control("stop", "escalation_handler")
                 status = "BLOCK"
             elif response.action == ApprovalAction.REJECT:
                 status = "BLOCK"
@@ -456,6 +474,7 @@ class Sidecar:
         policy_result = None
         if not is_plan and "policy" in self.roles:
             policy_result = self.policy.evaluate(context)
+            context._findings["policy"] = policy_result.model_dump(mode="json")
             if policy_result.effect == "deny":
                 return Decision(
                     status="BLOCK",
@@ -471,6 +490,7 @@ class Sidecar:
         risk_result = None
         if not is_plan and "risk" in self.roles:
             risk_result = self.risk.evaluate(context)
+            context._findings["risk"] = risk_result.model_dump(mode="json")
             if RISK_ORDER[risk_result.risk] >= RISK_ORDER[self.risk_block_threshold]:
                 return Decision(
                     status="BLOCK",
@@ -489,6 +509,7 @@ class Sidecar:
         alignment_result: AlignmentResult | None = None
         if not is_plan and "intent_guardian" in self.roles and self.intent is not None:
             alignment_result = self.intent.evaluate(context)
+            context._findings["alignment"] = alignment_result.model_dump(mode="json")
             if alignment_result.status == "BLOCK":
                 return Decision(
                     status="BLOCK",
@@ -508,6 +529,10 @@ class Sidecar:
         budget_result = None
         if "budget" in self.roles and self.budget is not None:
             budget_result = self.budget.evaluate()
+            context._findings["budget"] = {
+                "exceeded": budget_result.exceeded,
+                "reason": budget_result.reason,
+            }
             if budget_result.exceeded:
                 return Decision(
                     status="PAUSE",
@@ -532,6 +557,7 @@ class Sidecar:
             result = evaluator.evaluate(deepcopy(self._evaluator_context(context)))
             status = self._validate_result(result)
             results[role] = result
+            context._findings[role] = {"status": result.status, "reason": result.rationale}
             intervention_reason = f"{role.title()}: {result.rationale}"
             if (
                 role == "judge"

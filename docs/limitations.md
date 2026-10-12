@@ -1,6 +1,6 @@
 # Limitations
 
-Supported scope for the **0.6.1** API. See [Governance](governance.md) for usage
+Supported scope for the **0.7.0** API. See [Governance](governance.md) for usage
 and validation evidence, and [Roadmap](roadmap.md) for future priorities.
 
 ## Governance boundary
@@ -11,17 +11,16 @@ raise SidecarSuspendedError when unresolved. CHALLENGE/REPLAN always return
 control through SidecarSuspendedError. These exceptions prevent the tool call;
 they do not checkpoint, resume, or replan an entire agent workflow.
 
-Approval is local and synchronous, including the CLI prompt. Async tools run
+Approval is local or supplied through the authenticated runtime HTTP interface. Async tools run
 evaluation/approval in a worker thread to avoid blocking their event loop.
 Cancelling the waiting coroutine cannot cancel a running sync evaluator/prompt.
-Use one Sidecar/Judge/Budget per task; concurrent tool proposals on a shared
-instance are not a transaction or a supported approval queue.
+Use one Sidecar/Judge/Budget per task. Runtime approvals support concurrent
+proposals; evaluators and manual budget accounting are not a task transaction.
 
 APPROVE_ONCE authorizes the current invocation only. BLOCK cannot be approved.
 MODIFY_INTENT requires a full envelope, preserves bindings and reevaluates once;
 another intervention returns control without an automatic prompt loop.
-STOP_AGENT persists on that Sidecar instance; start a new task instance to run
-again. REJECT blocks that proposal. REPLAN returns control to the agent loop.
+STOP_AGENT latches the task; explicit runtime restart is required to run again. REJECT blocks that proposal. REPLAN returns control to the agent loop.
 
 ## Deterministic intent and heuristic evaluators
 
@@ -72,19 +71,18 @@ checks, budget and evaluators.
 
 Decision IDs and approval causal links are available. In-memory contexts are
 deep-copied at recording time; the public list, its contexts and nested decision
-dictionaries remain mutable. Durable, immutable audit lifecycle is planned for
-0.7. AuditRecord remains a caller-created export type.
+dictionaries remain mutable. The immutable runtime journal records durable execution lifecycle; see
+[Live operations](live-operations.md). AuditRecord remains a caller-created export type.
 
 LangGraph sync/async plain callables are supported. Framework-native tool objects,
 additional adapters and optional ecosystem exports target 0.8.
 
 ## Narration and CLI
 
-Narrator state is supplied by application code; pause/resume reports state.
-steps_completed counts recorded calls, including blocked/paused proposals.
-CLI status creates a fresh narrator. --follow repeats that local snapshot;
---follow --json is formatted JSON with headings, not JSONL. Runtime event
-connection and execution lifecycle tracking target 0.7. The approval prompt
-works with an attached Sidecar and does not supply a remote control plane.
+The standalone StatusNarrator remains manually populated. Connected CLI status
+reads actual runtime events and execution state; `--follow --json` prints
+formatted snapshots, not JSONL. The Control Room uses the same authenticated
+HTTP interface. See [Live operations](live-operations.md) for task isolation,
+stop/cancellation/revocation boundaries and restore behavior.
 
 The package remains Pre-Alpha; stable API/schema guarantees target 1.0.

@@ -1,6 +1,6 @@
 # Examples
 
-The examples target the **0.6.1** API. Historical version labels in filenames
+The examples target the **0.7.0** API. Historical version labels in filenames
 identify their introduction. Run them from the repository root:
 
 ```bash
@@ -19,6 +19,7 @@ for links and setup details.
 | `v0_3_planner_critic_judge.py` | Direct full-plan checks, heuristic Critic, mock Judge, and composed evaluation |
 | `v0_3_judge_providers.py` | Mock provider swapping and synthetic usage accounting |
 | `v0_4_budget_and_escalation.py` | Manual budget accounting, PAUSE verdict, explicitly invoked approval handler, and audit serialization |
+| `v0_7_control_room.py` | Real HTTP approval/rejection, execution lifecycle and Control Room |
 | `v0_6_1_governance.py` | Runtime approval, suspension, full-plan review and shared Judge budget |
 | `v0_5_status_narration.py` | Manually supplied decisions, compliance/budget values, and narrator pause/resume state |
 | `v0_5_cli_guide.md` | Local CLI snapshots, JSON, follow formatting, demo, and version |
@@ -39,8 +40,9 @@ Intent Guardian behavior.
 
 The budget example handles an approval request in its own application code.
 The governance example demonstrates runtime approval and suspension before
-dispatch, plus full-plan review and automatic Judge accounting. Narrator methods update reported state, while a live
-runtime connection is planned for 0.7. Provider mock costs are illustrative
+dispatch, plus full-plan review and automatic Judge accounting. The v0.7 Control
+Room example uses a real local HTTP interface, records approval and rejection,
+and counts actual tool effects. Standalone narrator methods update reported state. Provider mock costs are illustrative
 values, not measured inference costs. See [supported scope](limitations.md)
 and the [roadmap](roadmap.md).
 

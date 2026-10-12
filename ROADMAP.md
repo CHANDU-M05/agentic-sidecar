@@ -1,6 +1,6 @@
 # agentic-sidecar — Roadmap & Architecture
 
-> **Updated 2026-10-10 · Current checkout: 0.6.1 (release preparation).**
+> **Updated 2026-10-11 · Current checkout: 0.7.0 (prepared for review; unpublished).**
 > This is the canonical capability roadmap. Each stage builds on the existing
 > runtime with explicit deliverables and acceptance criteria. Future version
 > targets describe development priorities, not committed delivery dates.
@@ -15,9 +15,11 @@
 | v0.5.0 | Human-readable StatusNarrator and Typer/Rich CLI (`status`, `demo`, `version`) |
 | v0.6.0 | Combined runtime with optional evaluator stages and public evaluator exports |
 
-**0.6.1 release preparation:** governance resolution, full-plan context, optional
+**0.6.1 governance implementation:** governance resolution, full-plan context, optional
 live providers, timeout/usage accounting and reproducible validation. See
-[usage and acceptance evidence](docs/governance.md).
+[usage and acceptance evidence](docs/governance.md). Authenticated provider smoke remains
+pending credentials by request. **0.7.0 implementation:** runtime events, audit,
+local operator interface and Control Room; see [live operations](docs/live-operations.md).
 
 ## Current Capabilities and Next Steps
 
@@ -30,12 +32,12 @@ live providers, timeout/usage accounting and reproducible validation. See
 | Critic | Selected risk/assumption/history checks and supplied evidence | Broader evidence-driven reasoning |
 | Judge | Explicit MockJudge and optional live OpenAI/Anthropic, limits and shared usage | Recorded live smoke evidence |
 | Budget Guardian | Validated manual/Judge usage, governed PAUSE and approvals | Measured usage extraction needs |
-| Human escalation | ID-correlated local handlers, CLI prompt and five response actions | Runtime-connected operator controls |
-| Provenance | Serializable types, context copies and approval causal IDs | Immutable durable execution lifecycle |
-| Narration and CLI | Manually populated narrator and local status commands | Live runtime event connection |
+| Human escalation | ID-correlated local/HTTP handlers, CLI prompt and five actions | Additional adapter conformance |
+| Provenance | Immutable runtime events, durable JSONL and causal execution/approval IDs | Formal schema stability |
+| Narration and CLI | Runtime-connected HTTP status, control/approval and narration | Broader adapter coverage |
 | Additional framework adapters | LangGraph provides the initial integration surface | CrewAI, AutoGen, OpenAI Agents, and Google ADK |
 | Ecosystem integrations | Optional package boundaries | Decision export and shared correlation contracts |
-| Control Room | Local demonstration surfaces | Runtime-connected operator controls |
+| Control Room | Authenticated task-scoped runtime controls | Broader adapter coverage |
 | Evaluation and interoperability | Outcome tests and four deterministic intent fixtures | Broader comparative evidence and schemas |
 
 The 0.6.1 validation includes outcome/approval/failure tests, real LangGraph
@@ -55,8 +57,9 @@ src/agentic_sidecar/
   gate/          deterministic policy/risk, budget, escalation primitives
   intent/        IntentEnvelope and constraint alignment
   evaluators/    plan/critic heuristics, explicit mock and optional live providers
-  status/        manually populated human-readable narrator
-  cli/           local status/demo/version and approval commands
+  status/        runtime-connected and standalone human-readable narration
+  operations/    task runtime, immutable journal, authenticated HTTP and Control Room
+  cli/           connected status/control/approval and local demo/version commands
   adapters/      LangGraph callable wrapper; four additional placeholders
   integrations/  optional AgenticLens and Agentic Chaos placeholders
 ```
@@ -174,21 +177,26 @@ are reproducible. Safe conservative behavior takes precedence over latency.
 
 **Depends on:** the v0.6.x enforcement and escalation contract.
 
-- [ ] Emit runtime decision/execution/status events and connect `status --follow`
+- [x] Emit runtime decision/execution/status events and connect `status --follow`
       to a real Sidecar through a documented local IPC or HTTP interface.
-- [ ] Distinguish proposed, blocked, paused, executed, and completed actions in
+- [x] Distinguish proposed, blocked, paused, executed, and completed actions in
       narration; report actual intent/risk/budget state and task identity.
-- [ ] Create immutable decision-time audit snapshots with decision IDs, timestamps,
+- [x] Create immutable decision-time audit snapshots with decision IDs, timestamps,
       trigger/rationale, parent plan/decision links, and approval/rejection records.
-- [ ] Add an optional durable audit sink and verify export/restore behavior;
+- [x] Add an optional durable audit sink and verify export/restore behavior;
       define its artifact mapping against AIOS conventions.
-- [ ] Build a Control Room consuming the same event/approval interface: objective,
+- [x] Build a Control Room consuming the same event/approval interface: objective,
       plan, calls, alignment, risk, budget, pause/resume/stop, approve/reject,
       modify intent, and ask-to-replan. Use actual runtime controls.
-- [ ] Document operator access and task isolation; validate native evidence with
+- [x] Document operator access and task isolation; validate native evidence with
       Control Tower without treating blocked actions as deployment failures.
-- [ ] Add an end-to-end example and demo recording showing a real paused action
+- [x] Add an end-to-end example and demo recording showing a real paused action
       being approved or rejected with a causally linked audit record.
+
+**0.7 scope:** task-scoped local HTTP controls, owned async cancellation and
+harness-supplied access revocation callbacks. No built-in credential issuer or
+process isolation; receipts explicitly report unconfigured/failed revocation.
+Native Tower readback is tested; Lens integrity integration remains v0.8.
 
 ### v0.8 — Framework Adapters & Optional Integrations
 
@@ -266,10 +274,10 @@ Sidecar owns both the emergency brake (stop, prevent further calls, revoke task
 access) and independent policy enforcement. MCP/credential issuers implement
 access-boundary revocation; Tower supplies optional operator coordination.
 
-- [ ] v0.7: authenticated, task-scoped operator stop independent of LLM approval;
+- [x] v0.7: authenticated, task-scoped operator stop independent of LLM approval;
       latch stop before additional dispatch and acknowledge its effective time.
       Test queued calls, concurrent proposals, retries and explicit restart.
-- [ ] v0.7: distinguish already-running calls and completed side effects; cancel
+- [x] v0.7: distinguish already-running calls and completed side effects; cancel
       only where supported by the harness/provider. Coordinate MCP revocation and
       Tower results without taking ownership of credentials. Require task-access
       revocation acknowledgements, report partial failure, and verify stopped

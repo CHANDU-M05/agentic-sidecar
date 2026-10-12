@@ -1,13 +1,13 @@
 # Getting Started
 
-Start with deterministic tool-call supervision using the **0.6.1** API.
+Start with deterministic tool-call supervision using the **0.7.0** API.
 This release is prepared in the checkout; install from source until its tagged
 package is published.
 These examples run without a model, framework installation, or API key.
 
 ## Installation
 
-Requires Python 3.10 or newer. Until 0.6.1 is published to PyPI, install this
+Requires Python 3.10 or newer. Until 0.7.0 is published to PyPI, install this
 checkout so the API on this page matches what you have installed:
 
 ```bash
@@ -15,7 +15,7 @@ pip install -e .
 agentic-sidecar version
 ```
 
-Once 0.6.1 is published, install normally:
+Once 0.7.0 is published, install normally:
 
 ```bash
 pip install agentic-sidecar

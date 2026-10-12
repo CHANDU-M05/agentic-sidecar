@@ -72,8 +72,10 @@ arguments. Hook and failure verdicts may leave those fields unset. `Decision`
 is frozen at the field level; nested dictionaries and saved contexts remain
 mutable. `AuditRecord.to_dict()` serializes caller-created provenance records.
 Contexts are deep-copied at recording time; decisions have IDs and resolved
-approvals link to their originating decision. Durable lifecycle is planned for 0.7.
+approvals link to their originating decision. TaskRuntime adds immutable JSON event
+snapshots and optional durable JSONL execution evidence.
 
 `StatusNarrator` records application-supplied call/decision metadata. Its pause
-state is reporting state. CLI status creates its own narrator; runtime event
-connection and operator controls are also planned for 0.7.
+state is reporting state. CLI status with --endpoint connects to actual runtime
+events. TaskRuntime and OperatorServer provide task-scoped operator controls;
+see [Live operations](live-operations.md).

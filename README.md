@@ -6,7 +6,7 @@
 
 ## Status
 
-**Current checkout version: 0.6.1 (release preparation).** The runtime brings together deterministic
+**Current checkout version: 0.7.0 (prepared for review; unpublished).** The runtime brings together deterministic
 intent/policy/risk supervision, optional evaluators, budget accounting,
 narration, and the CLI. See the [roadmap](ROADMAP.md) for release history
 and upcoming capability stages.
@@ -16,14 +16,16 @@ and upcoming capability stages.
 | Runtime, policy/risk, Intent Guardian | Deterministic rules, constraint bindings, expiry warnings, intent/history injection |
 | Observe / Govern modes | Observe records; Govern executes ALLOW/WARN and resolves or suspends other outcomes |
 | Budget | Validated manual accounting plus automatic Judge usage; ceilings produce PAUSE |
-| Human escalation and provenance | Local approval handler/prompt, ID-correlated approval decisions, and caller-created audit exports; durable lifecycle planned for 0.7 |
+| Human escalation and provenance | Local/HTTP approvals, immutable runtime audit events, optional durable JSONL and causal execution links |
 | Planner / Critic | Full-plan boundary, bound constraints, selected plan/history heuristics and supplied evidence flags |
 | Judge | Explicit MockJudge; optional live OpenAI/Anthropic SDK providers, validated verdicts, timeouts and usage accounting |
-| Narration / CLI | Manually populated narrator and `status`, `demo`, `version`, `approval-demo` commands; CLI status creates a fresh local narrator |
+| Narration / CLI | Runtime-connected `status --endpoint ... --follow`, execution narration and `control`/`approve`; standalone narrator remains available |
 | Frameworks / integrations | LangGraph callable wrapper; additional adapters and optional exports planned for 0.8 |
 
-Next: **0.7 live status/audit/Control Room →
-0.8 adapters/integrations → 0.9 evaluation/authority → 1.0 stable schemas**.
+Live status, audit and Control Room: [usage and acceptance evidence](docs/live-operations.md).
+Authenticated provider smoke remains pending credentials.
+
+Next: **0.8 adapters/integrations → 0.9 evaluation/authority → 1.0 stable schemas**.
 See [supported scope and limitations](docs/limitations.md) for operational details.
 
 ### Installation & Usage
@@ -36,7 +38,7 @@ pip install "agentic-sidecar[langgraph]"
 
 # CLI usage (v0.5)
 agentic-sidecar status              # Single status snapshot
-agentic-sidecar status --follow     # Repeat local snapshot (Ctrl+C to stop)
+agentic-sidecar status --endpoint "$SIDECAR_ENDPOINT" --follow  # Live task
 agentic-sidecar status --json       # JSON output
 agentic-sidecar demo                # Interactive demo
 agentic-sidecar version             # Show version
@@ -380,7 +382,7 @@ budget and evaluators. See [API reference](docs/api-reference.md),
 
 ## Planned Python API
 
-The roadmap adds live status/audit/operator interfaces in 0.7 and framework adapters in 0.8.
+Live status/audit/operator interfaces are implemented; additional framework adapters target 0.8.
 Today `attach(sidecar, tools)` is adapter-specific and `evaluate()` accepts
 `DecisionContext`. Generic whole-agent attachment will be considered when
 multiple integrations demonstrate a useful shared boundary.
@@ -396,7 +398,8 @@ Catch `SidecarSuspendedError` to return control to your agent loop. Configure
 `escalation_handler=CLIApprovalHandler()` or register `on_escalation_required`
 for local approval. Approve-once applies to the current call; modify-intent
 reevaluates with a complete envelope; stop persists on that Sidecar instance.
-Live operator controls follow in 0.7. See [0.6.1 usage and validation](docs/governance.md).
+Use TaskRuntime and OperatorServer for [live operator controls](docs/live-operations.md).
+See [governance usage and validation](docs/governance.md).
 
 ## Long-term: an intent propagation layer
 
@@ -496,10 +499,10 @@ readers do not establish end-to-end integration or stable AIOS conformance.
 
 ## Operational safety roadmap
 
-Sidecar owns planned emergency braking (stop, prevent further calls and revoke
-task access through supporting access boundaries) and independent policy enforcement.
+Sidecar implements task-scoped local stop, dispatch prevention, async cancellation
+requests and harness-revocation receipts alongside deterministic policy enforcement.
 MCP and Tower support access enforcement and operator coordination.
 
 See [planned safety acceptance criteria](ROADMAP.md#operational-safety-acceptance-criteria-planned) for responsibilities and
-dependencies. These additions do not claim implemented end-to-end containment
-or integrity protection.
+dependencies. See [live operator scope](docs/live-operations.md) for implemented
+controls and the remaining gateway-isolation and issuer responsibilities.

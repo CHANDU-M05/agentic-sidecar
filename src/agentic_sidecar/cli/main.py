@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import os
 import time
 from datetime import datetime
 from typing import Any
@@ -37,7 +39,10 @@ def approval_demo() -> None:
 
 @app.command()
 def status(
-    follow: bool = typer.Option(False, "--follow", "-f", help="Repeat the local status snapshot"),
+    endpoint: str | None = typer.Option(None, "--endpoint", envvar="SIDECAR_ENDPOINT"),
+    follow: bool = typer.Option(
+        False, "--follow", "-f", help="Follow the connected task or standalone snapshot"
+    ),
     json_output: bool = typer.Option(
         False, "--json", "-j", help="Output as JSON instead of human-readable format"
     ),
@@ -47,7 +52,7 @@ def status(
 ) -> None:
     """Display sidecar status: current objective, decisions, risk, and budget.
 
-    With --follow, repeats a local narrator snapshot.
+    With --endpoint, reads a running task. --follow refreshes the selected source.
     Use Ctrl+C to stop.
 
     Examples:
@@ -56,6 +61,30 @@ def status(
         agentic-sidecar status --json             # JSON output
         agentic-sidecar status --follow --json    # Live JSON stream
     """
+    if interval < 1:
+        raise typer.BadParameter("interval must be positive")
+    if endpoint:
+        from agentic_sidecar.operations.client import request
+
+        token = os.environ.get("SIDECAR_OPERATOR_TOKEN", "")
+        after = 0
+        try:
+            while True:
+                snapshot = request(endpoint, token, "/status")
+                events = request(endpoint, token, f"/events?after={after}")
+                if json_output:
+                    console.print_json(data={"status": snapshot, "events": events})
+                else:
+                    from agentic_sidecar.status.live import narrate_status
+
+                    console.print(narrate_status(snapshot), markup=False)
+                if events:
+                    after = events[-1]["sequence"]
+                if not follow:
+                    return
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            return
     narrator = _get_narrator_instance()
 
     if not follow:
@@ -182,6 +211,44 @@ def _print_status_table(status: StatusNarrative) -> None:
         table.add_row("⏸️ Status", f"[yellow]PAUSED: {pause_text}[/yellow]")
 
     console.print(table)
+
+
+@app.command()
+def control(
+    action: str,
+    endpoint: str = typer.Option(..., "--endpoint", envvar="SIDECAR_ENDPOINT"),
+) -> None:
+    """Pause, resume, stop, restart or request replanning for the connected task."""
+    from agentic_sidecar.operations.client import request
+
+    console.print_json(
+        data=request(
+            endpoint, os.environ.get("SIDECAR_OPERATOR_TOKEN", ""), "/control", {"action": action}
+        )
+    )
+
+
+@app.command()
+def approve(
+    decision_id: str,
+    action: ApprovalAction,
+    endpoint: str = typer.Option(..., "--endpoint", envvar="SIDECAR_ENDPOINT"),
+    intent_file: str | None = typer.Option(None, "--intent-file"),
+) -> None:
+    """Resolve one pending approval; modify_intent reads a complete JSON envelope."""
+    from pathlib import Path
+
+    from agentic_sidecar.operations.client import request
+
+    modified = json.loads(Path(intent_file).read_text()) if intent_file else None
+    console.print_json(
+        data=request(
+            endpoint,
+            os.environ.get("SIDECAR_OPERATOR_TOKEN", ""),
+            "/approval",
+            {"decision_id": decision_id, "action": action.value, "modified_intent": modified},
+        )
+    )
 
 
 @app.command()

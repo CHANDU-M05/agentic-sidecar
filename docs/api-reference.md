@@ -1,6 +1,6 @@
 # API Reference
 
-Python API for `agentic-sidecar` **0.6.1**. Imports below identify the supported
+Python API for `agentic-sidecar` **0.7.0**. Imports below identify the supported
 module for each symbol; intent and policy/risk types live in their subpackages.
 
 ```python
@@ -339,12 +339,22 @@ from agentic_sidecar import AuditRecord, CausalLink, DecisionRationale, Decision
 
 Construct a caller-managed `AuditRecord` with decision ID, timestamp, outcome,
 trigger, rationale, and optional causal/execution context. `to_dict()` serializes
-the record, including ISO timestamp and structured causal links. Persistence
-and automatic runtime record generation are planned for 0.7.
+the record, including ISO timestamp and structured causal links. TaskRuntime
+automatically generates immutable event snapshots; EventJournal supplies
+optional durable JSONL persistence. See [Live operations](live-operations.md).
 
 ## Top-level `__version__`
 
 ```python
 from agentic_sidecar import __version__
-print(__version__)  # "0.6.1"
+print(__version__)  # "0.7.0"
 ```
+
+## Runtime operations
+
+Public exports: `TaskRuntime`, `RuntimeEvent`, `EventJournal`, `OperatorServer`.
+Supply `runtime=TaskRuntime(...)` to Sidecar and `escalation_handler=runtime`
+for remote approvals. Inspect `sidecar.runtime.snapshot()` and
+`sidecar.runtime.journal.export(after=0)`. DecisionContext accepts
+`parent_decision_id` and `parent_plan_step` for supplied plan causality.
+See [Live operations](live-operations.md) for the full lifecycle and HTTP surface.

@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated **2026-10-10 · Current version: 0.6.1 (release preparation)**.
+Updated **2026-10-11 · Current version: 0.7.0 (prepared for review; unpublished)**.
 The [root ROADMAP.md](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md)
 is the canonical plan with detailed deliverables and acceptance criteria.
 Future version targets describe priorities, not committed delivery dates.
@@ -34,11 +34,13 @@ See [Features](features.md) for current capabilities and
 
 ## v0.7 — Live Status, Audit Lifecycle & Control Room
 
-- Connect CLI status to actual runtime events through documented local IPC/HTTP.
-- Distinguish proposed, executed, completed, blocked, and paused actions.
-- Create causally linked audit snapshots and approval records with optional persistence.
-- Build real pause/resume/stop/approval/intent/replan controls on the shared interface.
-- Validate native evidence with Control Tower and provide an end-to-end operator demo.
+Implemented; see [live operations and acceptance evidence](live-operations.md).
+
+- [x] Connect CLI status to actual runtime events through documented local IPC/HTTP.
+- [x] Distinguish proposed, executed, completed, blocked, and paused actions.
+- [x] Create causally linked audit snapshots and approval records with optional persistence.
+- [x] Build real pause/resume/stop/approval/intent/replan controls on the shared interface.
+- [x] Validate native evidence with Control Tower and provide an end-to-end operator demo.
 
 ## v0.8 — Framework Adapters & Optional Integrations
 
@@ -72,6 +74,7 @@ independent of sibling packages; integrations and provider SDKs stay optional.
 
 Sidecar owns emergency braking (stop, block further dispatch and revoke task
 access through supporting access boundaries) and independent policy enforcement.
-See the [canonical acceptance criteria](../ROADMAP.md#operational-safety-acceptance-criteria-planned)
-for milestone dependencies and validation requirements. These remain planned
-beyond the current local STOP_AGENT and Govern interception behavior.
+See the [canonical acceptance criteria](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md#operational-safety-acceptance-criteria-planned)
+for milestone dependencies and validation requirements. The v0.7 local stop,
+cancellation, audit and harness-revocation interface is implemented; gateway
+isolation, Lens integrity and delegated authority work remain in later milestones.

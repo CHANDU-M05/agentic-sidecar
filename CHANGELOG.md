@@ -4,16 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-### Fixed
-
-- Bind dispatch authorization to the evaluated context as well as the verdict;
-  changed proposals cannot be reauthorized through a paused approval.
-- Apply runtime intent approvals and invalidate stale verdicts before operator
-  acknowledgement, preserving the real actor and avoiding duplicate/late mutations.
-- Reconcile live completion/failure state and cancellation callbacks despite
-  audit sink errors; document undetectable complete-tail removal in hash chains.
-
-## [0.7.0] - 2026-10-11
+## [0.7.0] - 2026-10-12
 
 ### Added
 
@@ -35,6 +26,15 @@ All notable changes to this project are documented here.
 - LangGraph wrapped sync/async tools report actual execution lifecycle; operator
   stop prevents dispatch in both modes and cannot be bypassed by fail_open.
 - Restored runtimes start stopped; incomplete execution/revocation prevents restart.
+
+### Fixed
+
+- Bind dispatch authorization to the evaluated context as well as the verdict;
+  changed proposals cannot be reauthorized through a paused approval.
+- Apply runtime intent approvals and invalidate stale verdicts before operator
+  acknowledgement, preserving the real actor and avoiding duplicate/late mutations.
+- Reconcile live completion/failure state and cancellation callbacks despite
+  audit sink errors; document undetectable complete-tail removal in hash chains.
 
 ### Validation limitation
 

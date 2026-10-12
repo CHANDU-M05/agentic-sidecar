@@ -1,6 +1,6 @@
 # agentic-sidecar — Roadmap & Architecture
 
-> **Updated 2026-10-11 · Current checkout: 0.7.0 (prepared for review; unpublished).**
+> **Updated 2026-10-12 · Current checkout: 0.7.0.**
 > This is the canonical capability roadmap. Each stage builds on the existing
 > runtime with explicit deliverables and acceptance criteria. Future version
 > targets describe development priorities, not committed delivery dates.

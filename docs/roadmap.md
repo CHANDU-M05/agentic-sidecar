@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated **2026-10-11 · Current version: 0.7.0 (prepared for review; unpublished)**.
+Updated **2026-10-12 · Current version: 0.7.0**.
 The [root ROADMAP.md](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md)
 is the canonical plan with detailed deliverables and acceptance criteria.
 Future version targets describe priorities, not committed delivery dates.

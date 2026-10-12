@@ -52,7 +52,7 @@ practice, the package covers both supervision and governance.
 
 ### Current Roadmap Focus
 
-The checkout targets v0.7.0 implementation review (unpublished). Runtime code includes Decision Gate outcomes,
+The checkout targets the v0.7.0 release. Runtime code includes Decision Gate outcomes,
 Intent Guardian, evaluator modules, budget/escalation handling, narration and
 CLI commands. Additional framework adapters remain docstring placeholders;
 use the actual source and tests to distinguish implementation from roadmap

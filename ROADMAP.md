@@ -257,3 +257,33 @@ Update this canonical file when scope or status changes, then update
 [the docs summary](docs/roadmap.md), README, and relevant ecosystem profile
 statements in the same change. [concept.md](concept.md) contains the original
 architecture proposal.
+
+## Operational safety acceptance criteria (planned)
+
+Added 2026-10-11. Extend existing milestones; local STOP_AGENT and Govern
+interception already exist, but remote stopping and isolated enforcement do not.
+Sidecar owns both the emergency brake (stop, prevent further calls, revoke task
+access) and independent policy enforcement. MCP/credential issuers implement
+access-boundary revocation; Tower supplies optional operator coordination.
+
+- [ ] v0.7: authenticated, task-scoped operator stop independent of LLM approval;
+      latch stop before additional dispatch and acknowledge its effective time.
+      Test queued calls, concurrent proposals, retries and explicit restart.
+- [ ] v0.7: distinguish already-running calls and completed side effects; cancel
+      only where supported by the harness/provider. Coordinate MCP revocation and
+      Tower results without taking ownership of credentials. Require task-access
+      revocation acknowledgements, report partial failure, and verify stopped
+      agents cannot regain access through retries, sessions or delegated tasks.
+- [ ] v0.8: test deterministic permissions at every supported adapter boundary,
+      including direct-call bypass attempts. Document unwrapped tools, Observe,
+      custom hooks and fail_open as limits; use fail_closed for containment tests.
+- [ ] v0.8: demonstrate protected tools/credentials accessible only through an
+      enforcing gateway; in-process wrappers alone are not process isolation.
+- [ ] v0.7–v0.8: correlate immutable decision records, policy versions, task IDs,
+      actors, approvals and stop acknowledgements with actual dispatch/completion.
+      Integrate Lens integrity verification; verdict history alone is not execution.
+- [ ] v0.9: test revoked/expired delegated authority and, with Chaos/Evals, prove
+      zero forbidden dispatches after acknowledged stop/revocation. Cover injected
+      instructions, policy bypass and failures of the gate itself.
+
+Shared authority/event semantics belong in AI Operations Specification.

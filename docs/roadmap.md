@@ -67,3 +67,11 @@ See [Features](features.md) for current capabilities and
 Local-model risk classification, automatic framework usage extraction, caching,
 and sampling require measured need before scheduling. Core runtime remains
 independent of sibling packages; integrations and provider SDKs stay optional.
+
+## Planned operational safety acceptance criteria
+
+Sidecar owns emergency braking (stop, block further dispatch and revoke task
+access through supporting access boundaries) and independent policy enforcement.
+See the [canonical acceptance criteria](../ROADMAP.md#operational-safety-acceptance-criteria-planned)
+for milestone dependencies and validation requirements. These remain planned
+beyond the current local STOP_AGENT and Govern interception behavior.

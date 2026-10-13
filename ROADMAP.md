@@ -101,7 +101,7 @@ contracts, and `Validate in` for integration checks.
 | Project | Relationship and ownership | Target |
 | --- | --- | --- |
 | `ai-operations-spec` | Coordinate envelope/decision terminology and mappings now; publish versioned schemas only once tested and stable | Informal alignment now; formal contract v1.0 |
-| `agenticlens` | Coordinate optional decision export and common run/trace/decision IDs; Lens owns instrumentation and retrospective analysis | v0.8 |
+| `agenticlens` | Coordinate optional decision export and common run/trace/decision IDs; Lens owns instrumentation and retrospective analysis. Lens 0.7.0 diagnosis (incident timeline, faulty-step attribution) is the planned consumer of exported decisions, so a correlated BLOCK/ESCALATE can appear on the run's timeline | v0.8 |
 | `agentic-evals` | Validate standalone scoring and release-gate reports; Sidecar owns supervision experiments, not another generic scoring engine | v0.9 |
 | `agentic-chaos` | Validate gate/provider timeout, malformed response, and recovery scenarios; optional same-run integration needs its own interface | Failure tests v0.6.x; optional integration v0.8 |
 | `semantica` (third party) | Optional governance/provenance export for all outcomes; coordinate a versioned correlation convention with AgenticLens | v0.8, contract before implementation |

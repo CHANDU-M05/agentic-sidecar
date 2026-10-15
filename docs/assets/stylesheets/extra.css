@@ -1,6 +1,240 @@
 :root {
+  /* Brand palette (matches the Agentic Sidecar product landing) */
   --md-primary-fg-color: #5ee7ff;
   --md-primary-fg-color--light: #93f0ff;
   --md-primary-fg-color--dark: #38bdf8;
   --md-accent-fg-color: #8b7cff;
+
+  /* Deep-navy design tokens lifted from site.css */
+  --as-bg: #070d17;
+  --as-bg-subtle: #0b1424;
+  --as-panel: #0f1c30;
+  --as-panel-hover: #15253f;
+  --as-border: rgba(94, 231, 255, 0.16);
+  --as-line: rgba(255, 255, 255, 0.08);
+  --as-text: #eaf2ff;
+  --as-muted: #9fb1c7;
+  --as-cyan: #5ee7ff;
+  --as-violet: #8b7cff;
+  --as-green: #4ade80;
+  --as-red: #ff5e7e;
+  --as-amber: #ffb84d;
+
+  /* Drive Material's own semantic tokens toward the landing look */
+  --md-default-bg-color: var(--as-bg);
+  --md-default-bg-color--light: var(--as-bg-subtle);
+  --md-default-fg-color: var(--as-text);
+  --md-default-fg-color--light: var(--as-muted);
+  --md-code-bg-color: #04080f;
+  --md-code-fg-color: #c9d6e8;
+  --md-typeset-a-color: var(--as-cyan);
+  --md-footer-bg-color: var(--as-bg-subtle);
+  --md-footer-bg-color--dark: #050b14;
+}
+
+/* ------------------------------------------------------------------ */
+/* Global chrome                                                       */
+/* ------------------------------------------------------------------ */
+body {
+  background:
+    radial-gradient(1100px 500px at 12% -8%, rgba(94, 231, 255, 0.10), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, rgba(139, 124, 255, 0.10), transparent 55%),
+    var(--as-bg);
+}
+
+::selection { background: rgba(94, 231, 255, 0.28); color: #04080f; }
+
+* { scrollbar-width: thin; scrollbar-color: rgba(94, 231, 255, 0.3) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(94, 231, 255, 0.22);
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(94, 231, 255, 0.4); background-clip: padding-box; }
+
+/* ------------------------------------------------------------------ */
+/* Header & navigation tabs — dark glass instead of a solid cyan bar   */
+/* ------------------------------------------------------------------ */
+.md-header {
+  background: rgba(7, 13, 23, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--as-text);
+  border-bottom: 1px solid var(--as-line);
+  box-shadow: none;
+}
+.md-header__topic, .md-header__option, .md-icon { color: var(--as-text); }
+.md-header__button:hover { color: var(--as-cyan); }
+
+.md-tabs {
+  background: rgba(11, 20, 36, 0.72);
+  backdrop-filter: blur(16px);
+  color: var(--as-muted);
+  border-bottom: 1px solid var(--as-line);
+}
+.md-tabs__link { opacity: 0.85; font-weight: 500; letter-spacing: 0.01em; }
+.md-tabs__link:hover, .md-tabs__item--active .md-tabs__link { color: var(--as-cyan); opacity: 1; }
+.md-tabs__item--active { border-bottom: 2px solid var(--as-cyan); }
+
+.md-search__input { background: rgba(255, 255, 255, 0.05); border-radius: 8px; }
+.md-search__input::placeholder { color: var(--as-muted); }
+
+/* ------------------------------------------------------------------ */
+/* Sidebar                                                             */
+/* ------------------------------------------------------------------ */
+.md-sidebar__scrollwrap::-webkit-scrollbar-thumb { background: rgba(94, 231, 255, 0.2); }
+.md-nav__link:hover { color: var(--as-cyan); }
+.md-nav__link--active { color: var(--as-cyan); font-weight: 600; }
+
+/* ------------------------------------------------------------------ */
+/* Content — typography & headings                                    */
+/* ------------------------------------------------------------------ */
+.md-typeset {
+  line-height: 1.72;
+  color: var(--as-text);
+}
+.md-typeset h1 {
+  font-size: 2.25em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--as-text);
+  margin-bottom: 0.4em;
+  padding-bottom: 0.35em;
+  border-bottom: 2px solid var(--as-border);
+}
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--as-text);
+  margin-top: 1.9em;
+}
+.md-typeset h2::before {
+  content: "";
+  display: inline-block;
+  width: 22px;
+  height: 3px;
+  margin-right: 10px;
+  vertical-align: middle;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--as-cyan), var(--as-violet));
+}
+.md-typeset h3, .md-typeset h4 { color: var(--as-text); font-weight: 600; }
+
+.md-typeset a { color: var(--as-cyan); text-decoration: none; transition: color 0.15s ease; }
+.md-typeset a:hover { color: var(--as-violet); text-decoration: underline; }
+
+.md-typeset strong { color: #ffffff; }
+.md-typeset del { color: var(--as-muted); }
+.md-typeset hr { border-color: var(--as-line); margin: 2.2em 0; }
+
+/* ------------------------------------------------------------------ */
+/* Inline code & fenced code blocks                                    */
+/* ------------------------------------------------------------------ */
+.md-typeset code {
+  background: rgba(94, 231, 255, 0.09);
+  color: var(--as-cyan);
+  border-radius: 5px;
+  padding: 0.12em 0.4em;
+  font-size: 0.86em;
+}
+.md-typeset pre > code { background: transparent; color: inherit; padding: 0; }
+
+.highlight, .md-code__content {
+  background: var(--md-code-bg-color) !important;
+  border: 1px solid var(--as-line);
+  border-radius: 12px;
+}
+.md-typeset .highlight { margin: 1.4em 0; overflow: hidden; }
+.md-typeset .highlight code { background: transparent; padding: 0.05em 0; }
+.md-clipboard:focus-visible, .md-clipboard:hover { color: var(--as-cyan); }
+
+/* ------------------------------------------------------------------ */
+/* Tables — framed panels with cyan headers                            */
+/* ------------------------------------------------------------------ */
+.md-typeset table:not([class]) {
+  background: var(--as-panel);
+  border: 1px solid var(--as-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  font-size: 0.86rem;
+}
+.md-typeset table:not([class]) th {
+  background: var(--as-bg-subtle);
+  color: var(--as-cyan);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-bottom: 1px solid var(--as-border);
+}
+.md-typeset table:not([class]) td { border-top: 1px solid var(--as-line); }
+.md-typeset table:not([class]) tr:hover td { background: var(--as-panel-hover); }
+
+/* ------------------------------------------------------------------ */
+/* Figures / images — card frame with centered caption                 */
+/* ------------------------------------------------------------------ */
+.md-typeset figure {
+  background: var(--as-panel);
+  border: 1px solid var(--as-border);
+  border-radius: 14px;
+  padding: 18px;
+  margin: 1.8em auto;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+.md-typeset figcaption {
+  font-size: 0.8em;
+  color: var(--as-muted);
+  font-style: normal;
+  text-align: center;
+  margin-top: 0.6em;
+}
+.md-typeset img { border-radius: 8px; }
+
+/* ------------------------------------------------------------------ */
+/* Blockquotes & admonitions                                          */
+/* ------------------------------------------------------------------ */
+.md-typeset blockquote {
+  background: var(--as-panel);
+  border-left: 3px solid var(--as-cyan);
+  border-radius: 0 10px 10px 0;
+  padding: 0.6em 1.1em;
+  color: var(--as-text);
+}
+.md-typeset .admonition {
+  background: var(--as-panel);
+  border: 1px solid var(--as-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.md-typeset .admonition-title { font-weight: 600; }
+
+/* ------------------------------------------------------------------ */
+/* Metadata callouts: stable / experimental / difficulty pills        */
+/* ------------------------------------------------------------------ */
+.md-container__inner .status-stable,
+.md-typeset code.status-stable {
+  background: rgba(74, 222, 128, 0.16);
+  color: var(--as-green);
+}
+.md-typeset code.status-experimental {
+  background: rgba(255, 184, 77, 0.16);
+  color: var(--as-amber);
+}
+
+/* ------------------------------------------------------------------ */
+/* Footer                                                              */
+/* ------------------------------------------------------------------ */
+.md-footer { border-top: 1px solid var(--as-line); }
+.md-footer-meta { background: var(--md-footer-bg-color--dark); }
+.md-footer-meta__inner { color: var(--as-muted); }
+.md-footer__link:hover .md-footer__direction { color: var(--as-cyan); }
+
+/* ------------------------------------------------------------------ */
+/* Responsive polish                                                    */
+/* ------------------------------------------------------------------ */
+@media (max-width: 700px) {
+  .md-typeset h1 { font-size: 1.75em; }
+  .md-typeset { font-size: 0.85rem; }
 }

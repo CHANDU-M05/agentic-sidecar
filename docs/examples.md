@@ -51,3 +51,10 @@ For the notebook, install Jupyter separately and run:
 ```bash
 jupyter notebook examples/sidecar_purpose_demo.ipynb
 ```
+
+---
+
+## End-to-End Use Cases
+
+For complete, step-by-step walkthroughs solving real-world production problems end-to-end (including multi-layer guardrails, LangGraph integration, and policy enforcement), visit the [Agentic Sidecar Use Cases Site](https://deepagentlabs.io/agentic-sidecar/usecases/).
+

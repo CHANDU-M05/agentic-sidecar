@@ -11,6 +11,7 @@ paths = [
     root / "README.md",
     root / "ROADMAP.md",
     *sorted((root / "docs").glob("*.md")),
+    *sorted((root / "usecases").glob("*.md")),
     *sorted((root / "examples").glob("*.md")),
 ]
 count = 0

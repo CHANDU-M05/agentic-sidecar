@@ -1,11 +1,23 @@
-:root {
-  /* Brand palette (matches the Agentic Sidecar product landing) */
+/*
+ * Agentic Sidecar — Material theme aligned to the product landing (site.css)
+ *
+ * IMPORTANT: MkDocs Material redefines its --md-* tokens on the
+ * [data-md-color-scheme="..."] attribute (which lives on <body>). Declaring our
+ * tokens only on :root is NOT enough — they get overridden for everything under
+ * <body>. We therefore scope the token block to the same selectors so our values
+ * win by source order (extra.css loads after palette.min.css).
+ */
+:root,
+[data-md-color-scheme="default"],
+[data-md-color-scheme="slate"] {
+  /* Brand palette */
   --md-primary-fg-color: #5ee7ff;
   --md-primary-fg-color--light: #93f0ff;
   --md-primary-fg-color--dark: #38bdf8;
+  --md-primary-bg-color: #04080f; /* dark text on bright cyan surfaces */
   --md-accent-fg-color: #8b7cff;
 
-  /* Deep-navy design tokens lifted from site.css */
+  /* Deep-navy design tokens (from site.css) */
   --as-bg: #070d17;
   --as-bg-subtle: #0b1424;
   --as-panel: #0f1c30;
@@ -23,13 +35,18 @@
   /* Drive Material's own semantic tokens toward the landing look */
   --md-default-bg-color: var(--as-bg);
   --md-default-bg-color--light: var(--as-bg-subtle);
+  --md-default-bg-color--dark: #050b14;
   --md-default-fg-color: var(--as-text);
   --md-default-fg-color--light: var(--as-muted);
+  --md-default-fg-color--lighter: rgba(159, 177, 199, 0.7);
+  --md-default-fg-color--lightest: rgba(159, 177, 199, 0.35);
   --md-code-bg-color: #04080f;
   --md-code-fg-color: #c9d6e8;
   --md-typeset-a-color: var(--as-cyan);
   --md-footer-bg-color: var(--as-bg-subtle);
   --md-footer-bg-color--dark: #050b14;
+  --md-shadow-z1: 0 0 2px rgba(0, 0, 0, 0.32), 0 1px 2px rgba(0, 0, 0, 0.44);
+  --md-shadow-z2: 0 0 2px rgba(0, 0, 0, 0.32), 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* ------------------------------------------------------------------ */
@@ -39,10 +56,10 @@ body {
   background:
     radial-gradient(1100px 500px at 12% -8%, rgba(94, 231, 255, 0.10), transparent 60%),
     radial-gradient(900px 480px at 100% 0%, rgba(139, 124, 255, 0.10), transparent 55%),
-    var(--as-bg);
+    var(--as-bg) !important;
 }
 
-::selection { background: rgba(94, 231, 255, 0.28); color: #04080f; }
+::selection { background: rgba(94, 231, 255, 0.30); color: #04080f; }
 
 * { scrollbar-width: thin; scrollbar-color: rgba(94, 231, 255, 0.3) transparent; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -65,7 +82,8 @@ body {
   border-bottom: 1px solid var(--as-line);
   box-shadow: none;
 }
-.md-header__topic, .md-header__option, .md-icon { color: var(--as-text); }
+.md-header__topic, .md-header__option { color: var(--as-text); }
+.md-header__button { color: var(--as-text); }
 .md-header__button:hover { color: var(--as-cyan); }
 
 .md-tabs {
@@ -74,50 +92,68 @@ body {
   color: var(--as-muted);
   border-bottom: 1px solid var(--as-line);
 }
-.md-tabs__link { opacity: 0.85; font-weight: 500; letter-spacing: 0.01em; }
+.md-tabs__link { opacity: 0.9; font-weight: 500; }
 .md-tabs__link:hover, .md-tabs__item--active .md-tabs__link { color: var(--as-cyan); opacity: 1; }
 .md-tabs__item--active { border-bottom: 2px solid var(--as-cyan); }
 
-.md-search__input { background: rgba(255, 255, 255, 0.05); border-radius: 8px; }
+/* Header repo/source widget + search field legibility */
+.md-header__source { color: var(--as-muted); }
+.md-search__input { background: rgba(255, 255, 255, 0.06); border-radius: 8px; color: var(--as-text); }
 .md-search__input::placeholder { color: var(--as-muted); }
+.md-search__icon { color: var(--as-muted); }
 
 /* ------------------------------------------------------------------ */
-/* Sidebar                                                             */
+/* Sidebar, drawer & table-of-contents (fixes grey + white-on-cyan)    */
 /* ------------------------------------------------------------------ */
-.md-sidebar__scrollwrap::-webkit-scrollbar-thumb { background: rgba(94, 231, 255, 0.2); }
+.md-sidebar, .md-sidebar__scrollwrap, .md-nav { background: var(--as-bg); }
+.md-nav { color: var(--as-text); }
+.md-nav__link { color: var(--as-muted); }
 .md-nav__link:hover { color: var(--as-cyan); }
-.md-nav__link--active { color: var(--as-cyan); font-weight: 600; }
+.md-nav__link--active, .md-nav__item .md-nav__link--active { color: var(--as-cyan); font-weight: 600; }
+.md-nav__title { background: var(--as-bg) !important; color: var(--as-text) !important; box-shadow: none; }
+
+/* The primary/drawer title and repo widget otherwise use a cyan background */
+.md-nav--primary .md-nav__title,
+.md-nav__source {
+  background: var(--as-bg-subtle) !important;
+  color: var(--as-text) !important;
+}
+.md-nav__source { border-top: 1px solid var(--as-line); }
+
+/* Secondary (right) TOC title used to be a bright strip */
+.md-nav--secondary .md-nav__title { background: var(--as-panel) !important; color: var(--as-text) !important; }
 
 /* ------------------------------------------------------------------ */
-/* Content — typography & headings                                    */
+/* Content — typography & headings                                     */
 /* ------------------------------------------------------------------ */
-.md-typeset {
-  line-height: 1.72;
-  color: var(--as-text);
-}
+.md-content { background: transparent; }
+.md-typeset { line-height: 1.72; color: var(--as-text); }
+
 .md-typeset h1 {
-  font-size: 2.25em;
+  font-size: 2.2em;
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
   color: var(--as-text);
-  margin-bottom: 0.4em;
+  margin: 0 0 0.5em;
   padding-bottom: 0.35em;
   border-bottom: 2px solid var(--as-border);
 }
 .md-typeset h2 {
+  position: relative;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--as-text);
-  margin-top: 1.9em;
+  margin-top: 2em;
 }
+/* Gradient accent sits in the left margin so heading text stays on the
+   body grid (x == 0) — earlier inline-block bar pushed it right. */
 .md-typeset h2::before {
   content: "";
-  display: inline-block;
-  width: 22px;
+  display: block;
+  width: 26px;
   height: 3px;
-  margin-right: 10px;
-  vertical-align: middle;
+  margin: 0 0 10px 0;
   border-radius: 3px;
   background: linear-gradient(90deg, var(--as-cyan), var(--as-violet));
 }
@@ -127,11 +163,12 @@ body {
 .md-typeset a:hover { color: var(--as-violet); text-decoration: underline; }
 
 .md-typeset strong { color: #ffffff; }
-.md-typeset del { color: var(--as-muted); }
 .md-typeset hr { border-color: var(--as-line); margin: 2.2em 0; }
 
 /* ------------------------------------------------------------------ */
-/* Inline code & fenced code blocks                                    */
+/* Code: inline + fenced blocks. This build has NO codehilite (no      */
+/* markdown_extensions), so fenced blocks are bare <pre><code> — style */
+/* the pre>code directly (there is no .highlight wrapper).             */
 /* ------------------------------------------------------------------ */
 .md-typeset code {
   background: rgba(94, 231, 255, 0.09);
@@ -140,16 +177,27 @@ body {
   padding: 0.12em 0.4em;
   font-size: 0.86em;
 }
-.md-typeset pre > code { background: transparent; color: inherit; padding: 0; }
-
-.highlight, .md-code__content {
-  background: var(--md-code-bg-color) !important;
+.md-typeset pre { margin: 1.4em 0; background: transparent; }
+.md-typeset pre > code {
+  display: block;
+  background: var(--md-code-bg-color);
+  color: var(--md-code-fg-color);
   border: 1px solid var(--as-line);
   border-radius: 12px;
+  padding: 1em 1.25rem;
+  /* keep the copy button from sitting on the first line */
+  padding-right: 3rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
 }
-.md-typeset .highlight { margin: 1.4em 0; overflow: hidden; }
-.md-typeset .highlight code { background: transparent; padding: 0.05em 0; }
-.md-clipboard:focus-visible, .md-clipboard:hover { color: var(--as-cyan); }
+/* Copy button: Material >=9 renders .md-code__button (older: .md-clipboard) */
+.md-typeset .md-code__button, .md-typeset .md-clipboard {
+  color: var(--as-muted);
+  opacity: 1;
+}
+.md-typeset .md-code__button:hover, .md-typeset .md-clipboard:hover { color: var(--as-cyan); }
 
 /* ------------------------------------------------------------------ */
 /* Tables — framed panels with cyan headers                            */
@@ -166,34 +214,28 @@ body {
   background: var(--as-bg-subtle);
   color: var(--as-cyan);
   font-weight: 600;
-  letter-spacing: 0.01em;
   border-bottom: 1px solid var(--as-border);
 }
 .md-typeset table:not([class]) td { border-top: 1px solid var(--as-line); }
 .md-typeset table:not([class]) tr:hover td { background: var(--as-panel-hover); }
+/* Metadata tables have an empty header row (| | |) — hide the blank cyan band */
+.md-typeset table:not([class]) thead:not(:has(th:not(:empty))) { display: none; }
 
 /* ------------------------------------------------------------------ */
-/* Figures / images — card frame with centered caption                 */
+/* Images / diagrams — light card frame                                */
 /* ------------------------------------------------------------------ */
-.md-typeset figure {
-  background: var(--as-panel);
+.md-typeset img {
+  border-radius: 10px;
   border: 1px solid var(--as-border);
-  border-radius: 14px;
-  padding: 18px;
-  margin: 1.8em auto;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  background: var(--as-panel);
+  padding: 8px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
 }
-.md-typeset figcaption {
-  font-size: 0.8em;
-  color: var(--as-muted);
-  font-style: normal;
-  text-align: center;
-  margin-top: 0.6em;
-}
-.md-typeset img { border-radius: 8px; }
+/* Italic line immediately after an image acts as a caption */
+.md-typeset p > em:only-child { color: var(--as-muted); font-size: 0.82em; }
 
 /* ------------------------------------------------------------------ */
-/* Blockquotes & admonitions                                          */
+/* Blockquotes, admonitions, marks, "back to top"                      */
 /* ------------------------------------------------------------------ */
 .md-typeset blockquote {
   background: var(--as-panel);
@@ -208,20 +250,25 @@ body {
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
-.md-typeset .admonition-title { font-weight: 600; }
+.md-typeset mark, .md-search-result mark, .md-nav__link mark {
+  background: #5ee7ff;
+  color: #04080f;
+  border-radius: 3px;
+}
+
+.md-top {
+  background: var(--as-panel);
+  color: var(--as-cyan);
+  border: 1px solid var(--as-border);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
 
 /* ------------------------------------------------------------------ */
-/* Metadata callouts: stable / experimental / difficulty pills        */
+/* Search panel (expand) legibility                                    */
 /* ------------------------------------------------------------------ */
-.md-container__inner .status-stable,
-.md-typeset code.status-stable {
-  background: rgba(74, 222, 128, 0.16);
-  color: var(--as-green);
-}
-.md-typeset code.status-experimental {
-  background: rgba(255, 184, 77, 0.16);
-  color: var(--as-amber);
-}
+.md-search__form, .md-search-result, .md-search-result__meta { background: var(--as-panel); }
+.md-search-result__meta { color: var(--as-muted); background: var(--as-bg-subtle); }
+.md-search-result__link:hover, .md-search-result__link:focus { background: var(--as-panel-hover); }
 
 /* ------------------------------------------------------------------ */
 /* Footer                                                              */
@@ -232,9 +279,9 @@ body {
 .md-footer__link:hover .md-footer__direction { color: var(--as-cyan); }
 
 /* ------------------------------------------------------------------ */
-/* Responsive polish                                                    */
+/* Responsive polish                                                   */
 /* ------------------------------------------------------------------ */
 @media (max-width: 700px) {
-  .md-typeset h1 { font-size: 1.75em; }
-  .md-typeset { font-size: 0.85rem; }
+  .md-typeset h1 { font-size: 1.7em; }
+  .md-typeset pre > code { font-size: 0.78rem; }
 }

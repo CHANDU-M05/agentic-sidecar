@@ -166,9 +166,10 @@ body {
 .md-typeset hr { border-color: var(--as-line); margin: 2.2em 0; }
 
 /* ------------------------------------------------------------------ */
-/* Code: inline + fenced blocks. This build has NO codehilite (no      */
-/* markdown_extensions), so fenced blocks are bare <pre><code> — style */
-/* the pre>code directly (there is no .highlight wrapper).             */
+/* Code: inline + fenced blocks. Fenced blocks render as               */
+/* <div class="... highlight"><pre><code>…</code></pre></div> with     */
+/* Pygments token spans + line anchors. Style the .highlight container  */
+/* as the framed panel and neutralise the inline-code pill inside it.   */
 /* ------------------------------------------------------------------ */
 .md-typeset code {
   background: rgba(94, 231, 255, 0.09);
@@ -177,27 +178,46 @@ body {
   padding: 0.12em 0.4em;
   font-size: 0.86em;
 }
-.md-typeset pre { margin: 1.4em 0; background: transparent; }
-.md-typeset pre > code {
-  display: block;
+.md-typeset pre { margin: 0; background: transparent; }
+/* The framed panel is the .highlight container Material emits. */
+.md-typeset .highlight {
+  position: relative;
+  margin: 1.4em 0;
   background: var(--md-code-bg-color);
-  color: var(--md-code-fg-color);
   border: 1px solid var(--as-line);
   border-radius: 12px;
   padding: 1em 1.25rem;
-  /* keep the copy button from sitting on the first line */
-  padding-right: 3rem;
+  overflow-x: auto;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  tab-size: 4;
+}
+.md-typeset .highlight code {
+  /* neutralise the inline-code pill and let tokens keep their colors */
+  display: block;
+  background: transparent;
+  color: var(--md-code-fg-color);
+  border: none;
+  border-radius: 0;
+  padding: 0;
   font-size: 0.82rem;
   line-height: 1.6;
-  overflow-x: auto;
   white-space: pre;
 }
-/* Copy button: Material >=9 renders .md-code__button (older: .md-clipboard) */
-.md-typeset .md-code__button, .md-typeset .md-clipboard {
+/* Line-number anchors (anchor_linenums): keep them invisible unless a
+   fence explicitly enables visible line numbers. */
+.md-typeset .highlight [id^="__codelineno"] {
+  display: inline-block;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+}
+/* Copy button: Material injects .md-clipboard (>=9: .md-code__button). */
+.md-typeset .md-clipboard, .md-typeset .md-code__button {
   color: var(--as-muted);
   opacity: 1;
+  z-index: 1;
 }
-.md-typeset .md-code__button:hover, .md-typeset .md-clipboard:hover { color: var(--as-cyan); }
+.md-typeset .md-clipboard:hover, .md-typeset .md-code__button:hover { color: var(--as-cyan); }
 
 /* ------------------------------------------------------------------ */
 /* Tables — framed panels with cyan headers                            */

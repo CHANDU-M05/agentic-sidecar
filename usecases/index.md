@@ -8,7 +8,7 @@ Practical, end-to-end walkthroughs for securing autonomous AI agents in real-wor
 
 | Use Case | Summary | Difficulty | Capabilities Used |
 |---|---|---|---|
-| [Prevent Unauthorized High-Value Refunds](prevent-unauthorized-refunds.md) | Intercept agent tool calls and enforce policy limits to block unauthorized monetary refunds in under 10 minutes. | Beginner | [Policy Advisor](https://deepagentlabs.io/agentic-sidecar/docs/features/#policy-advisor) |
+| [Prevent Unauthorized High-Value Refunds](prevent-unauthorized-refunds.md) | Intercept agent tool calls and enforce policy limits to block unauthorized monetary refunds in under 10 minutes. | Beginner | [Risk Evaluator](https://deepagentlabs.io/agentic-sidecar/docs/features/#risk-evaluator) |
 | [Run a Governed Customer Support Agent](governed-customer-support-agent.md) | Combine Policy Advisor, Intent Guardian, Risk Evaluator, and Budget Guardrails into a unified synchronous supervision sidecar. | Intermediate | [Policy Advisor](https://deepagentlabs.io/agentic-sidecar/docs/features/#policy-advisor), [Intent Guardian](https://deepagentlabs.io/agentic-sidecar/docs/features/#intent-guardian), [Risk Evaluator](https://deepagentlabs.io/agentic-sidecar/docs/features/#risk-evaluator), [Budget Guardrails](https://deepagentlabs.io/agentic-sidecar/docs/features/#budget-guardrails) |
 | [Govern LangGraph Agent Workflows with Sidecar Adapter](govern-langgraph-agent-workflows.md) | Attach Agentic Sidecar's native LangGraph adapter to intercept graph tool invocations and enforce intent constraints in govern mode. | Intermediate | [LangGraph Adapter](https://deepagentlabs.io/agentic-sidecar/docs/integrations/#langgraph), [Intent Guardian](https://deepagentlabs.io/agentic-sidecar/docs/features/#intent-guardian) |
 

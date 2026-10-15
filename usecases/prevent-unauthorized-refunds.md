@@ -7,7 +7,7 @@ Intercept agent tool calls and enforce policy limits to block unauthorized monet
 | **For** | AI agent developers building financial, e-commerce, or customer service tools |
 | **Difficulty** | Beginner |
 | **Time** | ~10 minutes |
-| **Capabilities** | [Policy Advisor](https://deepagentlabs.io/agentic-sidecar/docs/features/#policy-advisor) |
+| **Capabilities** | [Risk Evaluator](https://deepagentlabs.io/agentic-sidecar/docs/features/#risk-evaluator) |
 | **Status** | Stable |
 
 ## The problem
@@ -20,7 +20,7 @@ Existing approaches rely on wrapping tool functions with manual `if amount > 500
 
 ![Flow](assets/diagrams/prevent-unauthorized-refunds-flow.png)
 
-*Figure 1: Agentic Sidecar Policy Advisor intercepting `issue_refund` calls and enforcing policy rules in govern mode.*
+*Figure 1: Agentic Sidecar Risk Evaluator intercepting `issue_refund` calls and enforcing risk thresholds in govern mode.*
 
 ## Prerequisites
 
@@ -54,14 +54,18 @@ def issue_refund(order_id: str, amount: float, reason: str = "customer dispute")
     }
 ```
 
-### 3. Configure Policy Advisor and Sidecar Runtime
+### 3. Configure the Risk Policy and Sidecar Runtime
 
-Create a `PolicyAdvisor` rule that restricts monetary refunds to $500.00 and attach it to a `Sidecar` instance in `govern` mode:
+Define a `RiskEvaluator` rule that classifies refunds above $500.00 as `HIGH` risk and attach it to a `Sidecar` instance in `govern` mode. Enable logging so the Sidecar's `ALLOW`/`BLOCK` decisions are printed:
 
 ```python
+import logging
+
 from agentic_sidecar import Sidecar, SidecarBlockedError
 from agentic_sidecar.adapters.langgraph import attach
 from agentic_sidecar.gate.risk import RiskEvaluator, RiskRule
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s [%(name)s] %(message)s")
 
 # Define risk policy rule: HIGH risk on refunds exceeding $500.00
 risk_policy = RiskEvaluator(

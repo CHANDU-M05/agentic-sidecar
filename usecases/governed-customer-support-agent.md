@@ -158,7 +158,7 @@ Run the official example script directly from the codebase:
 python examples/governed_customer_support_agent.py
 ```
 
-Console Output:
+Console Output (excerpt — representative key lines are shown; a complete run additionally prints steps `1.2`, `1.4`, `2.2` and the "Sidecar Decisions Recorded in Observe Mode" list, all with the same allow/block behavior):
 
 ```
 ================================================================================

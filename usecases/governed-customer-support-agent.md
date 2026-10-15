@@ -30,7 +30,7 @@ Building custom checks across each tool function results in tangled, duplicate c
 ## Prerequisites
 
 - Python 3.10+ (Python 3.12 recommended)
-- `agentic-sidecar` v`0.6.0` installed
+- `agentic-sidecar` v`0.7.0` (or later) installed
 - Runnable script: [`examples/governed_customer_support_agent.py`](https://github.com/DeepAgentLabs/agentic-sidecar/tree/main/examples/governed_customer_support_agent.py)
 
 ## Walkthrough
@@ -180,7 +180,7 @@ ERROR [agentic_sidecar] [OBSERVE] BLOCK tool=issue_refund args={'order_id': 'ORD
   [EXEC] Executing read_order('ORD-999')...
   -> Result: {'order_id': 'ORD-999', 'customer_id': 'cust_1001', 'amount': 450.0, 'status': 'delivered'}
 
-2.3 Agent calls issue_refund('ORD-999', amount=850.0) [Intent Violation]:
+2.3 Agent calls issue_refund('ORD-999', amount=850.0) [Over-Limit Refund]:
 ERROR [agentic_sidecar] [GOVERN] BLOCK tool=issue_refund args={'order_id': 'ORD-999', 'amount': 850.0} risk=HIGH reason=Risk Evaluator: Refund exceeds standard support representative threshold ($500)
   🛑 BLOCKED BY SIDECAR: Sidecar blocked 'issue_refund'({'order_id': 'ORD-999', 'amount': 850.0}): Risk Evaluator: Refund exceeds standard support representative threshold ($500)
 
@@ -188,7 +188,7 @@ ERROR [agentic_sidecar] [GOVERN] BLOCK tool=issue_refund args={'order_id': 'ORD-
 ERROR [agentic_sidecar] [GOVERN] BLOCK tool=delete_customer_record args={'customer_id': 'cust_1001'} risk=None reason=Policy Advisor: Account deletion requires explicit admin authorization
   🛑 BLOCKED BY SIDECAR: Sidecar blocked 'delete_customer_record'({'customer_id': 'cust_1001'}): Policy Advisor: Account deletion requires explicit admin authorization
 
-Sidecar Audit Summary:
+In-memory Decision Summary:
 Total Interceptions: 4
   Allowed Actions: 2
   Blocked Actions: 2
@@ -217,4 +217,4 @@ deactivate
 
 ## Tested with
 
-- agentic-sidecar 0.6.0, Python 3.12, Ubuntu 24.04, verified 2026-10-07
+- agentic-sidecar 0.7.0, Python 3.12, Ubuntu 24.04, verified 2026-10-15

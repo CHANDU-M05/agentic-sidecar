@@ -1,6 +1,6 @@
 # Agentic Sidecar Use Cases
 
-Practical, end-to-end walkthroughs for securing autonomous AI agents in real-world environments. Every use case listed here is fully reproducible on your local machine using `agentic-sidecar` v0.6.0.
+Practical, end-to-end walkthroughs for securing autonomous AI agents in real-world environments. Every use case listed here is fully reproducible on your local machine using `agentic-sidecar` v0.7.0.
 
 ---
 
@@ -16,11 +16,11 @@ Practical, end-to-end walkthroughs for securing autonomous AI agents in real-wor
 
 ## Verified Package Version
 
-All use cases in this catalog have been executed and verified against **`agentic-sidecar` v0.6.0** running on **Python 3.12** on Ubuntu 24.04 LTS.
+All use cases in this catalog have been executed and verified against **`agentic-sidecar` v0.7.0** running on **Python 3.12** on Ubuntu 24.04 LTS.
 
-- **Package Version**: `agentic-sidecar==0.6.0`
-- **Verification Date**: 2026-10-07
-- **Test Suite Pass Rate**: 100% (218 tests passing, 89% code coverage)
+- **Package Version**: `agentic-sidecar==0.7.0`
+- **Verification Date**: 2026-10-15
+- **Test Suite**: 402 passed, 8 skipped (optional integrations), 93% code coverage
 
 ---
 

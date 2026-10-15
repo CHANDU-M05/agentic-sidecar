@@ -157,4 +157,4 @@ rm -rf .venv
 
 ## Tested with
 
-- agentic-sidecar 0.6.0, Python 3.12, Ubuntu 24.04, verified 2026-10-07
+- agentic-sidecar 0.7.0, Python 3.12, Ubuntu 24.04, verified 2026-10-15

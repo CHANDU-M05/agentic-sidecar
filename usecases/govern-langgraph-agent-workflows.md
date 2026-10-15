@@ -211,4 +211,4 @@ deactivate
 
 ## Tested with
 
-- agentic-sidecar 0.6.0, LangGraph 1.x (`>=1.0,<2`), Python 3.12, Ubuntu 24.04, verified 2026-10-07
+- agentic-sidecar 0.7.0, LangGraph 1.x (`>=1.0,<2`), Python 3.12, Ubuntu 24.04, verified 2026-10-15

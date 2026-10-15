@@ -11,8 +11,9 @@ and ROADMAP.md's build order.
 from __future__ import annotations
 
 from typing import Any, Literal
+from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 DecisionStatus = Literal["ALLOW", "WARN", "BLOCK", "CHALLENGE", "REPLAN", "PAUSE", "ESCALATE"]
 """Seven outcomes from concept.md §15, fully implemented as of v0.4:
@@ -50,6 +51,7 @@ class Decision(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
+    decision_id: str = Field(default_factory=lambda: str(uuid4()))
     status: DecisionStatus
     risk: RiskLevel | None
     reason: str

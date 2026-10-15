@@ -1,144 +1,84 @@
 # Troubleshooting
 
-Common errors and how to fix them.
+Use the returned verdict, enabled roles, and configured bindings to inspect
+behavior before attaching real tools. These notes describe the **0.7.0** API.
 
----
+## Required failure configuration
 
-## `ValueError: on_sidecar_failure=... is invalid`
-
-**Cause:** You constructed `Sidecar` without the required `on_sidecar_failure` argument, or passed an invalid value.
-
-```
-ValueError: on_sidecar_failure='auto' is invalid -- it is a required setting with no default
-and must be 'fail_open' or 'fail_closed'
-```
-
-**Fix:** Always pass `on_sidecar_failure="fail_closed"` (recommended) or `"fail_open"`:
+Omitting `on_sidecar_failure` raises `TypeError`; an unsupported value raises
+`ValueError`. Choose `fail_closed` for governed decision boundaries:
 
 ```python
-# ✅ Correct
-sidecar = Sidecar(on_sidecar_failure="fail_closed", ...)
-
-# ❌ Wrong — no default exists
-sidecar = Sidecar(...)
+from agentic_sidecar import Sidecar
+sidecar = Sidecar(on_sidecar_failure="fail_closed")
 ```
 
----
+## Optional modules and roles
 
-## `ValueError: intent=... was given but 'intent_guardian' is not in roles`
-
-**Cause:** You passed an `IntentGuardian` to `Sidecar.__init__` or `set_intent()`, but `"intent_guardian"` is not in `sidecar.roles`.
-
-**Fix:** Add `"intent_guardian"` to the `roles` list:
+Enable a module by passing its instance and including its role. Intent checks
+also require a configured envelope and bindings. Passing an IntentGuardian
+without `intent_guardian` in roles raises ValueError. Other optional modules
+should likewise have matching roles:
 
 ```python
-sidecar = Sidecar(
-    on_sidecar_failure="fail_closed",
-    intent=guardian,
-    roles=["policy", "risk", "intent_guardian"],  # ← must include this
-)
+from agentic_sidecar import BudgetGuardian, Sidecar
+budget = BudgetGuardian(max_cost=5)
+sidecar = Sidecar(on_sidecar_failure="fail_closed", budget=budget, roles=["budget"])
+budget.record_invocation(cost=5)
 ```
 
----
+Supported roles: policy, risk, intent_guardian, budget, planner, critic, judge.
 
-## `ValueError: Unknown role '...'`
+## Inspect a BLOCK decision
 
-**Cause:** You passed an unrecognised string in the `roles` list.
-
-**Fix:** Use only the supported role names: `"policy"`, `"risk"`, `"intent_guardian"`, `"budget"`, `"planner"`, `"critic"`, `"judge"`.
-
----
-
-## `SidecarBlockedError` raised unexpectedly
-
-**Cause:** Your `Sidecar` is in `mode="govern"` and a tool call matched a `deny` policy rule or exceeded the risk threshold.
-
-**Fix options:**
-
-1. **Switch to Observe mode** temporarily to understand which decisions are being blocked:
-   ```python
-   sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="observe", ...)
-   # Run the agent, then inspect:
-   for ctx, dec in sidecar.decisions:
-       print(ctx.tool_name, dec.status, dec.reason)
-   ```
-
-2. **Adjust the policy or risk rules** that are causing the block.
-
-3. **Handle the exception** at the call site:
-   ```python
-   from agentic_sidecar import SidecarBlockedError
-   try:
-       agent.invoke(...)
-   except SidecarBlockedError as exc:
-       print(f"Blocked: {exc.decision.reason}")
-   ```
-
----
-
-## `NotImplementedError: No EscalationHandler registered`
-
-**Cause:** A `PAUSE` decision was returned (e.g. by Budget Guardian) but no escalation handler is registered.
-
-**Fix:** Register a handler with `@sidecar.on_escalation_required`:
+Policy denial, risk threshold, and intent constraints can each produce BLOCK.
+Read the exception's `decision.reason` and `context` to identify the stage.
+Test a proposed action directly without dispatching it:
 
 ```python
-from agentic_sidecar.gate import ApprovalAction, ApprovalResponse
-
-@sidecar.on_escalation_required
-def handle_pause(request):
-    print(f"PAUSED: {request.reason}")
-    # Return an approval action
-    return ApprovalResponse(
-        decision_id=request.decision_id,
-        action=ApprovalAction.APPROVE_ONCE,
-    )
+from agentic_sidecar import DecisionContext
+verdict = sidecar.evaluate(DecisionContext(tool_name="issue_refund", tool_args={"amount": 850}))
+print(verdict.status, verdict.reason)
 ```
 
----
+Observe mode permits execution after a verdict. Use it with controlled tools
+when evaluating rules; Govern enforces BLOCK through the adapter.
 
-## Budget Guardian never triggers
+## Budget and approval handling
 
-**Cause:** `BudgetGuardian` is passed to `Sidecar`, but `"budget"` is not in `roles`, so it is never consulted.
+Judge usage automatically reaches the configured task budget. Record other
+calls explicitly. Govern suspends PAUSE/ESCALATE when no handler exists.
+Register on_escalation_required or pass CLIApprovalHandler as escalation_handler.
+Base EscalationHandler is an interface; it raises NotImplementedError.
 
-**Fix:** Include `"budget"` in the `roles` list:
+## Planner input
 
-```python
-sidecar = Sidecar(
-    on_sidecar_failure="fail_closed",
-    budget=BudgetGuardian(max_cost=5.00),
-    roles=["policy", "risk", "budget"],  # ← must include "budget"
-)
-```
+Use `Sidecar.evaluate_plan(plan, goal=...)` for a full-plan gate. Configuring a
+planner on tool calls does not discover the plan. The active envelope supplies
+goal/constraints; all evaluators receive history/plan/metadata.
 
----
+## Provider configuration
 
-## Intent Guardian never triggers
+Use MockJudge for offline scripted examples. OpenAIJudge/AnthropicJudge make
+live API calls and require their optional SDK, credentials and an explicit model.
+Supply both token rates before enabling cost ceilings or a task budget.
+Provider errors and timeouts follow on_sidecar_failure; direct Judge calls raise.
+See [Governance](governance.md) for setup and [Limitations](limitations.md) for
+post-response cost ceilings and cancellation boundaries.
 
-Same pattern as Budget Guardian. You must include `"intent_guardian"` in `roles` *and* call `sidecar.set_intent(guardian)`.
+## Local CLI status
 
----
+`status` starts with a fresh narrator. Zero calls and no objective are expected.
+`demo` shows a populated simulated narrator. Creating a narrator in application
+code does not connect a separate CLI process. For live status, run an OperatorServer
+in the task process and supply its URL through --endpoint or SIDECAR_ENDPOINT;
+set the same SIDECAR_OPERATOR_TOKEN in the operator terminal.
+Use a positive refresh interval for `--follow`.
 
-## `ImportError: No module named 'langgraph'`
+## Rule matching
 
-**Cause:** You're using the LangGraph adapter without installing the optional dependency.
-
-**Fix:**
-```bash
-pip install "agentic-sidecar[langgraph]"
-```
-
----
-
-## Policy rules not matching as expected
-
-**Cause:** `PolicyAdvisor` uses `fnmatch` glob matching, not regex. Common misunderstandings:
-
-- `"delete_*"` matches `delete_customer`, `delete_record` — ✅
-- `"delete_*"` does **not** match `"soft_delete"` — ❌
-- `"*delete*"` matches both — ✅
-
-**Fix:** Test your patterns with Python's `fnmatch.fnmatch`:
+Tool patterns use `fnmatch`, not regular expressions. Rules are ordered;
+the first match wins. Argument checks require the exact configured key.
 
 ```python
 import fnmatch
@@ -146,37 +86,18 @@ print(fnmatch.fnmatch("soft_delete", "delete_*"))  # False
 print(fnmatch.fnmatch("soft_delete", "*delete*"))  # True
 ```
 
----
+Constraint bindings skip undeclared constraints and absent arguments. Bindings
+validate the supplied structured values; they do not infer natural-language limits.
 
-## Risk rules with argument checks not triggering
+## Optional framework and docs setup
 
-**Cause:** The argument must exist in `tool_args` with exactly the name specified in `arg_name`.
+The callable wrapper itself does not import LangGraph. To run the real graph
+examples, install its extra. To build the site, install the docs extra:
 
-**Fix:** Check that the argument name matches exactly. Use `DecisionContext` directly to debug:
-
-```python
-from agentic_sidecar import DecisionContext
-ctx = DecisionContext(tool_name="issue_refund", tool_args={"amount": 850.0})
-result = risk.evaluate(ctx)
-print(result.risk, result.reason)
-```
-
----
-
-## `uv sync --extra docs` fails
-
-**Cause:** `mkdocs-material` requires Python ≥ 3.8 and uv ≥ 0.4.
-
-**Fix:**
 ```bash
-pip install uv --upgrade
-uv sync --extra docs --python 3.12
+uv sync --extra dev --extra docs --extra langgraph
+uv run mkdocs build --strict
 ```
 
----
-
-## `mkdocs build --strict` fails with omitted page warning
-
-**Cause:** A file exists in `docs/` but is not listed in `mkdocs.yml` `nav`.
-
-**Fix:** Every markdown file in `docs/` must appear in the `nav` section of `mkdocs.yml`, or the strict build treats it as an error.
+For a docs build failure, inspect the first error, verify local links/anchors,
+and include new pages in `mkdocs.yml` navigation.

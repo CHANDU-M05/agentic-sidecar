@@ -3,33 +3,31 @@
 Thanks for helping make `agentic-sidecar` better for everyone building
 governable autonomous AI agents.
 
-`agentic-sidecar` has v0.1 (Sidecar Runtime + Rule-Based Decision Gate)
-implemented; everything from v0.2 onward is still a **scaffold** — see
-[ROADMAP.md](ROADMAP.md) for what's planned and in what order before
-starting on a module.
+The checkout targets 0.6.1 governance/evaluator enhancements. See
+[ROADMAP.md](ROADMAP.md) for implemented scope, remaining acceptance evidence
+and upcoming work before starting on a module.
 
 ## Local setup
 
 ```bash
-git clone https://github.com/pramodbn27/agentic-sidecar.git
+git clone https://github.com/DeepAgentLabs/agentic-sidecar.git
 cd agentic-sidecar
 python -m venv .venv
 . .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,docs,langgraph]"
 ```
 
 Or with `uv`:
 
 ```bash
-uv sync --extra dev
+uv sync --locked --extra dev --extra docs --extra langgraph
 ```
 
 ## Development workflow
 
 1. Check [ROADMAP.md](ROADMAP.md) for the current build order — modules
    have a stated planned version for a reason (see its Design Constraints
-   section); don't jump ahead (e.g. building Judge before the v0.1
-   rule-based Decision Gate is solid).
+   section). Keep changes within the intended milestone.
 2. Create a focused branch from `main`.
 3. Add or update tests with every behavior change.
 4. Add or update user-facing examples when the feature or expected workflow
@@ -42,10 +40,10 @@ uv sync --extra dev
 7. Run:
 
 ```bash
-ruff check .
-ruff format --check .
-mypy
-pytest
+make check
+make docs-check
+make examples-check
+make release-check
 ```
 
 8. Keep PRs focused — one concern per pull request.
@@ -74,9 +72,12 @@ Releases are automated via GitHub Actions when a version tag is pushed.
    - `pyproject.toml` → `version = "X.Y.Z"`
    - `src/agentic_sidecar/__init__.py` → `__version__ = "X.Y.Z"`
    - `CHANGELOG.md` → add a `## [X.Y.Z] - YYYY-MM-DD` section
-2. Commit: `git commit -am "release: vX.Y.Z"`
-3. Tag: `git tag vX.Y.Z`
-4. Push: `git push origin main --tags`
+2. Commit the release preparation on a feature branch and merge through review.
+3. On main, create an annotated vX.Y.Z tag on the merge commit using the matching
+   changelog section as its message (`--cleanup=verbatim` preserves Markdown).
+4. Push that release tag to trigger publication.
 
-The `release-pypi.yml` workflow triggers on the tag push and publishes to
-PyPI via Trusted Publishing (OIDC).
+The release workflow validates tag, source versions, changelog, behavior, docs,
+and distribution metadata before publishing via PyPI Trusted Publishing. It
+then creates the GitHub release using the same changelog section. See
+[AGENTS.md](AGENTS.md) for the two-phase release procedure.

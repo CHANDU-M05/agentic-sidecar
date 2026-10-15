@@ -42,6 +42,7 @@ sidecar = Sidecar(
 tools = attach(sidecar, [read_order, issue_refund, delete_customer])
 agent = create_react_agent(model, tools=tools)`,
     intent: `# Intent Envelope & Constraint Binding
+from agentic_sidecar import Sidecar
 from agentic_sidecar.intent import IntentEnvelope, IntentGuardian, ConstraintBinding, Requester
 
 envelope = IntentEnvelope(
@@ -59,24 +60,30 @@ binding = ConstraintBinding(
 )
 
 guardian = IntentGuardian(envelope, [binding])
-sidecar.set_intent(guardian)`,
+sidecar = Sidecar(
+    on_sidecar_failure="fail_closed", mode="govern",
+    intent=guardian, roles=["policy", "risk", "intent_guardian"]
+)`,
     budget: `# Budget Guardian Ceiling
-from agentic_sidecar.gate import BudgetGuardian
+from agentic_sidecar import BudgetGuardian, DecisionContext, Sidecar
 
 budget = BudgetGuardian(max_cost=5.00, max_tokens=10000)
 sidecar = Sidecar(
     on_sidecar_failure="fail_closed",
-    budget=budget,
+    mode="govern", budget=budget,
     roles=["policy", "risk", "budget"]
 )
 
-# Returns PAUSE decision when ceiling is reached`,
-    govern: `# Handling Govern Mode Block Exceptions
-from agentic_sidecar import SidecarBlockedError
+# Record external usage; Judge usage is connected automatically when configured.
+budget.record_invocation(cost=5.00, tokens=1200)
+print(sidecar.evaluate(DecisionContext(tool_name="read_order")).status)  # PAUSE
+# An attached Govern tool suspends until approval resolution.`,
+    govern: `# Handling Govern Mode Interventions
+from agentic_sidecar import SidecarBlockedError, SidecarSuspendedError
 
 try:
     agent.invoke({"messages": [("user", "Delete customer record cust_1001")]})
-except SidecarBlockedError as exc:
+except (SidecarBlockedError, SidecarSuspendedError) as exc:
     print(f"Call prevented: {exc.decision.reason}")
     print(f"Tool attempted: {exc.context.tool_name}")`
   };
@@ -117,7 +124,7 @@ function initInteractiveDemo() {
       currentMode = 'govern';
       modeGovernBtn.classList.add('active');
       modeObserveBtn.classList.remove('active');
-      logMessage(`[SYSTEM] Switched to GOVERN mode (BLOCK decisions raise SidecarBlockedError).`);
+      logMessage(`[SYSTEM] Switched to GOVERN mode (Only ALLOW/WARN proceed; other outcomes resolve or suspend).`);
     });
   }
 
@@ -200,6 +207,8 @@ function initInteractiveDemo() {
     let execOutput = '';
     if (mode === 'govern' && act.status === 'BLOCK') {
       execOutput = `<div style="color: var(--red); margin-top: 8px;">🛑 SidecarBlockedError: Call prevented by Sidecar in GOVERN mode.</div>`;
+    } else if (mode === 'govern' && !['ALLOW', 'WARN'].includes(act.status)) {
+      execOutput = `<div style="color: var(--amber); margin-top: 8px;">⏸ SidecarSuspendedError: Approval or agent-loop resolution required; tool has not executed.</div>`;
     } else {
       execOutput = `<div style="color: var(--green); margin-top: 8px;">✓ Tool Executed: ${act.exec()}</div>`;
     }

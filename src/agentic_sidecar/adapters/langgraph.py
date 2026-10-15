@@ -11,24 +11,22 @@ stable `__name__` and a type-annotated signature, which is exactly what
 `agentic-sidecar[langgraph]` to actually build and run a graph around the
 wrapped tools (see `examples/`).
 
-In `sidecar.mode="observe"` (v0.1's only mode, still the default), the
-wrapped tool always calls through to the real tool regardless of
-`Decision.status` -- the Sidecar's verdict is only computed and recorded
-(`sidecar.decisions`). In `mode="govern"` (v0.2+), a `BLOCK` verdict raises
-`SidecarBlockedError` instead of calling the real tool; `ALLOW` and `WARN` both
-still call through -- `WARN` is advisory, not a stop signal (see README.md's
-Operating modes).
+Observe records verdicts and calls through. Govern calls Sidecar.enforce:
+ALLOW/WARN proceed, BLOCK raises SidecarBlockedError, PAUSE/ESCALATE invoke
+local approvals or suspend, and CHALLENGE/REPLAN raise SidecarSuspendedError.
+Plain sync and async functions are supported; async evaluation/approval runs
+in a worker thread before awaiting the original function.
 """
 
 from __future__ import annotations
 
+import asyncio
 import functools
 import inspect
 from collections.abc import Callable, Sequence
 from typing import Any, TypeVar
 
 from agentic_sidecar.core.context import DecisionContext
-from agentic_sidecar.core.exceptions import SidecarBlockedError
 from agentic_sidecar.core.sidecar import Sidecar
 
 F = TypeVar("F", bound=Callable[..., Any])
@@ -55,13 +53,49 @@ def _wrap_tool(sidecar: Sidecar, tool: F) -> F:
             tool_args=_bind_args(signature, args, kwargs),
         )
         decision = sidecar.evaluate(context)
-        # Enforcement only exists in Govern mode -- Observe mode (v0.1's
-        # only mode, still the default) always calls through regardless of
-        # `decision.status`. `WARN` never stops the call in either mode.
-        if sidecar.mode == "govern" and decision.status == "BLOCK":
-            raise SidecarBlockedError(decision, context)
-        return tool(*args, **kwargs)
+        # Resolve governance before invoking the original function.
+        decision = sidecar.enforce(context, decision)
+        invocation = sidecar.runtime.dispatch(context, decision)
+        try:
+            result = tool(*args, **kwargs)
+        except BaseException as exc:
+            sidecar.runtime.complete(invocation, exc)
+            raise
+        sidecar.runtime.complete(invocation)
+        return result
 
+    if inspect.iscoroutinefunction(tool):
+
+        @functools.wraps(tool)
+        async def _async_wrapped_tool(*args: Any, **kwargs: Any) -> Any:
+            context = DecisionContext(
+                tool_name=tool_name,
+                tool_args=_bind_args(signature, args, kwargs),
+            )
+            decision = await asyncio.to_thread(sidecar.evaluate, context)
+            decision = await asyncio.to_thread(sidecar.enforce, context, decision)
+            loop = asyncio.get_running_loop()
+            owned_task: asyncio.Task[Any] | None = None
+            invocation = ""
+
+            def cancel_on_loop() -> None:
+                if owned_task is not None and sidecar.runtime.is_running(invocation):
+                    owned_task.cancel()
+
+            def request_cancel() -> None:
+                loop.call_soon_threadsafe(cancel_on_loop)
+
+            invocation = sidecar.runtime.dispatch(context, decision, cancel=request_cancel)
+            try:
+                owned_task = asyncio.create_task(tool(*args, **kwargs))
+                result = await owned_task
+            except BaseException as exc:
+                sidecar.runtime.complete(invocation, exc)
+                raise
+            sidecar.runtime.complete(invocation)
+            return result
+
+        return _async_wrapped_tool  # type: ignore[return-value]
     return _sidecar_wrapped_tool  # type: ignore[return-value]
 
 

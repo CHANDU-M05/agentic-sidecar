@@ -10,20 +10,15 @@ This page covers all configuration options for the `Sidecar` constructor and its
 from agentic_sidecar import Sidecar
 
 sidecar = Sidecar(
-    on_sidecar_failure: Literal["fail_open", "fail_closed"],  # REQUIRED — no default
-    policy: PolicyAdvisor | None = None,
-    risk: RiskEvaluator | None = None,
-    intent: IntentGuardian | None = None,
-    budget: BudgetGuardian | None = None,
-    planner: PlanEvaluator | None = None,
-    critic: CriticEvaluator | None = None,
-    judge: JudgeEvaluator | None = None,
-    escalation_handler: EscalationHandler | None = None,
-    risk_block_threshold: RiskLevel = "HIGH",
-    mode: Literal["observe", "govern"] = "observe",
-    roles: Sequence[str] | None = None,
+    on_sidecar_failure="fail_closed",
+    mode="observe",
+    roles=["policy", "risk"],
 )
 ```
+
+The following table lists constructor arguments. Configure each optional module
+and include its role to enable it. See [Features](features.md) for evaluator
+and narrator examples.
 
 ### Parameters
 
@@ -36,10 +31,10 @@ sidecar = Sidecar(
 | `budget` | `BudgetGuardian` \| `None` | `None` | Budget ceiling tracker. Only consulted if `"budget"` is in `roles`. |
 | `planner` | `PlanEvaluator` \| `None` | `None` | Plan evaluator. Only consulted if `"planner"` is in `roles`. |
 | `critic` | `CriticEvaluator` \| `None` | `None` | Critic evaluator. Only consulted if `"critic"` is in `roles`. |
-| `judge` | `JudgeEvaluator` \| `None` | `None` | LLM judge evaluator. Only consulted if `"judge"` is in `roles`. |
-| `escalation_handler` | `EscalationHandler` \| `None` | `None` | Handler for PAUSE/ESCALATE decisions. |
+| `judge` | `JudgeEvaluator` \| `None` | `None` | Judge/provider evaluator. Choose explicit mock or optional live providers. Only consulted if `"judge"` is in `roles`. |
+| `escalation_handler` | `EscalationHandler` \| `None` | `None` | Invoked for PAUSE/ESCALATE by Govern enforcement. |
 | `risk_block_threshold` | `"LOW"` \| `"MEDIUM"` \| `"HIGH"` | `"HIGH"` | Minimum risk level that triggers a `BLOCK`. |
-| `mode` | `"observe"` \| `"govern"` | `"observe"` | Observe logs decisions; Govern enforces them. |
+| `mode` | `"observe"` \| `"govern"` | `"observe"` | Observe records; Govern resolves or suspends non-proceed outcomes. |
 | `roles` | `Sequence[str]` \| `None` | `["policy", "risk"]` | Which evaluation modules to run. |
 
 ---
@@ -62,7 +57,7 @@ The `roles` parameter is the main switch for enabling/disabling evaluation modul
 
 **Default roles when `roles=None`:** `["policy", "risk"]`
 
-**Example — all non-LLM modules:**
+**Composition example — using the configured `policy`, `risk`, `guardian`, and `budget` objects below:**
 ```python
 sidecar = Sidecar(
     on_sidecar_failure="fail_closed",
@@ -130,7 +125,7 @@ risk = RiskEvaluator(
 | `risk` | `"LOW"` \| `"MEDIUM"` \| `"HIGH"` | Required | Risk level when this rule matches |
 | `reason` | `str` \| `None` | `None` | Human-readable explanation |
 | `arg_name` | `str` \| `None` | `None` | Argument to check (optional) |
-| `arg_op` | `ArgOp` | `"eq"` | Comparison operator: `eq`, `lt`, `lte`, `gt`, `gte`, `ne` |
+| `arg_op` | `ArgOp` | `"eq"` | Comparison operator: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `in`, `contains` |
 | `arg_value` | `Any` | `None` | Value to compare against |
 
 ---
@@ -196,9 +191,16 @@ guardian = IntentGuardian(envelope, bindings)
 
 ---
 
+Budget counters are shared with the object passed to Sidecar. Record actual
+usage explicitly for external calls; Judge usage reaches this budget once.
+PAUSE suspends Govern dispatch or invokes the configured approval handler.
+See [Governance](governance.md) for provider rates and limit configuration.
+
 ## Updating intent at runtime
 
-A long-lived `Sidecar` is expected to serve one `IntentEnvelope` per task. Use `set_intent()` between tasks:
+A long-lived `Sidecar` can serve one `IntentEnvelope` per task. The following
+composition pattern assumes configured envelopes, bindings, and an agent.
+Use `set_intent()` between tasks and reset the budget separately when appropriate:
 
 ```python
 # Before task 1

@@ -1,169 +1,39 @@
 # Examples
 
-One runnable script per shipped capability, added in the same PR as the
-code it demonstrates (see [../ROADMAP.md](../ROADMAP.md)).
+These examples run against the current **0.6.1** API. Versioned filenames record
+when a capability was introduced; they are not separate installation requirements.
+The [roadmap](../ROADMAP.md) describes upcoming enhancements.
 
-## v0.1 — Sidecar Runtime + Rule-Based Decision Gate
-
-[`langgraph_refund_observe_mode.py`](langgraph_refund_observe_mode.py) --
-a real `langgraph.prebuilt.create_react_agent` agent with a plain LangGraph
-adapter (`agentic_sidecar.adapters.langgraph.attach`) wired up, showing the
-v0.1 rule-based Decision Gate (Policy Advisor + Risk Evaluator, zero LLM
-calls) evaluate two proposed tool calls in Observe mode: a refund over its
-authorized amount and a destructive delete blocked by policy. Both actions
-still execute -- Observe mode only logs what the Sidecar *would* have
-decided; Govern mode (where `BLOCK` actually stops the call) ships in v0.2.
-
-Uses a small scripted chat model instead of a real LLM provider, so it runs
-deterministically offline with no API key.
+From the repository root, install the development environment:
 
 ```bash
 uv sync --extra dev --extra langgraph
-uv run python examples/langgraph_refund_observe_mode.py
 ```
 
-## v0.2 — Intent Guardian
+All Python examples use local data or scripted responses and require no API keys.
+The two LangGraph graph examples require the optional `langgraph` extra.
 
-[`langgraph_intent_guardian_govern_mode.py`](langgraph_intent_guardian_govern_mode.py)
--- the refund-limit scenario from concept.md §9, but in Govern mode: an
-`IntentEnvelope` with a `maximum_refund: 500` constraint, bound to
-`issue_refund`'s `amount` argument via a `ConstraintBinding`. A refund
-request for $850 raises `SidecarBlockedError` *before* the real tool
-runs -- unlike the v0.1 example, the call genuinely never executes. A
-second, compliant $120 refund goes through normally.
+| Example | Demonstrates | Run |
+| --- | --- | --- |
+| [Customer support](governed_customer_support_agent.py) | Observe vs Govern, policy/risk/intent checks, BLOCK interception | `uv run python examples/governed_customer_support_agent.py` |
+| [LangGraph Observe](langgraph_refund_observe_mode.py) | Real graph with a scripted model; advisory verdicts allow calls through | `uv run python examples/langgraph_refund_observe_mode.py` |
+| [LangGraph Govern](langgraph_intent_guardian_govern_mode.py) | Real graph; $850 refund blocked, $120 refund allowed under a $500 constraint | `uv run python examples/langgraph_intent_guardian_govern_mode.py` |
+| [Evaluator API](v0_3_planner_critic_judge.py) | Explicit plan ALLOW/REPLAN, heuristic CHALLENGE, mock Judge, pipeline composition | `uv run python examples/v0_3_planner_critic_judge.py` |
+| [Provider contract](v0_3_judge_providers.py) | Explicit offline MockJudge responses, swapping, validation, synthetic usage accounting | `uv run python examples/v0_3_judge_providers.py` |
+| [Budget and approval types](v0_4_budget_and_escalation.py) | Manual usage, PAUSE verdict, caller-managed approval response, audit serialization | `uv run python examples/v0_4_budget_and_escalation.py` |
+| [Governance](v0_6_1_governance.py) | Runtime approve-once, rejection, suspension, full-plan review and shared Judge budget | `uv run python examples/v0_6_1_governance.py` |
+| [Narration](v0_5_status_narration.py) | Manually recorded decisions, compliance, budget values, and narrator pause/resume state | `uv run python examples/v0_5_status_narration.py` |
+| [CLI guide](v0_5_cli_guide.md) | Local status snapshots, follow formatting, JSON output, demo, and version | `uv run agentic-sidecar --help` |
+| [Interactive notebook](sidecar_purpose_demo.ipynb) | Deterministic constraints across support, operations, and research scenarios | Open with Jupyter after installing it separately |
 
-```bash
-uv sync --extra dev --extra langgraph
-uv run python examples/langgraph_intent_guardian_govern_mode.py
-```
+## Reading the output
 
-## v0.4 — Budget Guardian + Human Escalation + Decision Provenance
+`evaluate()` returns a decision; it does not execute or stop the action itself.
+The LangGraph wrapper allows ALLOW/WARN in Govern mode; other outcomes resolve
+or suspend. See [governance walkthrough](v0_6_1_governance.py) for runtime approvals.
 
-[`v0_4_budget_and_escalation.py`](v0_4_budget_and_escalation.py) --
-demonstrates the v0.4 human-in-the-loop escalation workflow: a Budget Guardian
-tracks cost/token limits per task and returns a PAUSE decision when limits are
-exceeded, triggering structured approval workflows. Includes Decision Provenance
-(audit trails with JSON serialization) and all seven decision outcomes (ALLOW,
-WARN, BLOCK, CHALLENGE, REPLAN, PAUSE, ESCALATE).
-
-Key features:
-- Budget Guardian: cost and token ceiling enforcement
-- Human Escalation: EscalationRequest/ApprovalResponse workflow
-- Decision Provenance: full audit trail with DecisionTrigger, DecisionRationale, CausalLink
-- Seven-outcome Decision Gate
-
-```bash
-python examples/v0_4_budget_and_escalation.py
-```
-
-## v0.3 — Evaluators: Planner, Critic, Judge
-
-### Python API Examples
-
-[`v0_3_planner_critic_judge.py`](v0_3_planner_critic_judge.py) --
-comprehensive demo of the three evaluators working together:
-
-- **Planner**: Assesses plan alignment with user intent
-  - Detects unnecessary steps (cancel, refund, delete)
-  - Identifies contradictions (create + delete patterns)
-  - Returns ALLOW or REPLAN
-- **Critic**: Challenges decisions for flaws and risks
-  - Detects risky operations (delete, refund, cancel)
-  - Flags large financial amounts
-  - Identifies unsupported assumptions
-  - Returns CHALLENGE when issues found
-- **Judge**: LLM-based decision evaluation
-  - Model-agnostic provider interface
-  - Pluggable backends (OpenAI, Anthropic)
-  - Confidence scoring from LLM
-  - Returns ALLOW/WARN/BLOCK/CHALLENGE
-
-Five comprehensive examples:
-1. Planner alignment evaluation
-2. Critic challenge detection
-3. Judge LLM-based evaluation
-4. All three evaluators together
-5. Cost tracking
-
-```bash
-python examples/v0_3_planner_critic_judge.py
-```
-
-[`v0_3_judge_providers.py`](v0_3_judge_providers.py) --
-demonstrates Judge provider swapping and cost comparison:
-
-- **OpenAI Judge**: GPT-4, GPT-3.5-turbo support
-- **Anthropic Judge**: Claude 3 Opus, Sonnet support
-- **Provider swapping**: Swap implementations without changing Sidecar
-- **Cost tracking**: Per-provider cost accounting
-- **Validation**: Provider configuration checks
-
-Six comprehensive examples:
-1. OpenAI provider usage
-2. Anthropic provider usage
-3. Provider swapping
-4. Cost comparison across providers
-5. Provider validation
-6. Different models within providers
-
-```bash
-python examples/v0_3_judge_providers.py
-```
-
-## v0.5 — Status Narration + CLI
-
-### Python API Example
-
-[`v0_5_status_narration.py`](v0_5_status_narration.py) --
-demonstrates StatusNarrator for live agent execution narration:
-
-- **Human-readable narration**: Translates tool calls into emoji-based narrative
-  (e.g., `search` → "🔍 Searching for information")
-- **Decision tracking**: Records ALLOW/WARN/BLOCK/PAUSE outcomes with risk levels
-- **Intent compliance**: Detects and reports intent drift
-- **Budget monitoring**: Tracks remaining costs and tokens
-- **Pause/resume**: Workflow for human escalation and approval
-
-Six comprehensive examples covering:
-1. Basic narration
-2. Decision tracking
-3. Budget tracking
-4. Intent compliance
-5. Pause and resume
-6. Complete workflow
-
-```bash
-python examples/v0_5_status_narration.py
-```
-
-### CLI Usage Guide
-
-[`v0_5_cli_guide.md`](v0_5_cli_guide.md) --
-complete guide to the `agentic-sidecar` command-line tool:
-
-```bash
-# Single status snapshot
-agentic-sidecar status
-
-# Live status stream (real-time updates, Ctrl+C to stop)
-agentic-sidecar status --follow
-
-# JSON output for integration with other tools
-agentic-sidecar status --json
-
-# Custom refresh interval
-agentic-sidecar status --follow --interval 2
-
-# Interactive demo
-agentic-sidecar demo
-
-# Show version
-agentic-sidecar version
-```
-
-Features:
-- Live agent monitoring with Rich terminal formatting
-- JSON output for tool integration
-- Emoji-based narration with decision indicators
-- Real-time budget/token tracking
-- Custom refresh intervals
+Planner examples supply `plan` and `goal` directly to `PlanEvaluator.evaluate()`.
+Mock Judge responses and usage values illustrate the interface rather than
+measured model quality, latency, or pricing. Narrator pause/resume updates its
+reported state; it does not control an agent. Live CLI/runtime status is planned
+for 0.7, and additional adapters/integrations for 0.8.

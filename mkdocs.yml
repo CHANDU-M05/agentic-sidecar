@@ -34,6 +34,8 @@ nav:
   - Getting started: getting-started.md
   - Architecture: architecture.md
   - Features: features.md
+  - Live operations: live-operations.md
+  - Governance & evaluators: governance.md
   - Configuration: configuration.md
   - API reference: api-reference.md
   - CLI reference: cli-reference.md

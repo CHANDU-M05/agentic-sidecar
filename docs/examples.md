@@ -1,119 +1,54 @@
 # Examples
 
-All examples live in the [`examples/`](https://github.com/DeepAgentLabs/agentic-sidecar/tree/main/examples) directory. Each is a self-contained runnable script.
-
----
-
-## Governed Customer Support Agent
-
-**File:** [`examples/governed_customer_support_agent.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/governed_customer_support_agent.py)
-
-Demonstrates all four Decision Gate modules (Policy, Risk, Intent Guardian, Budget Guardian) working together to govern a customer support agent that can read orders, issue refunds, and delete customers.
+The examples target the **0.7.0** API. Historical version labels in filenames
+identify their introduction. Run them from the repository root:
 
 ```bash
-python examples/governed_customer_support_agent.py
+uv sync --extra dev --extra langgraph
 ```
 
-What it shows:
-- `read_order` → `ALLOW` (no rules triggered)
-- `issue_refund(amount=250)` → `ALLOW` (under $500 constraint)
-- `issue_refund(amount=850)` → `BLOCK` (IntentGuardian: exceeds `maximum_refund=500`)
-- `delete_customer` → `BLOCK` (PolicyAdvisor: `delete_*` deny rule)
-- Budget ceiling hit → `PAUSE` (BudgetGuardian: cumulative cost ≥ $5.00)
+Every Python example uses local data or scripted responses; no API key is needed.
+See the [example catalog](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/README.md)
+for links and setup details.
 
----
+| File under `examples/` | Purpose |
+| --- | --- |
+| `governed_customer_support_agent.py` | Observe vs Govern with policy/risk/intent checks; reads and within-limit refunds pass, over-limit refunds and deletions receive BLOCK |
+| `langgraph_refund_observe_mode.py` | A scripted real LangGraph agent executes tools while Sidecar records advisory verdicts |
+| `langgraph_intent_guardian_govern_mode.py` | A scripted real graph blocks $850 and permits $120 under a $500 refund constraint |
+| `v0_3_planner_critic_judge.py` | Direct full-plan checks, heuristic Critic, mock Judge, and composed evaluation |
+| `v0_3_judge_providers.py` | Mock provider swapping and synthetic usage accounting |
+| `v0_4_budget_and_escalation.py` | Manual budget accounting, PAUSE verdict, explicitly invoked approval handler, and audit serialization |
+| `v0_7_control_room.py` | Real HTTP approval/rejection, execution lifecycle and Control Room |
+| `v0_6_1_governance.py` | Runtime approval, suspension, full-plan review and shared Judge budget |
+| `v0_5_status_narration.py` | Manually supplied decisions, compliance/budget values, and narrator pause/resume state |
+| `v0_5_cli_guide.md` | Local CLI snapshots, JSON, follow formatting, demo, and version |
+| `sidecar_purpose_demo.ipynb` | Interactive deterministic intent constraints for multiple domains |
 
-## LangGraph — Intent Guardian in Govern Mode
-
-**File:** [`examples/langgraph_intent_guardian_govern_mode.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/langgraph_intent_guardian_govern_mode.py)
-
-Full LangGraph agent with `attach()`, IntentEnvelope, ConstraintBindings, and `SidecarBlockedError` handling.
+For example:
 
 ```bash
-pip install "agentic-sidecar[langgraph]"
-python examples/langgraph_intent_guardian_govern_mode.py
+uv run python examples/v0_3_planner_critic_judge.py
+uv run python examples/v0_4_budget_and_escalation.py
+uv run python examples/langgraph_intent_guardian_govern_mode.py
 ```
 
----
+The customer-support example configures a budget but does not spend against it;
+use the budget example to see a PAUSE verdict. Its over-limit refund is classified
+by Risk before the Intent stage; the dedicated LangGraph Govern example isolates
+Intent Guardian behavior.
 
-## LangGraph — Observe Mode
+The budget example handles an approval request in its own application code.
+The governance example demonstrates runtime approval and suspension before
+dispatch, plus full-plan review and automatic Judge accounting. The v0.7 Control
+Room example uses a real local HTTP interface, records approval and rejection,
+and counts actual tool effects. Standalone narrator methods update reported state. Provider mock costs are illustrative
+values, not measured inference costs. See [supported scope](limitations.md)
+and the [roadmap](roadmap.md).
 
-**File:** [`examples/langgraph_refund_observe_mode.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/langgraph_refund_observe_mode.py)
-
-Shows how to start in Observe mode: the Sidecar evaluates every tool call and logs decisions without blocking execution. Good starting point for adding Sidecar to an existing agent.
-
-```bash
-pip install "agentic-sidecar[langgraph]"
-python examples/langgraph_refund_observe_mode.py
-```
-
----
-
-## Plan Evaluator, Critic, and Judge (v0.3)
-
-**File:** [`examples/v0_3_planner_critic_judge.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/v0_3_planner_critic_judge.py)
-
-Demonstrates the experimental evaluators: `PlanEvaluator` (REPLAN decisions), `CriticEvaluator` (CHALLENGE decisions), and `JudgeEvaluator`.
+For the notebook, install Jupyter separately and run:
 
 ```bash
-python examples/v0_3_planner_critic_judge.py
-```
-
----
-
-## Judge Providers (OpenAI and Anthropic)
-
-**File:** [`examples/v0_3_judge_providers.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/v0_3_judge_providers.py)
-
-Shows how to configure `OpenAIJudge` and `AnthropicJudge` as providers for the `JudgeEvaluator`.
-
-```bash
-export OPENAI_API_KEY=...
-python examples/v0_3_judge_providers.py
-```
-
----
-
-## Budget Guardian and Escalation (v0.4)
-
-**File:** [`examples/v0_4_budget_and_escalation.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/v0_4_budget_and_escalation.py)
-
-Full example of `BudgetGuardian` with `record_invocation()`, triggering a `PAUSE` decision when the ceiling is reached, and handling the escalation via `@sidecar.on_escalation_required`.
-
-```bash
-python examples/v0_4_budget_and_escalation.py
-```
-
----
-
-## Status Narrator (v0.5)
-
-**File:** [`examples/v0_5_status_narration.py`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/v0_5_status_narration.py)
-
-Demonstrates `StatusNarrator` — recording tool calls, generating narratives, tracking blocked decisions and intent violations, and printing a live status snapshot.
-
-```bash
-python examples/v0_5_status_narration.py
-```
-
----
-
-## CLI Guide (v0.5)
-
-**File:** [`examples/v0_5_cli_guide.md`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/v0_5_cli_guide.md)
-
-A markdown walkthrough of the `agentic-sidecar` CLI commands with annotated output examples.
-
----
-
-## Interactive Notebook
-
-**File:** [`examples/sidecar_purpose_demo.ipynb`](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/examples/sidecar_purpose_demo.ipynb)
-
-Jupyter notebook demonstrating the Sidecar concept end-to-end in an interactive format.
-
-```bash
-pip install jupyter
 jupyter notebook examples/sidecar_purpose_demo.ipynb
 ```
 

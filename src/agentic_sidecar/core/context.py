@@ -12,9 +12,9 @@ hook or future evaluator wants to attach without a breaking change here.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
 from agentic_sidecar.core.decision import DecisionStatus
 
@@ -65,3 +65,11 @@ class DecisionContext(BaseModel):
     intent: IntentSnapshot | None = None
     history: list[HistoryEntry] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+    boundary: Literal["tool_call", "plan"] = "tool_call"
+    parent_decision_id: str | None = None
+    parent_plan_step: int | None = None
+    _proposal_id: str | None = PrivateAttr(default=None)
+    _runtime_epoch: int = PrivateAttr(default=-1)
+    _findings: dict[str, Any] = PrivateAttr(default_factory=dict)
+    goal: str = ""
+    plan: list[dict[str, Any]] = Field(default_factory=list)

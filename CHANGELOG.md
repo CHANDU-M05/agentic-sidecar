@@ -4,6 +4,106 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-12
+
+### Added
+
+- TaskRuntime and immutable runtime events for proposals, decisions, actual
+  dispatch, completion/failure, actor-attributed approvals and stop receipts.
+- Optional fsynced JSONL journal with hash/sequence/task validation on restore,
+  decision-time context, findings, policy fingerprints and causal plan links.
+- Authenticated task-scoped loopback HTTP status/events/control/approval interface
+  and embedded Control Room for objective, plan, intent, risk, budget and calls.
+- Connected `status --endpoint ... --follow`, remote `control` and `approve` CLI
+  commands; measured execution narration separates proposals from completions.
+- Independent stop latch, stale/consumed verdict rejection, pause/resume/replan,
+  explicit restart, owned async-tool cancellation and harness revocation receipts.
+- Runnable HTTP approval/rejection demo and recorded lifecycle evidence; optional
+  Control Tower readback tests preserve supervision outcomes separately from health.
+
+### Changed
+
+- LangGraph wrapped sync/async tools report actual execution lifecycle; operator
+  stop prevents dispatch in both modes and cannot be bypassed by fail_open.
+- Restored runtimes start stopped; incomplete execution/revocation prevents restart.
+
+### Fixed
+
+- Bind dispatch authorization to the evaluated context as well as the verdict;
+  changed proposals cannot be reauthorized through a paused approval.
+- Apply runtime intent approvals and invalidate stale verdicts before operator
+  acknowledgement, preserving the real actor and avoiding duplicate/late mutations.
+- Reconcile live completion/failure state and cancellation callbacks despite
+  audit sink errors; document undetectable complete-tail removal in hash chains.
+
+### Validation limitation
+
+- Authenticated OpenAI/Anthropic live smoke from v0.6.1 remains pending credentials
+  by user request. Deterministic SDK contract validation remains available.
+
+## [0.6.1] - 2026-10-10
+
+### Added
+
+- Govern resolution for all seven outcomes with sync/async callable interception;
+  unresolved PAUSE/ESCALATE/CHALLENGE/REPLAN return control before tool execution.
+- ID-correlated approve-once, reject, modify-intent, replan and stop handling;
+  local CLIApprovalHandler and safe `approval-demo` prompt.
+- Full-plan Sidecar boundary with goal, constraints, history, plan and metadata;
+  deterministic step checks and expanded scoped Planner/Critic heuristics.
+- Explicit offline MockJudge and optional live OpenAI/Anthropic SDK providers,
+  with lazy imports, explicit models/rates and deterministic SDK contracts.
+- Judge timeout and post-response cost ceilings, sync/async usage/latency parity,
+  automatic task budget accounting and validated nonnegative finite usage.
+- Four deterministic intent scenarios with guardian-off/on and clean controls;
+  measured fixture catch rate 4/4 and false positives 0/4 with guardian enabled.
+- Release tag/source/changelog/wheel/sdist validation before publication;
+  offline example/doc snippet checks and strict docs builds on pull requests.
+
+### Changed
+
+- Injection, malformed hook/evaluator/provider output and recording failures
+  follow the configured Sidecar failure policy. Judge errors propagate to it.
+- In-memory history stores deep context copies; decisions have generated IDs,
+  and approval resolutions link back to the originating decision.
+- Bundled OpenAIJudge/AnthropicJudge now make live calls; offline usage moves
+  to MockJudge. Live cost ceilings require configured token rates.
+- Pages deployment is restricted to main; provider credentials remain optional
+  in CI. Authenticated provider smoke evidence is pending credentialed validation.
+
+### Fixed
+
+- `evaluate_plan()` no longer re-checks Policy/Risk/Intent Guardian against the
+  synthetic `"__plan__"` marker after every real step already passed; a
+  default-deny policy or high default risk could otherwise false-BLOCK an
+  already-valid plan.
+- A plan step's `WARN`-severity `ConstraintBinding` finding is now aggregated
+  into the plan's final verdict instead of being silently dropped.
+- Custom governance-loop docs now call `sidecar.enforce()` so PAUSE/ESCALATE/
+  CHALLENGE/REPLAN are handled the same as the adapter, not just BLOCK.
+- Judge's internal question no longer interpolates caller-controlled
+  `goal`/`tool_name` into the privileged provider prompt; that data still
+  reaches the model only through the separately serialized untrusted context.
+- `JudgeProvider.cost_tracking_available()` now defaults to `False`; a custom
+  provider must opt in explicitly before cost limits/budget accounting trust it.
+- `PlanEvaluator._analyze_plan()` no longer takes an unused `intent` parameter.
+- `tests/test_critic.py` passes a `str` for `CriticChallenge.evidence`, matching
+  its declared type instead of a `list`.
+
+### Documentation
+
+- Clarified that a recorder failure discards the already-computed verdict, so
+  `fail_open` resolves it to ALLOW and `fail_closed` resolves it to BLOCK.
+- Documented that `BudgetGuardian` is not internally locked and is meant for
+  one task at a time, not shared across concurrently-dispatched tool calls.
+- Updated the canonical and docs roadmaps with release history through 0.6.0,
+  current capabilities, and acceptance criteria for upcoming stages.
+- Prioritized 0.6.x governance/evaluator enhancements, followed by live operations,
+  adapters/integrations, evaluation/authority, and stable interoperability schemas.
+- Aligned README, API/configuration/CLI guidance, example catalog, and ecosystem roadmap summaries.
+- Updated runnable demos for explicit plan review, mock-provider contracts,
+  caller-managed approval/audit records, and local narration; refreshed notebook scope.
+
 ## [0.6.0] - 2026-09-14
 
 ### Added

@@ -4,10 +4,10 @@ Run these checks locally before every push or PR.
 
 ## Docs-only shortcut
 
-If your diff only touches `.md` files, skip code checks. Verify with:
+For documentation changes, run strict docs/snippet/link checks:
 
 ```bash
-git status --short
+make docs-check
 ```
 
 ## Required checks (all code changes)
@@ -61,10 +61,21 @@ module depends on.
 
 ## CI parity
 
-The GitHub Actions CI workflow runs one job today: lint, format-check,
-type-check, and test across Python 3.10–3.13, then a build/package check.
-If `make check` passes locally, CI should pass too.
+The CI workflow checks Python 3.10–3.13 with the LangGraph extra, including
+real governed ToolNode dispatch, offline examples, Python documentation fences,
+local file links and release source metadata. A package job checks wheel/sdist.
+The docs workflow builds strictly on PRs and deploys Pages only from main.
 
-A second job testing `agentic_sidecar.integrations.agenticlens` against a
-real `agenticlens` checkout should be added once that module has real code,
-not before.
+Release automation validates tag/source/changelog first, runs runtime/example/docs
+checks, validates built distribution metadata, then publishes via OIDC. Manual
+release dispatch requires a tag ref. Live provider smoke tests are opt-in with
+credentials; deterministic SDK contracts run without credentials in normal CI.
+
+```bash
+make check
+make docs-check
+make examples-check
+make release-check
+```
+
+Add sibling integration jobs when the corresponding integration has real code.

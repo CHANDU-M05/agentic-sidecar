@@ -1,133 +1,81 @@
 # Architecture
 
-Agentic Sidecar is built on a single architectural principle: **the Main Agent acts; the Sidecar observes, thinks, advises, and governs.**
+**The Main Agent acts. The Sidecar observes, thinks, advises, and governs.**
+Sidecar evaluates proposed actions; the agent runtime and adapter own execution.
 
----
+## Decision flow
 
-## Core design
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                      Main Agent                          │
-│   (LangGraph / CrewAI / AutoGen / Custom Loop)          │
-└──────────────────────┬──────────────────────────────────┘
-                       │ proposes tool call
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│              Framework Adapter (e.g. langgraph.attach)  │
-│  Intercepts every tool invocation before execution      │
-└──────────────────────┬──────────────────────────────────┘
-                       │ DecisionContext
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Sidecar Core                           │
-│                                                          │
-│  1. Policy Advisor   ─── YAML allow/deny rules          │
-│  2. Risk Evaluator   ─── Argument pattern rules         │
-│  3. Intent Guardian  ─── Constraint binding check       │
-│  4. Budget Guardian  ─── Cost / token ceiling           │
-│  5. Plan Evaluator   ─── Multi-step plan review (opt-in)│
-│  6. Critic Evaluator ─── Assumption challenge (opt-in)  │
-│  7. Judge Evaluator  ─── LLM decision review (opt-in)   │
-│                                                          │
-│  Returns: Decision(status, risk, reason, ...)           │
-└──────────────────────┬──────────────────────────────────┘
-                       │ Decision
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Adapter Enforcement                    │
-│                                                          │
-│  Observe mode → always passes through, logs decision    │
-│  Govern mode  → BLOCK raises SidecarBlockedError        │
-│               → PAUSE requires escalation handler       │
-└─────────────────────────────────────────────────────────┘
+```text
+Agent proposes an action
+  → LangGraph callable wrapper or caller-managed boundary
+  → DecisionContext
+  → Sidecar: Policy → Risk → Intent → Budget → Planner → Critic → Judge
+  → Decision
+  → Observe: call through
+  → Govern: ALLOW/WARN execute; BLOCK stops; other outcomes resolve or suspend
 ```
 
----
+Modules run only when enabled in `roles` and configured. A policy denial, risk
+threshold, or blocking intent finding returns immediately. Budget PAUSE,
+planner REPLAN/BLOCK, Critic CHALLENGE, and supported Judge interventions also
+return before later stages. Intent WARN is advisory and can accompany later
+checks. A custom `before_tool_call` hook replaces the built-in pipeline.
 
-## Decision Gate pipeline
-
-The Sidecar evaluates modules in a fixed order, short-circuiting at the first BLOCK:
-
-1. **Policy Advisor** — checked first; a `deny` rule immediately returns `BLOCK`
-2. **Risk Evaluator** — if risk ≥ `risk_block_threshold` (default: HIGH), returns `BLOCK`
-3. **Intent Guardian** — if a constraint binding is violated, returns `BLOCK` or `WARN`
-4. **Budget Guardian** — if cost or token ceiling exceeded, returns `PAUSE`
-5. **Plan Evaluator** — if plan is unsafe, returns `BLOCK` or `REPLAN`
-6. **Critic Evaluator** — if unsupported assumptions detected, returns `CHALLENGE`
-7. **Judge Evaluator** — LLM-based review, can return `BLOCK`, `CHALLENGE`, `WARN`, `PAUSE`
-
-If none of the above trigger, the decision is `ALLOW` (or `WARN` if intent drifted but not blocked).
-
----
-
-## Package boundaries
-
-The codebase is divided into strict layers that never import upward:
-
-| Package | Responsibility | Dependencies |
-|---|---|---|
-| `core/` | `Sidecar`, `Decision`, `DecisionContext`, `SidecarBlockedError` | None (zero external deps) |
-| `gate/` | `PolicyAdvisor`, `RiskEvaluator`, `BudgetGuardian`, `EscalationHandler` | `core/` only |
-| `intent/` | `IntentEnvelope`, `IntentGuardian`, `ConstraintBinding` | `core/` only |
-| `evaluators/` | `CriticEvaluator`, `JudgeEvaluator`, `PlanEvaluator` | `core/` only |
-| `status/` | `StatusNarrator`, `StatusNarrative` | `core/` only |
-| `adapters/` | `langgraph.attach`, `crewai`, `autogen`, etc. | `core/`, framework-specific |
-| `cli/` | `agentic-sidecar status/version/demo` | `core/`, `status/` |
-| `integrations/` | Optional cross-package bridges | `core/`, optional extras |
-
-`core/` must never import from `adapters/` — routing tool calls through `evaluate()` is the adapter's job, not core's.
-
----
+Use `Sidecar.evaluate_plan()` for full-plan review before dispatch. Evaluators
+receive goal, constraints, intent, decision history, plan and metadata. Planner
+and Critic are deterministic heuristics; Judge uses an explicit MockJudge or
+optional live provider. See [Governance](governance.md).
 
 ## Operating modes
 
-### Observe mode (default)
+| Mode | Adapter behavior |
+| --- | --- |
+| Observe (default) | Computes/logs verdicts, then executes the wrapped tool |
+| Govern | ALLOW/WARN execute; BLOCK stops; PAUSE/ESCALATE invoke approvals; unresolved outcomes suspend |
 
-```python
-sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="observe")
-```
+Budget ceilings produce PAUSE. Govern invokes a registered escalation handler
+or returns control via SidecarSuspendedError. Approvals are scoped to one call;
+BLOCK never reaches approval. CHALLENGE/REPLAN suspend for agent-loop handling.
 
-- Every tool call is intercepted and evaluated
-- `Decision` is computed and logged
-- The tool **always executes** regardless of the verdict
-- `sidecar.decisions` accumulates every (context, decision) pair for audit
+## Failure configuration
 
-Use this for: shadow auditing, baseline evaluation, initial deployment.
+`on_sidecar_failure` is required: `fail_closed` converts caught gate errors to
+BLOCK; `fail_open` converts them to ALLOW. Observe remains advisory regardless
+of that verdict. Configure `fail_closed` for governed boundaries.
 
-### Govern mode
+Injection, evaluation/provider calls, verdict validation and recording share
+the failure boundary. Approval errors follow the same policy. Judge errors
+propagate to that boundary. Recording failures cannot guarantee a log entry;
+see [supported scope](limitations.md) for timeout and accounting details.
 
-```python
-sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="govern")
-```
+## Package boundaries
 
-- Every tool call is intercepted and evaluated
-- A `BLOCK` verdict causes the adapter to raise `SidecarBlockedError` **before the tool runs**
-- `ALLOW` and `WARN` still pass through (`WARN` is advisory)
-- `PAUSE` requires an escalation handler to be registered
+| Package | Responsibility | Current dependencies |
+| --- | --- | --- |
+| `core/` | Runtime, contexts, decision and provenance types | Gate, intent, evaluators, Pydantic |
+| `gate/` | Policy, risk, budget and approval primitives | Core models/operators; Pydantic and PyYAML for rules |
+| `intent/` | Envelope and constraint bindings | Core models/operators, Pydantic |
+| `evaluators/` | Planner/Critic heuristics, Judge/provider interface | Core types, evaluator base; live SDK imports are lazy and optional |
+| `status/` | Manually populated narration | Core decision types |
+| `adapters/` | Framework interception | Core; LangGraph callable wrapper has no framework import dependency |
+| `cli/` | Local status, approval, demo, version | Status, Typer, Rich |
+| `integrations/` | Reserved optional ecosystem bridges | Planned for 0.8 |
 
-Use this for: production enforcement, financial boundary control, safety gating.
+`core/` never imports adapters. Policy/Risk stay independent of Intent and
+model evaluators. Framework and sibling packages remain optional.
 
----
+## Decision records and status
 
-## Failure handling
+`sidecar.decisions` stores in-memory `(DecisionContext, Decision)` pairs.
+Built-in verdicts commonly include `decision_point="tool_call"` and trigger
+arguments. Hook and failure verdicts may leave those fields unset. `Decision`
+is frozen at the field level; nested dictionaries and saved contexts remain
+mutable. `AuditRecord.to_dict()` serializes caller-created provenance records.
+Contexts are deep-copied at recording time; decisions have IDs and resolved
+approvals link to their originating decision. TaskRuntime adds immutable JSON event
+snapshots and optional durable JSONL execution evidence.
 
-`on_sidecar_failure` is a **required** parameter with no default. If the evaluation itself raises an exception (e.g. a misconfigured rule), the Sidecar resolves the decision via this setting:
-
-- `"fail_closed"` — resolves to `BLOCK` (recommended for production)
-- `"fail_open"` — resolves to `ALLOW` (use only when you explicitly accept the risk)
-
-This is Design Constraint 3: anything that reaches a Decision Gate is, by definition, worth being conservative about.
-
----
-
-## Provenance and audit trail
-
-Every call to `sidecar.evaluate()` is recorded in `sidecar.decisions` as a `(DecisionContext, Decision)` tuple. The `Decision` object carries:
-
-- `status` — ALLOW / WARN / BLOCK / CHALLENGE / REPLAN / PAUSE / ESCALATE
-- `risk` — LOW / MEDIUM / HIGH (or None if risk evaluator not enabled)
-- `reason` — human-readable explanation of the verdict
-- `decision_point` — always `"tool_call"` in v0.6
-- `trigger_details` — dict with `tool_name` and `arguments`
-- `escalation_required` — bool, true for PAUSE/ESCALATE
+`StatusNarrator` records application-supplied call/decision metadata. Its pause
+state is reporting state. CLI status with --endpoint connects to actual runtime
+events. TaskRuntime and OperatorServer provide task-scoped operator controls;
+see [Live operations](live-operations.md).

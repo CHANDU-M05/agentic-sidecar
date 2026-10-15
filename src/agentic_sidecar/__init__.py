@@ -3,19 +3,13 @@ supervision layer for autonomous AI agents.
 
     The Main Agent acts. The Sidecar observes, thinks, advises, and governs.
 
-v0.1 shipped the Sidecar runtime and a rule-based, LLM-free Decision Gate
-(Policy Advisor + Risk Evaluator), attached via the LangGraph adapter, in
-Observe mode. v0.2 adds Intent Guardian (`agentic_sidecar.intent`) and
-Govern mode, where a `BLOCK` decision is actually enforced. v0.4 adds the
-full Decision Gate outcomes (CHALLENGE, REPLAN, PAUSE, ESCALATE), Budget
-Guardian for cost/token ceilings, and Human Escalation primitives. See
-ROADMAP.md for the full build order and README.md for the architecture and
-Python API.
+0.7.0 adds runtime events, immutable durable audit evidence, authenticated local
+operator controls and the Control Room. See docs/live-operations.md for scope.
 """
 
 from agentic_sidecar.core.context import DecisionContext
 from agentic_sidecar.core.decision import Decision, DecisionStatus, RiskLevel
-from agentic_sidecar.core.exceptions import SidecarBlockedError
+from agentic_sidecar.core.exceptions import SidecarBlockedError, SidecarSuspendedError
 from agentic_sidecar.core.provenance import (
     AuditRecord,
     CausalLink,
@@ -43,15 +37,22 @@ from agentic_sidecar.gate import (
     EscalationHandler,
     EscalationRequest,
 )
+from agentic_sidecar.operations import EventJournal, RuntimeEvent, TaskRuntime
+from agentic_sidecar.operations.server import OperatorServer
 from agentic_sidecar.status import (
     StatusNarrative,
     StatusNarrator,
     ToolCallNarrative,
 )
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 __all__ = [
+    "EventJournal",
+    "OperatorServer",
+    "RuntimeEvent",
+    "TaskRuntime",
+    "MockJudge",
     "AnthropicJudge",
     "ApprovalAction",
     "ApprovalResponse",
@@ -78,8 +79,11 @@ __all__ = [
     "RiskLevel",
     "Sidecar",
     "SidecarBlockedError",
+    "SidecarSuspendedError",
     "StatusNarrative",
     "StatusNarrator",
     "ToolCallNarrative",
     "__version__",
 ]
+
+from agentic_sidecar.evaluators.providers.mock import MockJudge

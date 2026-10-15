@@ -339,7 +339,8 @@ def test_evaluate_mutates_the_callers_context_in_place() -> None:
 
     assert context.intent is not None
     assert context.intent.goal == "refund_customer"
-    assert context is sidecar.decisions[0][0]
+    assert context == sidecar.decisions[0][0]
+    assert context is not sidecar.decisions[0][0]
 
 
 def test_evaluate_injects_growing_history_into_recorded_context() -> None:

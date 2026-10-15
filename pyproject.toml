@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentic-sidecar"
-version = "0.6.0"
+version = "0.7.0"
 description = "Companion intelligence and real-time decision supervision for autonomous AI agents."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -32,6 +32,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+openai = ["openai>=1.68,<3"]
+anthropic = ["anthropic>=0.49,<2"]
 # Only needed for agentic_sidecar.integrations.agenticlens -- the core
 # runtime never requires it. That module is currently a placeholder (see
 # src/agentic_sidecar/integrations/agenticlens.py); this extra is declared

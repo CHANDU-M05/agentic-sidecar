@@ -1,11 +1,9 @@
-"""`agentic-sidecar status --follow` -- live status stream backed by
-`status/narrate.py`.
-
-v0.5 implements the CLI status command with real-time streaming support.
-"""
+"""Local status reporting and interactive approval commands."""
 
 from __future__ import annotations
 
+import json
+import os
 import time
 from datetime import datetime
 from typing import Any
@@ -15,16 +13,35 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.table import Table
 
+from agentic_sidecar.cli.approval import CLIApprovalHandler
+from agentic_sidecar.core.context import DecisionContext
+from agentic_sidecar.core.decision import Decision
+from agentic_sidecar.gate.escalation import ApprovalAction, EscalationRequest
 from agentic_sidecar.status.narrate import StatusNarrative, StatusNarrator
 
-app = typer.Typer(help="Agentic Sidecar CLI - Live supervision and monitoring")
+app = typer.Typer(help="Agentic Sidecar CLI - Status reporting and local approvals")
 console = Console()
 
 
 @app.command()
+def approval_demo() -> None:
+    """Try the local approval prompt without executing a tool or changing a task."""
+    decision = Decision(status="PAUSE", risk=None, reason="Demonstration approval request")
+    request = EscalationRequest(
+        decision.decision_id,
+        decision.reason,
+        DecisionContext(tool_name="demo").model_dump(mode="json"),
+        list(ApprovalAction),
+    )
+    response = CLIApprovalHandler(console).handle_escalation(request)
+    console.print(f"Selected {response.action.value}; no tool executed.")
+
+
+@app.command()
 def status(
+    endpoint: str | None = typer.Option(None, "--endpoint", envvar="SIDECAR_ENDPOINT"),
     follow: bool = typer.Option(
-        False, "--follow", "-f", help="Follow live status stream (refresh every second)"
+        False, "--follow", "-f", help="Follow the connected task or standalone snapshot"
     ),
     json_output: bool = typer.Option(
         False, "--json", "-j", help="Output as JSON instead of human-readable format"
@@ -35,7 +52,7 @@ def status(
 ) -> None:
     """Display sidecar status: current objective, decisions, risk, and budget.
 
-    With --follow, streams live updates as the agent executes.
+    With --endpoint, reads a running task. --follow refreshes the selected source.
     Use Ctrl+C to stop.
 
     Examples:
@@ -44,6 +61,30 @@ def status(
         agentic-sidecar status --json             # JSON output
         agentic-sidecar status --follow --json    # Live JSON stream
     """
+    if interval < 1:
+        raise typer.BadParameter("interval must be positive")
+    if endpoint:
+        from agentic_sidecar.operations.client import request
+
+        token = os.environ.get("SIDECAR_OPERATOR_TOKEN", "")
+        after = 0
+        try:
+            while True:
+                snapshot = request(endpoint, token, "/status")
+                events = request(endpoint, token, f"/events?after={after}")
+                if json_output:
+                    console.print_json(data={"status": snapshot, "events": events})
+                else:
+                    from agentic_sidecar.status.live import narrate_status
+
+                    console.print(narrate_status(snapshot), markup=False)
+                if events:
+                    after = events[-1]["sequence"]
+                if not follow:
+                    return
+                time.sleep(interval)
+        except KeyboardInterrupt:
+            return
     narrator = _get_narrator_instance()
 
     if not follow:
@@ -55,8 +96,7 @@ def status(
 def _get_narrator_instance() -> StatusNarrator:
     """Get the active StatusNarrator instance.
 
-    In v0.5, this creates a demo narrator. In v0.6+, this will connect to
-    a running Sidecar instance via IPC or HTTP.
+    Runtime connection via IPC or HTTP is planned for v0.7.
     """
     return StatusNarrator()
 
@@ -171,6 +211,44 @@ def _print_status_table(status: StatusNarrative) -> None:
         table.add_row("⏸️ Status", f"[yellow]PAUSED: {pause_text}[/yellow]")
 
     console.print(table)
+
+
+@app.command()
+def control(
+    action: str,
+    endpoint: str = typer.Option(..., "--endpoint", envvar="SIDECAR_ENDPOINT"),
+) -> None:
+    """Pause, resume, stop, restart or request replanning for the connected task."""
+    from agentic_sidecar.operations.client import request
+
+    console.print_json(
+        data=request(
+            endpoint, os.environ.get("SIDECAR_OPERATOR_TOKEN", ""), "/control", {"action": action}
+        )
+    )
+
+
+@app.command()
+def approve(
+    decision_id: str,
+    action: ApprovalAction,
+    endpoint: str = typer.Option(..., "--endpoint", envvar="SIDECAR_ENDPOINT"),
+    intent_file: str | None = typer.Option(None, "--intent-file"),
+) -> None:
+    """Resolve one pending approval; modify_intent reads a complete JSON envelope."""
+    from pathlib import Path
+
+    from agentic_sidecar.operations.client import request
+
+    modified = json.loads(Path(intent_file).read_text()) if intent_file else None
+    console.print_json(
+        data=request(
+            endpoint,
+            os.environ.get("SIDECAR_OPERATOR_TOKEN", ""),
+            "/approval",
+            {"decision_id": decision_id, "action": action.value, "modified_intent": modified},
+        )
+    )
 
 
 @app.command()

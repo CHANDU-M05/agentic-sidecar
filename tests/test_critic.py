@@ -12,7 +12,7 @@ class TestCriticChallenge:
             category="risky",
             severity="HIGH",
             description="Attempting to delete database without backup",
-            evidence=["no_backup_found", "large_table"],
+            evidence="no_backup_found, large_table",
             suggestion="Create backup before deletion",
         )
         assert challenge.category == "risky"

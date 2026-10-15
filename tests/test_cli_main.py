@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
+from agentic_sidecar import __version__
 from agentic_sidecar.cli.main import app
 from agentic_sidecar.core.decision import Decision
 from agentic_sidecar.status.narrate import StatusNarrator
@@ -16,7 +17,7 @@ def test_version_command() -> None:
     result = runner.invoke(app, ["version"])
     assert result.exit_code == 0
     assert "agentic-sidecar" in result.stdout
-    assert "0.6.0" in result.stdout
+    assert __version__ in result.stdout
 
 
 def test_status_command_once() -> None:

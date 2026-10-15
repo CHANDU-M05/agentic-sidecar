@@ -102,7 +102,7 @@ uv run python scripts/smoke_judge_providers.py --provider anthropic --model YOUR
 
 ## Acceptance evidence
 
-Local acceptance: **363 passing tests**, **94% coverage**, eight offline Python
+Local acceptance: **402 passing tests**, **93% coverage**, eight offline Python
 examples and ten notebook cells, strict MkDocs/snippet/link checks, Ruff/mypy,
 Actionlint, and wheel/sdist/Twine metadata validation. The full suite also passed
 on Python 3.10; CI covers Python 3.10–3.13.

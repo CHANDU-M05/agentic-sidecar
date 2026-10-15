@@ -48,12 +48,56 @@ pip install "agentic-sidecar[langgraph]"
 Define the target tool `issue_refund` and import LangGraph components:
 
 ```python
-from langchain_core.messages import AIMessage
+from typing import Any
+
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
 from langgraph.prebuilt import create_react_agent
 
 def issue_refund(order_id: str, amount: float) -> str:
     """Issue a refund for an order."""
     return f"refunded ${amount:.2f} for order {order_id}"
+
+
+class ScriptedToolCallingModel(BaseChatModel):
+    """Replays a fixed sequence of `AIMessage`s -- see
+    `langgraph_refund_observe_mode.py` for why this exists.
+    """
+
+    responses: list[AIMessage]
+    step: int = 0
+
+    def bind_tools(self, tools: Any, **kwargs: Any) -> "ScriptedToolCallingModel":
+        return self
+
+    def _generate(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: Any = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        message = self.responses[self.step]
+        self.step += 1
+        return ChatResult(generations=[ChatGeneration(message=message)])
+
+    @property
+    def _llm_type(self) -> str:
+        return "scripted"
+
+
+def refund_request(order_id: str, amount: float) -> AIMessage:
+    return AIMessage(
+        content="",
+        tool_calls=[
+            {
+                "name": "issue_refund",
+                "args": {"order_id": order_id, "amount": amount},
+                "id": "call_1",
+            }
+        ],
+    )
 ```
 
 ### 3. Build Intent Envelope and Constraint Bindings
@@ -99,6 +143,7 @@ Wrap the tool array using `attach(sidecar, tools)` before instantiating the Lang
 governed_tools = attach(sidecar, [issue_refund])
 
 # Pass governed tools directly into LangGraph create_react_agent
+model = ScriptedToolCallingModel(responses=[refund_request("A100", 850.0)])
 agent = create_react_agent(model, tools=governed_tools)
 ```
 
@@ -114,6 +159,10 @@ except SidecarBlockedError as exc:
     print(f"Blocked before tool ran: {exc}")
 
 # Attempt 2: $120.00 refund (Within limit) -> Allowed
+model = ScriptedToolCallingModel(
+    responses=[refund_request("A100", 120.0), AIMessage(content="Refund issued.")]
+)
+agent = create_react_agent(model, tools=governed_tools)
 result = agent.invoke({"messages": [("user", "Refund order A100 for $120.")]})
 print(f"Agent response: {result['messages'][-1].content}")
 ```

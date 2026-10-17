@@ -1,6 +1,6 @@
 # API Reference
 
-Python API for `agentic-sidecar` **0.8.0**. Imports below identify the supported
+Python API for `agentic-sidecar` **0.8.1** (unchanged from 0.8.0). Imports below identify the supported
 module for each symbol; intent and policy/risk types live in their subpackages.
 
 ```python

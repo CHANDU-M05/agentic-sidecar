@@ -1,6 +1,6 @@
 # Getting Started
 
-Start with deterministic tool-call supervision using the **0.8.0** API.
+Start with deterministic tool-call supervision using the **0.8.1** API (unchanged from 0.8.0).
 These examples run without a model, framework installation, or API key.
 
 ## Installation

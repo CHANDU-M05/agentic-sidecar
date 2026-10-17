@@ -47,6 +47,7 @@ nav:
   - Configuration: configuration.md
   - API reference: api-reference.md
   - CLI reference: cli-reference.md
+  - Scoped supervision: scoped-supervision.md
   - Integrations: integrations.md
   - Examples: examples.md
   - Use cases: https://deepagentlabs.io/agentic-sidecar/usecases/

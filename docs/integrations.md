@@ -1,151 +1,113 @@
 # Integrations
 
-Agentic Sidecar attaches to your agent framework via adapter modules in `agentic_sidecar.adapters`. The core runtime has zero dependencies on any specific framework — adapters handle the interception boundary.
+## Framework adapters
 
----
+All adapters share the same sync/async governed callable boundary. Supply plain,
+typed Python functions with docstrings to `attach(sidecar, tools)` and pass the
+returned tools to your framework. The core imports no framework SDK.
 
-## LangGraph
+| Module / install extra | Returned surface | Tested SDK | Python |
+| --- | --- | --- | --- |
+| `adapters.langgraph` / `langgraph` | Typed callables for LangChain StructuredTool / LangGraph | LangGraph 1.x, LangChain Core 1.x | 3.10+ |
+| `adapters.autogen` / `autogen` | AutoGen Core FunctionTool | 0.7.5 | 3.10+ |
+| `adapters.crewai` / `crewai` | CrewAI Tool | 1.6.1 | 3.10–3.13 |
+| `adapters.openai_agents` / `openai-agents` | OpenAI Agents FunctionTool | 0.24.0 | 3.10+ |
+| `adapters.google_adk` / `google-adk` | ADK FunctionTool | 2.12.0 | 3.11+ |
 
-**Status: Available — callable wrapping and Govern BLOCK**
-**Install:** `pip install "agentic-sidecar[langgraph]"`
-
-The `langgraph` adapter is the primary supported integration. It wraps a list of tool callables before passing them to `create_react_agent`.
-
-### How it works
-
-`attach(sidecar, tools)` wraps each tool so that calling it first runs `sidecar.evaluate()`. If `mode="govern"` and the decision is `BLOCK`, it raises `SidecarBlockedError` instead of calling the real tool.
-
-```python
-from agentic_sidecar import Sidecar, SidecarBlockedError
-from agentic_sidecar.adapters.langgraph import attach
-from agentic_sidecar.gate.policy import PolicyAdvisor, PolicyRule
-from langgraph.prebuilt import create_react_agent
-
-sidecar = Sidecar(
-    on_sidecar_failure="fail_closed",
-    mode="govern",
-    policy=PolicyAdvisor([
-        PolicyRule(tool="delete_*", effect="deny"),
-    ]),
-)
-
-def read_order(order_id: str) -> dict:
-    return {"order_id": order_id, "amount": 450.0}
-
-def delete_customer(customer_id: str) -> dict:
-    return {"status": "deleted"}
-
-# Wrap tools — pass result directly to create_react_agent
-tools = attach(sidecar, [read_order, delete_customer])
-# Supply your configured chat model; scripted examples include an offline model.
-agent = create_react_agent(model, tools=tools)
-
-try:
-    result = agent.invoke({"messages": [("user", "Delete customer cust_1001")]})
-except SidecarBlockedError as exc:
-    print(f"Blocked: {exc.decision.reason}")
-```
-
-### Observe vs Govern with LangGraph
-
-In **Observe mode**: the wrapped tool always calls through regardless of the verdict. Use `sidecar.decisions` to review after the run.
-
-In **Govern mode**: ALLOW/WARN execute; BLOCK raises SidecarBlockedError;
-PAUSE/ESCALATE invoke approvals or suspend; CHALLENGE/REPLAN suspend. Catch
-SidecarSuspendedError to return control to the agent loop. Plain async functions
-are supported. See [Governance](governance.md) for approval configuration.
-
-### Notes
-
-- The adapter doesn't require `@tool` decorators — it works with plain Python callables
-- It uses `inspect.signature` to bind call arguments into `DecisionContext.tool_args`
-- Positional args are bound to parameter names; defaults are applied
-- The examples use `create_react_agent` within the supported LangGraph major version; it emits a deprecation notice
-- Additional frameworks and optional ecosystem bridges target 0.8
-
----
-
-## CrewAI
-
-**Status: Planned for 0.8**
-
-The `adapters/crewai.py` module exists as a placeholder stub (no `attach()` function) and is not functional in v0.7.0. See [Roadmap](roadmap.md).
-
----
-
-## AutoGen
-
-**Status: Planned for 0.8**
-
-The `adapters/autogen.py` module exists as a placeholder stub and is not functional in v0.7.0. See [Roadmap](roadmap.md).
-
----
-
-## OpenAI Agents SDK
-
-**Status: Planned for 0.8**
-
-The `adapters/openai_agents.py` module exists as a placeholder stub and is not functional in v0.7.0. See [Roadmap](roadmap.md).
-
----
-
-## Google ADK
-
-**Status: Planned for 0.8**
-
-The `adapters/google_adk.py` module exists as a placeholder stub and is not functional in v0.7.0. See [Roadmap](roadmap.md).
-
----
-
-## Custom / generic Python agent
-
-For any agent that doesn't use a specific framework, call `sidecar.evaluate()` directly:
+The native SDK conformance job runs on Python 3.12; the core/LangGraph matrix
+runs on 3.10–3.13. Other SDK/Python combinations are not independently certified.
+SDK extras are pinned to the validated versions. CrewAI and ADK dependencies use
+Python markers; an ineligible Python environment will not install that SDK.
 
 ```python
-from agentic_sidecar import Sidecar, DecisionContext
+from agentic_sidecar import Sidecar
+from agentic_sidecar.adapters.autogen import attach
 
 sidecar = Sidecar(on_sidecar_failure="fail_closed", mode="govern")
 
-def my_tool(param: str) -> str:
-    context = DecisionContext(tool_name="my_tool", tool_args={"param": param})
-    decision = sidecar.evaluate(context)
-    # enforce() raises for BLOCK/PAUSE/ESCALATE/CHALLENGE/REPLAN, not just BLOCK.
-    sidecar.enforce(context, decision)
+def read_order(order_id: str) -> str:
+    """Read an order."""
+    return f"Order {order_id}"
 
-    return f"processed {param}"
+# Install agentic-sidecar[autogen] before running this conversion.
+tools = attach(sidecar, [read_order])
 ```
 
----
+Observe records all seven verdicts and calls through. Govern executes ALLOW/WARN,
+blocks BLOCK, and resolves or suspends PAUSE/ESCALATE/CHALLENGE/REPLAN. All adapters
+use the same approval, explicit fail_open/fail_closed, stop and audit paths.
+OpenAI tools disable SDK error conversion so governance exceptions propagate.
+CrewAI `run()` also runs async callables; the shared async wrapper retains owned
+cancellation. Frameworks may convert exceptions into model-visible errors; such
+conversion never authorizes the denied tool invocation.
 
-## AgenticLens integration
+Supported inputs are plain typed callables, not prebuilt SDK tools, injected SDK
+context parameters, hosted tools, automatic handoffs or agent-as-tool recursion.
+Protect every nested boundary explicitly. Original functions and raw sessions
+remain accessible to a trusted host: wrappers are not a sandbox. Use
+[scoped supervision](scoped-supervision.md) for shared/exclusive composition.
 
-**Status: Planned for 0.8**
+## MCP
 
-An optional bridge to [AgenticLens](https://deepagentlabs.io/agenticlens/) for unified tracing is declared in the package:
+`agentic_sidecar.adapters.mcp.attach(sidecar, session, tool_names)` creates async
+callables for allowlisted tools on an initialized MCP 2.3.0 `ClientSession`.
+The MCP SDK owns transport/discovery. Client-side checks alone cannot contain an
+agent holding the raw session. The gateway example also gates the server's tool,
+keeps credentials server-side, rejects raw tool names and records actual execution.
+See [examples](examples.md); production requires a separately secured service identity.
 
-The reserved module is `agentic_sidecar.integrations.agenticlens`.
+## Versioned native decision evidence
 
-Install with: `pip install "agentic-sidecar[agenticlens]"`
+`sidecar.correlation/1` associates each decision with explicit run/trace/span IDs,
+logical task/system/agent identity, source journal event, timestamp, policy hash,
+boundary, tool name and the original seven-state decision (including causal ID).
+The host must supply IDs for the exact session/span; exporting a mixed-span
+Sidecar under one span is not automatic correlation.
 
-This module is a placeholder. Actual trace forwarding from Sidecar to AgenticLens spans is a planned capability — see [Roadmap](roadmap.md).
+```python
+from agentic_sidecar import DecisionContext, Sidecar
+from agentic_sidecar.integrations.correlation import Correlation, export_decisions
 
----
+sidecar = Sidecar(on_sidecar_failure="fail_closed")
+sidecar.evaluate(DecisionContext(tool_name="read"))
+records = export_decisions(sidecar, Correlation(
+    run_id="run-1", trace_id="trace-1", span_id="span-1",
+))
+```
 
-## Agentic Chaos integration
+Export verifies the complete native journal hash chain first. Projections omit the full DecisionContext; the original Decision trigger details
+can contain tool arguments, and reasons can contain sensitive values. Authorize
+readers and redact appropriately before exporting beyond that boundary.
+A projection is not independently verifiable execution evidence. Hash chains detect
+alteration/reordering, not a full rewrite by a malicious producer without an
+external trusted anchor. AIOS mapping is a non-normative draft; stable schemas
+remain v1.0 work.
 
-**Status: Planned for 0.8**
+## AgenticLens
 
-The reserved module is `agentic_sidecar.integrations.agentic_chaos`.
+Lens **0.7.1** provides `agenticlens.integrations.sidecar.attach_decisions(run, records)`
+and native journal verification. Sidecar's optional helper
+`agentic_sidecar.integrations.agenticlens.attach_decisions(sidecar, run, span_id=...)`
+verifies the journal through Lens and exports the matching projection. Install the
+`agenticlens` extra. Lens checks exact run/trace/span identity and atomically rejects
+invalid/conflicting batches; duplicate records are idempotent. Diagnosis schema 1.1
+adds supervision decisions to the timeline. BLOCK does not mark a span/run/deployment
+failed; actual dispatch/completion remains native journal evidence.
 
-Install with: `pip install "agentic-sidecar[agentic-chaos]"`
+## Agentic Chaos and Evals
 
-The extra reserves a dependency boundary; install it when a compatible
-integration becomes available. See [Roadmap](roadmap.md).
+`integrations.agentic_chaos.evaluate_recovery(sidecar, event, tool_name=..., arguments=...)`
+checks/enforces a recovery proposal with a native Chaos event ID. It does not execute
+it; actual dispatch still uses a supervised adapter. Tested against Chaos 0.5.3.
+Gate failure tests cover explicit fail_open/fail_closed; Chaos retains fault injection.
+Evals 0.7.1 retains scoring/report ownership; comparative supervision evidence and
+delegated authority remain v0.9 work. No core sibling dependency is introduced.
 
-## Ecosystem coordination
+## Tower, AIOS and Semantica
 
-AgenticLens export, Chaos coordination, and Semantica provenance export target
-0.8, with a shared correlation contract before cross-project export. Control
-Tower consumes decision/status evidence while retaining deployment-health
-semantics. Authority/delegation work targets 0.9; published AI Operations
-Specification schemas target 1.0. See the [canonical plan](roadmap.md).
+Tower 0.5.1's existing native decision/journal reader retains producer outcomes and
+separate deployment health. MCP 0.3.5's discovery boundary remains separate from a
+live runtime. Compatibility checks do not imply remote operator bridging.
+AIOS records the correlation convention as a draft, not stable conformance.
+`integrations.semantica` and the empty `semantica` extra are reserved; no provenance
+export or upstream compatibility is claimed until its API is validated.

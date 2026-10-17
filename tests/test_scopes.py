@@ -187,3 +187,31 @@ def test_scoped_guardrails_are_part_of_audit_policy_fingerprint() -> None:
         assert event["payload"]["policy"]["mandatory"]["shared"]["guardrails"]["rules"]
         fingerprints.append(event["payload"]["policy_version"])
     assert len(set(fingerprints)) == 2
+
+
+def test_positional_only_binding_cannot_be_overwritten_by_extra_keywords() -> None:
+    config = system(
+        shared=ScopeLayer(
+            guardrails=GuardrailSpec(
+                constraints={"limit": 100},
+                bindings=[ConstraintBinding(constraint="limit", tool="refund", arg_name="amount")],
+            )
+        )
+    )
+    bound = config.bind("refund", on_sidecar_failure="fail_closed")
+    calls = []
+
+    def refund(amount: int, /, **metadata: object) -> int:
+        """Refund the positional amount."""
+        calls.append((amount, metadata))
+        return amount
+
+    (guarded,) = attach(bound.sidecar, [refund])
+    with pytest.raises(SidecarBlockedError):
+        guarded(200, amount=10)
+    assert calls == []
+    assert guarded(50, amount=10) == 50
+    context, _ = bound.sidecar.decisions[-1]
+    assert context.tool_args == {"amount": 50, "metadata": {"amount": 10}}
+    assert calls == [(50, {"amount": 10})]
+

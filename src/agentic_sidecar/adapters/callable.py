@@ -97,5 +97,11 @@ def _bind_args(
     arguments = dict(bound.arguments)
     for name, parameter in signature.parameters.items():
         if parameter.kind is inspect.Parameter.VAR_KEYWORD:
-            arguments.update(arguments.pop(name, {}))
+            extra = arguments.pop(name, {})
+            # Positional-only names may legally also occur inside **kwargs.
+            # The declared binding is what the callable will execute with.
+            if any(key in arguments for key in extra):
+                arguments[name] = extra
+            for key, value in extra.items():
+                arguments.setdefault(key, value)
     return arguments

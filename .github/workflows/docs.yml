@@ -41,10 +41,10 @@ jobs:
 
       - name: Add product website
         run: |
-          cp index.html site/index.html
-          cp site.css site/site.css
-          cp site.js site/site.js
-          cp og.png site/og.png
+          cp website/index.html site/index.html
+          cp website/site.css site/site.css
+          cp website/site.js site/site.js
+          cp website/og.png site/og.png
           touch site/.nojekyll
 
       - name: Check site layout

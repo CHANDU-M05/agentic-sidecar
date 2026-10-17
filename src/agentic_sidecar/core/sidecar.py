@@ -93,6 +93,8 @@ class Sidecar:
         mode: SidecarMode = "observe",
         roles: Sequence[str] | None = None,
         runtime: TaskRuntime | None = None,
+        mandatory_checks: Sequence[DecisionHook] = (),
+        context_metadata: dict[str, Any] | None = None,
     ) -> None:
         if on_sidecar_failure not in ("fail_open", "fail_closed"):
             raise ValueError(
@@ -117,6 +119,8 @@ class Sidecar:
                 "on_sidecar_failure instead of failing fast here."
             )
 
+        self._mandatory_checks = tuple(mandatory_checks)
+        self._context_metadata = deepcopy(context_metadata or {})
         self.on_sidecar_failure = on_sidecar_failure
         self.policy = policy or PolicyAdvisor()
         self.risk = risk or RiskEvaluator()
@@ -258,7 +262,22 @@ class Sidecar:
                 decision = Decision(status="BLOCK", risk=None, reason="Task stopped")
             else:
                 evaluator = self._hook or self._default_evaluate
-                decision = evaluator(context)
+                decision = None
+                warning = None
+                for check in self._mandatory_checks:
+                    checked = check(context.model_copy(deep=True))
+                    if not isinstance(checked, Decision):
+                        raise TypeError("Mandatory checks must return a Decision")
+                    checked = Decision.model_validate(checked.model_dump())
+                    if checked.status == "WARN":
+                        warning = checked
+                    elif checked.status != "ALLOW":
+                        decision = checked
+                        break
+                if decision is None:
+                    decision = evaluator(context)
+                    if isinstance(decision, Decision) and decision.status == "ALLOW" and warning:
+                        decision = warning
             if not isinstance(decision, Decision):
                 raise TypeError("Decision hooks must return a Decision")
             # Revalidate even objects constructed with model_construct/model_copy.
@@ -416,6 +435,7 @@ class Sidecar:
         ).status
 
     def _inject(self, context: DecisionContext) -> None:
+        context.metadata.update(deepcopy(self._context_metadata))
         history = [
             HistoryEntry(tool_name=c.tool_name, tool_args=c.tool_args, status=d.status)
             for c, d in self.decisions

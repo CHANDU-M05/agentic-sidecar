@@ -17,9 +17,9 @@
 
 **0.6.1 governance implementation:** governance resolution, full-plan context, optional
 live providers, timeout/usage accounting and reproducible validation. See
-[usage and acceptance evidence](docs/governance.md). Authenticated provider smoke remains
+[usage and acceptance evidence](website/docs/governance.md). Authenticated provider smoke remains
 pending credentials by request. **0.7.0 implementation:** runtime events, audit,
-local operator interface and Control Room; see [live operations](docs/live-operations.md).
+local operator interface and Control Room; see [live operations](website/docs/live-operations.md).
 
 ## Current Capabilities and Next Steps
 
@@ -44,7 +44,7 @@ local operator interface and Control Room; see [live operations](docs/live-opera
 The 0.6.1 validation includes outcome/approval/failure tests, real LangGraph
 execution boundaries, deterministic provider contracts, eight offline examples,
 a four-scenario Intent Guardian benchmark, strict docs and package metadata
-checks. See [acceptance evidence](docs/governance.md) for scope and live-smoke status.
+checks. See [acceptance evidence](website/docs/governance.md) for scope and live-smoke status.
 
 ## Shared & Exclusive Context and Guardrails
 
@@ -250,7 +250,7 @@ Native Tower readback is tested; Lens integrity integration remains v0.8.
 
 **Status: implemented in 0.8.0**, with SDK conformance, scoped-agent examples,
 verified native journal correlation and real MCP gateway evidence. See
-[usage and compatibility](docs/integrations.md) and [scope limits](docs/scoped-supervision.md).
+[usage and compatibility](website/docs/integrations.md) and [scope limits](website/docs/scoped-supervision.md).
 Semantica's module/extra is reserved; its export remains conditional on upstream
 API validation and is not claimed implemented.
 
@@ -322,7 +322,7 @@ when scope changes; mark each capability complete when its acceptance criteria p
 There is no calendar commitment or week estimate in this plan.
 
 Update this canonical file when scope or status changes, then update
-[the docs summary](docs/roadmap.md), README, and relevant ecosystem profile
+[the docs summary](website/docs/roadmap.md), README, and relevant ecosystem profile
 statements in the same change. [concept.md](concept.md) contains the original
 architecture proposal.
 
@@ -378,5 +378,5 @@ Shared authority/event semantics belong in AI Operations Specification.
 Tower Phase 6 and 6A ship together in 0.6.0 with MCP 0.3.6: evidence-cited
 investigation, exact-preview human approval and verified deterministic staging
 recovery. Native producer outcomes and package ownership remain unchanged.
-See [compatibility, examples and dependency matrix](docs/control-tower-0.6.md).
+See [compatibility, examples and dependency matrix](website/docs/control-tower-0.6.md).
 This is documentation alignment; no package release or dependency bump is needed.

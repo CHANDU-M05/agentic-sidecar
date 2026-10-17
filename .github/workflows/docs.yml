@@ -34,10 +34,10 @@ jobs:
         run: uv run python scripts/check_docs.py
 
       - name: Build docs
-        run: uv run mkdocs build --strict --site-dir site/docs
+        run: uv run mkdocs build --strict -f website/mkdocs.yml --site-dir "$GITHUB_WORKSPACE/site/docs"
 
       - name: Build use cases
-        run: uv run mkdocs build --strict -f mkdocs.usecases.yml --site-dir site/usecases
+        run: uv run mkdocs build --strict -f website/mkdocs.usecases.yml --site-dir "$GITHUB_WORKSPACE/site/usecases"
 
       - name: Add product website
         run: |

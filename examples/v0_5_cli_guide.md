@@ -42,7 +42,7 @@ uv run agentic-sidecar approval-demo
 
 This tries all five approval actions without dispatching a tool. For actual
 PAUSE/ESCALATE handling, pass CLIApprovalHandler from agentic_sidecar.cli.approval
-as escalation_handler on a Govern Sidecar. See [Governance](../docs/governance.md).
+as escalation_handler on a Govern Sidecar. See [Governance](../website/docs/governance.md).
 
 ## Populate a narrator in your application
 
@@ -69,5 +69,5 @@ execution. `steps_completed` currently counts recorded calls, including blocked
 or paused proposals. Creating a narrator in your application does not attach it
 to a separate CLI process.
 
-See [CLI reference](../docs/cli-reference.md),
+See [CLI reference](../website/docs/cli-reference.md),
 [examples](README.md), and [roadmap](../ROADMAP.md).

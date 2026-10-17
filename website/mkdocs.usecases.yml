@@ -1,7 +1,7 @@
 INHERIT: mkdocs.yml
 site_name: Agentic Sidecar Use Cases
 site_url: https://deepagentlabs.io/agentic-sidecar/usecases/
-edit_uri: edit/main/usecases/
+edit_uri: edit/main/website/usecases/
 docs_dir: usecases
 
 nav:

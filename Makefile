@@ -39,7 +39,7 @@ check: lint format-check typecheck test ## Run all quality gates
 
 docs-check: ## Validate docs snippets/links and build strictly
 	uv run --extra docs python scripts/check_docs.py
-	uv run --extra docs mkdocs build --strict
+	uv run --extra docs mkdocs build --strict -f website/mkdocs.yml
 
 examples-check: ## Run offline examples and intent benchmark
 	@for example in examples/*.py; do uv run --extra langgraph python "$$example" || exit 1; done

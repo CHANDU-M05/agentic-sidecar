@@ -100,4 +100,4 @@ uv run mkdocs build --strict
 ```
 
 For a docs build failure, inspect the first error, verify local links/anchors,
-and include new pages in `mkdocs.yml` navigation.
+and include new pages in `website/mkdocs.yml` navigation.

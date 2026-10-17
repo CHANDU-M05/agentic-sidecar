@@ -65,7 +65,7 @@ and authority, then v1.0 stable schemas. Release tags do not imply milestone
 completion. Governance outcomes, local approvals, full-plan context and judge
 limits/accounting are implemented in 0.6.1; explicit MockJudge is offline, and
 OpenAI/Anthropic providers use optional live SDKs. Live smoke evidence remains
-pending credentials. Read docs/governance.md for supported scope and validation.
+pending credentials. Read website/docs/governance.md for supported scope and validation.
 
 ### Before You Build Here
 

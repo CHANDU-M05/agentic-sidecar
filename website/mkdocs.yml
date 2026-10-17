@@ -1,7 +1,7 @@
 site_name: Agentic Sidecar Documentation
 site_url: https://deepagentlabs.io/agentic-sidecar/docs/
 repo_url: https://github.com/DeepAgentLabs/agentic-sidecar
-edit_uri: edit/main/docs/
+edit_uri: edit/main/website/docs/
 docs_dir: docs
 
 theme:

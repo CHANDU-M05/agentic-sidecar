@@ -23,11 +23,11 @@ and upcoming capability stages.
 | Frameworks / integrations | LangGraph, AutoGen, CrewAI, OpenAI Agents, Google ADK and MCP; correlated Lens decisions and Chaos recovery |
 | Shared / Exclusive scopes | Context only, guardrails only, or both; explicit host context delivery and mandatory guardrail composition |
 
-Live status, audit and Control Room: [usage and acceptance evidence](docs/live-operations.md).
+Live status, audit and Control Room: [usage and acceptance evidence](website/docs/live-operations.md).
 Authenticated provider smoke remains pending credentials.
 
 Next: **0.9 evaluation, privacy and authority → 1.0 stable schemas**.
-See [supported scope and limitations](docs/limitations.md) for operational details.
+See [supported scope and limitations](website/docs/limitations.md) for operational details.
 
 ### Installation & Usage
 ```bash
@@ -279,7 +279,7 @@ The diagram shows the supervision model. The current `Decision` type supports
 all seven outcomes. Govern permits ALLOW/WARN, raises `SidecarBlockedError`
 for BLOCK, invokes approvals for PAUSE/ESCALATE, and raises `SidecarSuspendedError`
 for unresolved outcomes, CHALLENGE and REPLAN before dispatch.
-See [supported scope](docs/limitations.md) and the [roadmap](ROADMAP.md#build-order).
+See [supported scope](website/docs/limitations.md) and the [roadmap](ROADMAP.md#build-order).
 
 ## Sidecar modules
 
@@ -378,13 +378,13 @@ print(result.status)  # REPLAN
 ```
 
 A `before_tool_call` hook replaces the entire built-in pipeline, including
-budget and evaluators. See [API reference](docs/api-reference.md),
-[configuration](docs/configuration.md), and [runnable examples](examples/README.md).
+budget and evaluators. See [API reference](website/docs/api-reference.md),
+[configuration](website/docs/configuration.md), and [runnable examples](examples/README.md).
 
 ## Planned Python API
 
 Live operations and v0.8 framework/scoped integrations are implemented. See
-[validated SDK versions and limits](docs/integrations.md).
+[validated SDK versions and limits](website/docs/integrations.md).
 Today `attach(sidecar, tools)` is adapter-specific and `evaluate()` accepts
 `DecisionContext`. Generic whole-agent attachment will be considered when
 multiple integrations demonstrate a useful shared boundary.
@@ -400,8 +400,8 @@ Catch `SidecarSuspendedError` to return control to your agent loop. Configure
 `escalation_handler=CLIApprovalHandler()` or register `on_escalation_required`
 for local approval. Approve-once applies to the current call; modify-intent
 reevaluates with a complete envelope; stop persists on that Sidecar instance.
-Use TaskRuntime and OperatorServer for [live operator controls](docs/live-operations.md).
-See [governance usage and validation](docs/governance.md).
+Use TaskRuntime and OperatorServer for [live operator controls](website/docs/live-operations.md).
+See [governance usage and validation](website/docs/governance.md).
 
 ## Long-term: an intent propagation layer
 
@@ -486,7 +486,7 @@ transport; this does not provide automatic prompt rewriting or process isolation
 
 See the [deliverables and acceptance criteria](ROADMAP.md#shared--exclusive-context-and-guardrails).
 
-See [scoped usage](docs/scoped-supervision.md) and the two-agent example
+See [scoped usage](website/docs/scoped-supervision.md) and the two-agent example
 [examples/v0_8_scoped_agents.py](examples/v0_8_scoped_agents.py).
 
 Original architecture proposal: [concept.md](concept.md).
@@ -520,7 +520,7 @@ requests and harness-revocation receipts alongside deterministic policy enforcem
 MCP and Tower support access enforcement and operator coordination.
 
 See [planned safety acceptance criteria](ROADMAP.md#operational-safety-acceptance-criteria) for responsibilities and
-dependencies. See [live operator scope](docs/live-operations.md) for implemented
+dependencies. See [live operator scope](website/docs/live-operations.md) for implemented
 controls and the remaining gateway-isolation and issuer responsibilities.
 
 ## Control Tower 0.6.0 integration
@@ -528,5 +528,5 @@ controls and the remaining gateway-isolation and issuer responsibilities.
 Tower Phase 6 and 6A ship together in 0.6.0 with MCP 0.3.6: evidence-cited
 investigation, exact-preview human approval and verified deterministic staging
 recovery. Native producer outcomes and package ownership remain unchanged.
-See [compatibility, examples and dependency matrix](docs/control-tower-0.6.md).
+See [compatibility, examples and dependency matrix](website/docs/control-tower-0.6.md).
 This is documentation alignment; no package release or dependency bump is needed.

@@ -509,8 +509,9 @@ explicit deployment/evidence link. They do not change producer behavior or
 convert a failed run, failed gate, blocked action or injected fault into fleet
 health. This link is a Tower-local contract, not a normative AIOS schema.
 See [Control Tower's evidence contract](https://github.com/DeepAgentLabs/agenticops-control-tower/blob/main/docs/ecosystem-alignment.md).
-Remote collection and operator posture views remain planned; these local
-readers do not establish end-to-end integration or stable AIOS conformance.
+Tower 0.6.0 adds pushed evidence posture, cited investigation and approved
+deterministic staging recovery. Pull collection and production runtime adapters
+remain planned; native interoperability does not establish stable AIOS conformance.
 
 ## Operational safety roadmap
 
@@ -521,3 +522,11 @@ MCP and Tower support access enforcement and operator coordination.
 See [planned safety acceptance criteria](ROADMAP.md#operational-safety-acceptance-criteria) for responsibilities and
 dependencies. See [live operator scope](docs/live-operations.md) for implemented
 controls and the remaining gateway-isolation and issuer responsibilities.
+
+## Control Tower 0.6.0 integration
+
+Tower Phase 6 and 6A ship together in 0.6.0 with MCP 0.3.6: evidence-cited
+investigation, exact-preview human approval and verified deterministic staging
+recovery. Native producer outcomes and package ownership remain unchanged.
+See [compatibility, examples and dependency matrix](docs/control-tower-0.6.md).
+This is documentation alignment; no package release or dependency bump is needed.

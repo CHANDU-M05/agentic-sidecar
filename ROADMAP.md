@@ -1,6 +1,6 @@
 # agentic-sidecar — Roadmap & Architecture
 
-> **Updated 2026-10-17 · Current checkout: 0.8.0.**
+> **Updated 2026-10-17 · Current checkout: 0.8.1.**
 > This is the canonical capability roadmap. Each stage builds on the existing
 > runtime with explicit deliverables and acceptance criteria. Future version
 > targets describe development priorities, not committed delivery dates.
@@ -20,6 +20,8 @@ live providers, timeout/usage accounting and reproducible validation. See
 [usage and acceptance evidence](website/docs/governance.md). Authenticated provider smoke remains
 pending credentials by request. **0.7.0 implementation:** runtime events, audit,
 local operator interface and Control Room; see [live operations](website/docs/live-operations.md).
+**0.8.1 compatibility patch:** the optional `agentic-chaos` extra admits Chaos 0.6
+(`>=0.5.3,<0.7`); no runtime change. See [Chaos integration](website/docs/integrations.md).
 
 ## Current Capabilities and Next Steps
 

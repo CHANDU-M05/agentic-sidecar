@@ -15,7 +15,7 @@ resolution-markers = [
 
 [[package]]
 name = "agentic-chaos"
-version = "0.5.3"
+version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
@@ -23,9 +23,9 @@ dependencies = [
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6f/57/ba383c01c740a83ad6d3c8bd9278ba94f3c2d4339f74ce4fbcbc5833fa57/agentic_chaos-0.5.3.tar.gz", hash = "sha256:cecca584db5a2449ee76b4afd8c7cd130a6026117e379958c8127e6b60364633", size = 320403, upload-time = "2026-10-13T23:50:09.286Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/81/ee/0a64b67621c48bd8ab0dd002dc4e21fe1d85696bf5b99dd3c93f0deb7a3a/agentic_chaos-0.6.0.tar.gz", hash = "sha256:b769e8db27adb8df873924be5684ee57e983ef6baf1129fb6a7e43c9b1ede794", size = 511226, upload-time = "2026-10-17T07:11:59.545Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/a5/0676f4c172f79d78d2f5711a16849547f247a2edd6131dca7c3657174012/agentic_chaos-0.5.3-py3-none-any.whl", hash = "sha256:fff693b4f07e1b1bec27ee12d876da0676e4461593c9cfe291a4098015679ce5", size = 64387, upload-time = "2026-10-13T23:50:08.003Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/d3/5b62af987d09f14bdbe2c9791d5392d44f64f949da65cabcda579d7eb11d/agentic_chaos-0.6.0-py3-none-any.whl", hash = "sha256:d82136ff8f38305732db36117c712bb8d06dd6cf1e61f6ff3c965339f578bbb9", size = 86401, upload-time = "2026-10-17T07:11:57.895Z" },
 ]
 
 [[package]]
@@ -45,7 +45,7 @@ wheels = [
 
 [[package]]
 name = "agentic-sidecar"
-version = "0.8.0"
+version = "0.8.1"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
@@ -102,7 +102,7 @@ openai-agents = [
 
 [package.metadata]
 requires-dist = [
-    { name = "agentic-chaos", marker = "extra == 'agentic-chaos'", specifier = ">=0.5.3,<0.6" },
+    { name = "agentic-chaos", marker = "extra == 'agentic-chaos'", specifier = ">=0.5.3,<0.7" },
     { name = "agenticlens", marker = "extra == 'agenticlens'", specifier = ">=0.7.1,<0.8" },
     { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=0.49,<2" },
     { name = "autogen-core", marker = "extra == 'autogen'", specifier = "==0.7.5" },

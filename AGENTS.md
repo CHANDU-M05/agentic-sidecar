@@ -52,7 +52,7 @@ practice, the package covers both supervision and governance.
 
 ### Current Roadmap Focus
 
-The checkout targets the v0.8.0 release. Runtime code includes Decision Gate outcomes,
+The checkout targets the v0.8.1 release (0.8.0 runtime plus the Chaos 0.6 extra range). Runtime code includes Decision Gate outcomes,
 Intent Guardian, evaluator modules, budget/escalation handling, narration and
 CLI commands. Native AutoGen, CrewAI, OpenAI Agents, Google ADK and MCP boundaries are implemented;
 use the actual source and tests to distinguish implementation from roadmap

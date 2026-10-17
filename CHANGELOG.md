@@ -4,6 +4,20 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-10-17
+
+### Changed
+
+- The optional `agentic-chaos` extra now admits Agentic Chaos 0.6
+  (`>=0.5.3,<0.7`, was `<0.6`), so `pip install "agentic-sidecar[agentic-chaos]"`
+  resolves alongside Chaos 0.6.0 (pytest plugin and chaos contracts). The lock
+  file tests against 0.6.0.
+- `evaluate_recovery()` is unchanged: Chaos 0.6.0 keeps the native event shape
+  and IDs. The ecosystem tests pass against 0.6.0, and the Chaos pytest plugin
+  stays inert in Sidecar's own suite without `--chaos`.
+- Version markers in the README, roadmap and docs move to 0.8.1. No runtime,
+  API or schema change.
+
 ## [0.8.0] - 2026-10-17
 
 ### Added

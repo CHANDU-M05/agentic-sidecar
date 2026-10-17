@@ -19,8 +19,14 @@ class Correlation(BaseModel):
     span_id: str = Field(min_length=1)
 
 
+class CorrelatedDecision(Decision):
+    """Serialized evidence requires the producer's original decision identity."""
+
+    decision_id: str = Field(min_length=1)
+
+
 class DecisionEvidence(BaseModel):
-    """Decision-time projection for authorized consumers; no tool arguments."""
+    """Authorized projection; reasons/trigger details may contain sensitive arguments."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
     contract_version: Literal["sidecar.correlation/1"] = "sidecar.correlation/1"
@@ -33,7 +39,7 @@ class DecisionEvidence(BaseModel):
     policy_version: str = Field(min_length=1)
     tool_name: str
     boundary: str
-    decision: Decision
+    decision: CorrelatedDecision
 
     @field_validator("timestamp")
     @classmethod

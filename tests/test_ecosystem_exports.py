@@ -63,3 +63,40 @@ def test_real_chaos_recovery_and_failure_policy() -> None:
         ).status
         == "ALLOW"
     )
+
+
+@pytest.mark.parametrize("failure,expected", [("fail_open", "ALLOW"), ("fail_closed", "BLOCK")])
+def test_actual_chaos_gate_timeout(failure, expected) -> None:
+    pytest.importorskip("agentic_chaos")
+    from agentic_chaos import chaos_call, chaos_session
+    from agentic_chaos.chaos.faults import TokenTimeoutFault
+
+    from agentic_sidecar import Decision
+
+    sidecar = Sidecar(on_sidecar_failure=failure, mode="govern")
+    sidecar.before_tool_call(
+        lambda context: chaos_call(
+            lambda: Decision(status="ALLOW", risk="LOW", reason="healthy"),
+            step_name="sidecar-gate",
+        )
+    )
+    with chaos_session([TokenTimeoutFault(hang_seconds=0)]) as session:
+        decision = sidecar.evaluate(DecisionContext(tool_name="read"))
+    assert decision.status == expected
+    assert session.events[0].fault_type == "token_timeout"
+
+
+def test_serialized_evidence_requires_original_decision_identity() -> None:
+    import json
+    from pathlib import Path
+
+    from pydantic import ValidationError
+
+    from agentic_sidecar.integrations.correlation import DecisionEvidence
+
+    record = json.loads(
+        (Path(__file__).parent / "fixtures/sidecar-correlation-v1.json").read_text()
+    )
+    del record["decision"]["decision_id"]
+    with pytest.raises(ValidationError):
+        DecisionEvidence.model_validate(record)

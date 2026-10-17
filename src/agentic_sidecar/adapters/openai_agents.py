@@ -1,4 +1,6 @@
-"""OpenAI Agents FunctionTools; governance exceptions propagate. Hosted tools and handoffs are separate boundaries."""
+"""OpenAI Agents FunctionTools; governance exceptions propagate.
+
+Hosted tools and handoffs are separate boundaries."""
 
 from collections.abc import Callable, Sequence
 from importlib import import_module

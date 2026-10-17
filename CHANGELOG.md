@@ -28,6 +28,13 @@ All notable changes to this project are documented here.
 - Scoped-agent/evidence examples, compatibility and scope-limit documentation,
   native SDK/ecosystem CI jobs and an AIOS non-normative correlation fixture.
 
+### Fixed
+
+- Preserve declared positional-only bindings when flattening extra keyword
+  arguments, preventing shadow values from bypassing numeric guardrails.
+- Combine approval-required mandatory checks with ordinary restrictions so a
+  hard policy denial remains dominant; warnings retain evaluated risk/provenance.
+
 ### Changed
 
 - Audit policy fingerprints include mandatory shared/exclusive guardrail configuration.

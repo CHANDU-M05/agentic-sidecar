@@ -37,3 +37,6 @@ Mock Judge responses and usage values illustrate the interface rather than
 measured model quality, latency, or pricing. Narrator pause/resume updates its
 reported state; it does not control an agent. Live CLI/runtime status is planned
 for 0.7, and additional adapters/integrations for 0.8.
+
+See the v0.8 scoped-agent, correlated-evidence and MCP gateway examples described
+in [the examples guide](../docs/examples.md).

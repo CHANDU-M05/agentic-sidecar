@@ -28,14 +28,50 @@
       DeepAgentLabs
     </a>
     <nav class="nav-links" aria-label="Main navigation">
-      <a href="docs/">Docs</a>
-      <a href="usecases/">Use cases</a>
-      <a href="#playground">Live Demo</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#modules">Capabilities</a>
-      <a href="#quickstart">Quickstart</a>
-      <a href="#usecases">Use Cases</a>
-      <a href="#ecosystem">Ecosystem</a>
+      <div class="nav-item" data-nav>
+        <a class="nav-tab" href="#top">Product</a>
+        <button class="nav-caret" type="button" aria-expanded="false" aria-controls="menu-product" aria-label="Show Product menu">
+          <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-menu" id="menu-product" role="menu" aria-label="Product">
+          <a role="menuitem" href="#top">Overview</a>
+          <a role="menuitem" href="#playground">Live Demo</a>
+          <a role="menuitem" href="#architecture">Architecture</a>
+          <a role="menuitem" href="#modules">Capabilities</a>
+          <a role="menuitem" href="#modes">Observe vs Govern</a>
+          <a role="menuitem" href="#quickstart">Quickstart</a>
+          <a role="menuitem" href="#ecosystem">Ecosystem</a>
+        </div>
+      </div>
+      <div class="nav-item" data-nav>
+        <a class="nav-tab" href="docs/">Docs</a>
+        <button class="nav-caret" type="button" aria-expanded="false" aria-controls="menu-docs" aria-label="Show Docs menu">
+          <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-menu" id="menu-docs" role="menu" aria-label="Docs">
+          <a role="menuitem" href="docs/">Documentation home</a>
+          <a role="menuitem" href="docs/getting-started/">Getting started</a>
+          <a role="menuitem" href="docs/architecture/">Architecture</a>
+          <a role="menuitem" href="docs/features/">Features</a>
+          <a role="menuitem" href="docs/configuration/">Configuration</a>
+          <a role="menuitem" href="docs/api-reference/">API reference</a>
+          <a role="menuitem" href="docs/cli-reference/">CLI reference</a>
+          <a role="menuitem" href="docs/integrations/">Integrations</a>
+          <a role="menuitem" href="docs/examples/">Examples</a>
+        </div>
+      </div>
+      <div class="nav-item" data-nav>
+        <a class="nav-tab" href="https://deepagentlabs.io/agentic-sidecar/usecases/">Use Cases</a>
+        <button class="nav-caret" type="button" aria-expanded="false" aria-controls="menu-usecases" aria-label="Show Use Cases menu">
+          <svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-menu" id="menu-usecases" role="menu" aria-label="Use Cases">
+          <a role="menuitem" href="https://deepagentlabs.io/agentic-sidecar/usecases/">All use cases</a>
+          <a role="menuitem" href="usecases/prevent-unauthorized-refunds/">Prevent Unauthorized Refunds</a>
+          <a role="menuitem" href="usecases/governed-customer-support-agent/">Governed Customer Support Agent</a>
+          <a role="menuitem" href="usecases/govern-langgraph-agent-workflows/">Govern LangGraph Workflows</a>
+        </div>
+      </div>
     </nav>
 
     <a class="button button-small button-ghost" href="https://github.com/DeepAgentLabs/agentic-sidecar" target="_blank" rel="noopener">

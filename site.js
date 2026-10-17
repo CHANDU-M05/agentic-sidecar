@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCopyButton();
   initCodeTabs();
   initInteractiveDemo();
+  initNavDropdowns();
 });
 
 // Copy Install Command
@@ -245,4 +246,65 @@ function initInteractiveDemo() {
       }, null, 2);
     }
   }
+}
+
+
+// Accessible dropdown navigation (Product / Docs / Use Cases)
+function initNavDropdowns() {
+  const items = Array.from(document.querySelectorAll('.nav-item[data-nav]'));
+  if (!items.length) return;
+
+  const setOpen = (item, open) => {
+    item.classList.toggle('is-open', open);
+    const caret = item.querySelector('.nav-caret');
+    if (caret) caret.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+  const closeAll = (except) => items.forEach((it) => { if (it !== except) setOpen(it, false); });
+
+  items.forEach((item) => {
+    const caret = item.querySelector('.nav-caret');
+    const menu = item.querySelector('.nav-menu');
+    if (!caret || !menu) return;
+
+    caret.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = !item.classList.contains('is-open');
+      closeAll(item);
+      setOpen(item, open);
+    });
+
+    // Keyboard: ArrowDown opens the menu and focuses the first item.
+    caret.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        closeAll(item);
+        setOpen(item, true);
+        const first = menu.querySelector('a');
+        if (first) first.focus();
+      }
+    });
+
+    // Keyboard: ArrowUp/ArrowDown move focus between menu links.
+    menu.addEventListener('keydown', (e) => {
+      const links = Array.from(menu.querySelectorAll('a'));
+      const idx = links.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); links[(idx + 1) % links.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); links[(idx - 1 + links.length) % links.length].focus(); }
+    });
+  });
+
+  // Escape closes the open menu and returns focus to its caret.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const open = items.find((it) => it.classList.contains('is-open'));
+    if (!open) return;
+    setOpen(open, false);
+    const caret = open.querySelector('.nav-caret');
+    if (caret) caret.focus();
+  });
+
+  // Click outside any nav item closes all menus.
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.nav-item')) closeAll(null);
+  });
 }

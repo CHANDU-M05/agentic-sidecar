@@ -94,4 +94,8 @@ def _bind_args(
         # tool call, so this path is a defensive fallback, not the norm).
         return dict(kwargs)
     bound.apply_defaults()
-    return dict(bound.arguments)
+    arguments = dict(bound.arguments)
+    for name, parameter in signature.parameters.items():
+        if parameter.kind is inspect.Parameter.VAR_KEYWORD:
+            arguments.update(arguments.pop(name, {}))
+    return arguments

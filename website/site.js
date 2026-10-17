@@ -291,6 +291,12 @@ function initNavDropdowns() {
       if (e.key === 'ArrowDown') { e.preventDefault(); links[(idx + 1) % links.length].focus(); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); links[(idx - 1 + links.length) % links.length].focus(); }
     });
+
+    // Close the menu when an item is chosen. Navigating links reload anyway,
+    // but same-page #anchor links (Product tab) would otherwise leave it open.
+    menu.addEventListener('click', (e) => {
+      if (e.target.closest('a')) setOpen(item, false);
+    });
   });
 
   // Escape closes the open menu and returns focus to its caret.

@@ -372,3 +372,11 @@ Shared authority/event semantics belong in AI Operations Specification.
   producer/discovery contracts; Evals 0.7.1 retains scoring ownership.
 - Full provider smoke remains pending credentials from v0.6.x. Semantica export,
   private-context lifecycle validation and stable AIOS schemas remain deferred.
+
+## Control Tower 0.6.0 integration
+
+Tower Phase 6 and 6A ship together in 0.6.0 with MCP 0.3.6: evidence-cited
+investigation, exact-preview human approval and verified deterministic staging
+recovery. Native producer outcomes and package ownership remain unchanged.
+See [compatibility, examples and dependency matrix](docs/control-tower-0.6.md).
+This is documentation alignment; no package release or dependency bump is needed.

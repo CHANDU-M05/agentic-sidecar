@@ -1,6 +1,6 @@
 # agentic-sidecar — Roadmap & Architecture
 
-> **Updated 2026-10-17 · Current checkout: 0.7.0.**
+> **Updated 2026-10-17 · Current checkout: 0.8.0.**
 > This is the canonical capability roadmap. Each stage builds on the existing
 > runtime with explicit deliverables and acceptance criteria. Future version
 > targets describe development priorities, not committed delivery dates.
@@ -35,9 +35,10 @@ local operator interface and Control Room; see [live operations](docs/live-opera
 | Human escalation | ID-correlated local/HTTP handlers, CLI prompt and five actions | Additional adapter conformance |
 | Provenance | Immutable runtime events, durable JSONL and causal execution/approval IDs | Formal schema stability |
 | Narration and CLI | Runtime-connected HTTP status, control/approval and narration | Broader adapter coverage |
-| Additional framework adapters | LangGraph provides the initial integration surface | CrewAI, AutoGen, OpenAI Agents, and Google ADK |
-| Ecosystem integrations | Optional package boundaries | Decision export and shared correlation contracts |
+| Framework adapters | LangGraph, AutoGen, CrewAI, OpenAI Agents, Google ADK and MCP boundaries | Broader version/platform evidence |
+| Ecosystem integrations | Versioned correlation, Lens decision export and Chaos recovery checks | Conditional Semantica export |
 | Control Room | Authenticated task-scoped runtime controls | Broader adapter coverage |
+| Scoped supervision | Shared/exclusive context transport and mandatory guardrail composition | Private-context and authority lifecycle validation |
 | Evaluation and interoperability | Outcome tests and four deterministic intent fixtures | Broader comparative evidence and schemas |
 
 The 0.6.1 validation includes outcome/approval/failure tests, real LangGraph
@@ -45,9 +46,10 @@ execution boundaries, deterministic provider contracts, eight offline examples,
 a four-scenario Intent Guardian benchmark, strict docs and package metadata
 checks. See [acceptance evidence](docs/governance.md) for scope and live-smoke status.
 
-## Planned: Shared & Exclusive Context and Guardrails
+## Shared & Exclusive Context and Guardrails
 
-**Status: planned, not implemented.** Users can configure context/intent only,
+**Status: v0.8 configuration, delivery and composition implemented.** Privacy,
+authority/lifecycle validation and stable contracts remain v0.9/v1.0 work. Users can configure context/intent only,
 guardrails only, or both, with independent scopes for each:
 
 | Scope | Context / intent | Guardrails |
@@ -84,8 +86,8 @@ the other's exclusive context by default.
   access and propagation semantics with AIOS mappings, compatibility tests and
   migration guarantees.
 
-Existing per-Sidecar envelopes and policies are foundations, not automatic scope
-inheritance or private-context isolation. Sidecar owns scope resolution and
+ScopedSystem now resolves layers and provides explicit host context delivery;
+it does not automatically rewrite agent prompts or provide process isolation. Sidecar owns scope resolution and
 pre-action supervision; host frameworks own orchestration and prompt/memory
 transport. Harnesses and access boundaries provide the isolation required by the
 documented threat model.
@@ -105,8 +107,9 @@ src/agentic_sidecar/
   status/        runtime-connected and standalone human-readable narration
   operations/    task runtime, immutable journal, authenticated HTTP and Control Room
   cli/           connected status/control/approval and local demo/version commands
-  adapters/      LangGraph callable wrapper; four additional placeholders
-  integrations/  optional AgenticLens and Agentic Chaos placeholders
+  adapters/      common boundary; LangGraph, AutoGen, CrewAI, OpenAI, ADK and MCP
+  scopes/        shared/exclusive context delivery and mandatory guardrail layers
+  integrations/  correlation, Lens and Chaos; reserved Semantica module
 ```
 
 One repository and one PyPI package. Framework adapters own `attach()`;
@@ -245,25 +248,31 @@ Native Tower readback is tested; Lens integrity integration remains v0.8.
 
 ### v0.8 — Framework Adapters & Optional Integrations
 
+**Status: implemented in 0.8.0**, with SDK conformance, scoped-agent examples,
+verified native journal correlation and real MCP gateway evidence. See
+[usage and compatibility](docs/integrations.md) and [scope limits](docs/scoped-supervision.md).
+Semantica's module/extra is reserved; its export remains conditional on upstream
+API validation and is not claimed implemented.
+
 **Depends on:** a stable, tested gate and audit/event contract.
 
-- [ ] Deliver Shared & Exclusive scoped configuration, context delivery and guardrail
+- [x] Deliver Shared & Exclusive scoped configuration, context delivery and guardrail
       composition with the v0.8 acceptance checks above.
-- [ ] Implement a second real adapter and revise the interception abstraction
+- [x] Implement a second real adapter and revise the interception abstraction
       only where integration evidence requires it.
-- [ ] Implement CrewAI, AutoGen, OpenAI Agents SDK, and Google ADK adapters
+- [x] Implement CrewAI, AutoGen, OpenAI Agents SDK, and Google ADK adapters
       incrementally; maintain explicit dependency/version compatibility tables.
-- [ ] Run conformance tests for all seven statuses, both modes, both failure
+- [x] Run conformance tests for all seven statuses, both modes, both failure
       policies, and supported approval behavior across every shipped adapter.
-- [ ] Implement optional AgenticLens decision export with tested ID correlation.
-- [ ] Define a versioned correlation contract tested by Sidecar and AgenticLens;
-      reserve Semantica's module/extra, then implement optional provenance export
-      only once that contract and the upstream API are validated.
-- [ ] Define and test optional Agentic Chaos coordination for supervised recovery
+- [x] Implement optional AgenticLens decision export with tested ID correlation.
+- [x] Define a versioned correlation contract tested by Sidecar and AgenticLens;
+      reserve Semantica's module/extra. Optional provenance export remains deferred
+      until upstream API validation (not a shipped v0.8 capability).
+- [x] Define and test optional Agentic Chaos coordination for supervised recovery
       decisions and Sidecar failure injection.
-- [ ] Validate a real MCP tool call and cross-agent adapter setup; preserve core
+- [x] Validate a real MCP tool call and cross-agent adapter setup; preserve core
       independence from framework SDKs and sibling installations.
-- [ ] Add runnable integration examples and record sibling compatibility checks.
+- [x] Add runnable integration examples and record sibling compatibility checks.
 
 ### v0.9 — Evaluation Evidence & Authority Boundaries
 
@@ -317,10 +326,11 @@ Update this canonical file when scope or status changes, then update
 statements in the same change. [concept.md](concept.md) contains the original
 architecture proposal.
 
-## Operational safety acceptance criteria (planned)
+## Operational safety acceptance criteria
 
-Added 2026-10-11. Extend existing milestones; local STOP_AGENT and Govern
-interception already exist, but remote stopping and isolated enforcement do not.
+Added 2026-10-11. v0.8 demonstrates server-enforced MCP tools in a separate
+process; deployment under a separately secured credential-owning service identity
+is still a harness responsibility. It does not sandbox a hostile OS user.
 Sidecar owns both the emergency brake (stop, prevent further calls, revoke task
 access) and independent policy enforcement. MCP/credential issuers implement
 access-boundary revocation; Tower supplies optional operator coordination.
@@ -333,12 +343,12 @@ access-boundary revocation; Tower supplies optional operator coordination.
       Tower results without taking ownership of credentials. Require task-access
       revocation acknowledgements, report partial failure, and verify stopped
       agents cannot regain access through retries, sessions or delegated tasks.
-- [ ] v0.8: test deterministic permissions at every supported adapter boundary,
+- [x] v0.8: test deterministic permissions at every supported adapter boundary,
       including direct-call bypass attempts. Document unwrapped tools, Observe,
       custom hooks and fail_open as limits; use fail_closed for containment tests.
-- [ ] v0.8: demonstrate protected tools/credentials accessible only through an
+- [x] v0.8: demonstrate protected tools/credentials accessible only through an
       enforcing gateway; in-process wrappers alone are not process isolation.
-- [ ] v0.7–v0.8: correlate immutable decision records, policy versions, task IDs,
+- [x] v0.7–v0.8: correlate immutable decision records, policy versions, task IDs,
       actors, approvals and stop acknowledgements with actual dispatch/completion.
       Integrate Lens integrity verification; verdict history alone is not execution.
 - [ ] v0.9: test revoked/expired delegated authority and, with Chaos/Evals, prove
@@ -346,3 +356,19 @@ access-boundary revocation; Tower supplies optional operator coordination.
       instructions, policy bypass and failures of the gate itself.
 
 Shared authority/event semantics belong in AI Operations Specification.
+
+## v0.8 validation record
+
+- Native SDK conformance covers seven statuses, sync/async calls, Observe/Govern,
+  failure policies and approve-once behavior without model credentials.
+- Scoped tests cover independent context/guardrail selection, shared/exclusive
+  composition, private payload delivery, conflict/identity rejection, missing
+  bound arguments, plan boundaries and custom-hook bypass attempts.
+- MCP 2.3.0 stdio test launches a credential-owning server process; direct-session
+  attempts still meet server checks, raw tools are unregistered, and actual
+  execution is journaled. In-process wrappers alone are not isolation.
+- Lens 0.7.1 verifies native chains and correlates decisions; Chaos 0.5.3 native
+  recovery events are checked. Tower 0.5.1 and MCP server 0.3.5 retain existing
+  producer/discovery contracts; Evals 0.7.1 retains scoring ownership.
+- Full provider smoke remains pending credentials from v0.6.x. Semantica export,
+  private-context lifecycle validation and stable AIOS schemas remain deferred.

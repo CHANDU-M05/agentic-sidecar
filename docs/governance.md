@@ -1,6 +1,6 @@
 # Governance & evaluator enhancements — 0.6.1
 
-These governance enhancements originated in **0.6.1** and remain part of **0.7.0**.
+These governance enhancements originated in **0.6.1** and remain part of **0.8.0**.
 See [Live operations](live-operations.md) for the connected runtime and operator interface.
 Govern permits ALLOW/WARN. BLOCK stops. CHALLENGE/REPLAN return control to the
 agent loop. PAUSE/ESCALATE invoke a registered handler or suspend when unresolved.

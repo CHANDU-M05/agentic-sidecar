@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated **2026-10-17 · Current version: 0.7.0**.
+Updated **2026-10-17 · Current version: 0.8.0**.
 The [root ROADMAP.md](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md)
 is the canonical plan with detailed deliverables and acceptance criteria.
 Future version targets describe priorities, not committed delivery dates.
@@ -44,11 +44,16 @@ Implemented; see [live operations and acceptance evidence](live-operations.md).
 
 ## v0.8 — Framework Adapters & Optional Integrations
 
-- Prove a second adapter, then ship CrewAI, AutoGen, OpenAI Agents, and Google ADK incrementally.
-- Test outcome, mode, failure, and approval conformance across supported frameworks.
-- Add optional AgenticLens export and a shared, versioned correlation-ID contract.
-- Add Semantica export after contract validation; define optional Chaos coordination.
-- Validate real MCP tool calls and cross-agent setups with supported-version evidence.
+Implemented in 0.8.0; see [compatibility and usage](integrations.md).
+
+- Native AutoGen, CrewAI, OpenAI Agents and Google ADK tool adapters share the
+  LangGraph execution boundary with native SDK conformance tests.
+- Shared/Exclusive context-only, guardrails-only and combined scopes have
+  explicit host delivery, independent mandatory checks and trusted identity.
+- Versioned correlation links verified native journals and Lens 0.7.1 decisions;
+  Chaos 0.5.3 recovery proposals have native event IDs.
+- Real MCP 2.3.0 calls and a separate-process enforcing gateway are exercised.
+- Semantica module/extra is reserved; export awaits upstream API validation.
 
 ## v0.9 — Evaluation Evidence & Authority Boundaries
 
@@ -64,16 +69,16 @@ Implemented; see [live operations and acceptance evidence](live-operations.md).
 - Test cross-instance/agent propagation, schema compatibility, and migration behavior.
 - Define public API stability and document supported sibling/framework versions.
 
-**Planned: Shared & Exclusive context/intent and guardrails.** Users may choose
+**Shared & Exclusive context/intent and guardrails (v0.8 implemented).** Users may choose
 context only, guardrails only, or both, independently Shared across a system/task
 or Exclusive to designated agent(s). Each agent receives shared plus assigned
 exclusive context; shared guardrails remain mandatory alongside exclusive rules.
-v0.8 targets scoped configuration, delivery and composition; v0.9 validates
-privacy, authority and lifecycle behavior; v1.0 stabilizes contracts. This is not
-implemented. Current evaluator injection does not automatically populate agent
-prompts or isolate private context.
+v0.8 provides scoped configuration, delivery and composition; v0.9 validates
+privacy, authority and lifecycle behavior; v1.0 stabilizes contracts. Host context
+delivery is explicit; it does not automatically rewrite agent
+prompts or provide process isolation.
 
-See the [canonical acceptance criteria](../ROADMAP.md#planned-shared--exclusive-context-and-guardrails).
+See the [canonical acceptance criteria](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md#shared--exclusive-context-and-guardrails).
 
 ## Conditional follow-ups
 
@@ -85,7 +90,9 @@ independent of sibling packages; integrations and provider SDKs stay optional.
 
 Sidecar owns emergency braking (stop, block further dispatch and revoke task
 access through supporting access boundaries) and independent policy enforcement.
-See the [canonical acceptance criteria](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md#operational-safety-acceptance-criteria-planned)
+See the [canonical acceptance criteria](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md#operational-safety-acceptance-criteria)
 for milestone dependencies and validation requirements. The v0.7 local stop,
-cancellation, audit and harness-revocation interface is implemented; gateway
-isolation, Lens integrity and delegated authority work remain in later milestones.
+cancellation, audit and harness-revocation interface is implemented. v0.8 adds
+a separate-process enforcing MCP gateway demonstration and Lens native journal
+verification. Secure service deployment is a harness responsibility; delegated
+authority and end-to-end privacy validation remain v0.9 work.

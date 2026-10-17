@@ -1,6 +1,6 @@
 # Limitations
 
-Supported scope for the **0.7.0** API. See [Governance](governance.md) for usage
+Supported scope for the **0.8.0** API. See [Governance](governance.md) for usage
 and validation evidence, and [Roadmap](roadmap.md) for future priorities.
 
 ## Governance boundary
@@ -86,3 +86,12 @@ HTTP interface. See [Live operations](live-operations.md) for task isolation,
 stop/cancellation/revocation boundaries and restore behavior.
 
 The package remains Pre-Alpha; stable API/schema guarantees target 1.0.
+
+## Scoped delivery and adapters
+
+v0.8 provides explicit host context delivery and mandatory guardrail composition.
+Wrappers cover returned tools only. Private-context isolation across external
+memories, outputs and telemetry remains v0.9 validation work; keep journals and
+configuration in the trusted host. Semantica export remains conditional. See
+[scoped limits](scoped-supervision.md#limits-and-responsibilities) and
+[validated framework versions](integrations.md).

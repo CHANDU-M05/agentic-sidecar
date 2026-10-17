@@ -1,6 +1,6 @@
 # Examples
 
-The examples target the **0.7.0** API. Historical version labels in filenames
+The examples target the **0.8.0** API. Historical version labels in filenames
 identify their introduction. Run them from the repository root:
 
 ```bash
@@ -58,3 +58,17 @@ jupyter notebook examples/sidecar_purpose_demo.ipynb
 
 For complete, step-by-step walkthroughs solving real-world production problems end-to-end (including multi-layer guardrails, LangGraph integration, and policy enforcement), visit the [Agentic Sidecar Use Cases Site](https://deepagentlabs.io/agentic-sidecar/usecases/).
 
+
+## v0.8 examples
+
+- `examples/v0_8_scoped_agents.py`: two agents, shared context and policy, exclusive
+  context/restrictions, explicit host delivery and blocked dispatch.
+- `examples/v0_8_framework_agents.py`: host-bound LangGraph research and AutoGen
+  refund tools, shared denial and separate exclusive context (requires both extras).
+- `examples/v0_8_correlated_evidence.py`: credential-free native evidence export.
+- `examples/v0_8_gateway_server.py`: separate-process credential-owning MCP server,
+  launched by `tests/test_mcp_gateway.py` with `SIDECAR_RUN_GATEWAY=1`.
+
+Run `uv run python examples/v0_8_scoped_agents.py`; install the `mcp` extra and run
+`uv run pytest tests/test_mcp_gateway.py` for the real transport/gateway scenario.
+Framework conformance runs through real native SDK dispatch without model calls.

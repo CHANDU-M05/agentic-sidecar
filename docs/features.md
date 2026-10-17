@@ -1,6 +1,6 @@
 # Features
 
-Current **0.7.0** capabilities and their supported usage. Upcoming extensions
+Current **0.8.0** capabilities and their supported usage. Upcoming extensions
 are described in [Roadmap](roadmap.md); execution boundaries are summarized in
 [Limitations](limitations.md).
 
@@ -148,7 +148,9 @@ a local prompt. See [Governance](governance.md) for all five approval actions.
 
 ## Custom Decision Hook
 
-`before_tool_call` replaces all built-in stages, including budget and evaluators.
+`before_tool_call` replaces the ordinary built-in pipeline, including budget and
+evaluators. Trusted mandatory scope checks still run before the hook and cannot
+be bypassed by its ALLOW verdict.
 It receives injected intent/history and returns a Decision:
 
 ```python
@@ -166,3 +168,18 @@ print(sidecar.evaluate(DecisionContext(tool_name="delete_customer")).status)  # 
 
 Use the standard pipeline when you want configured modules to run together.
 Provenance export types are documented in [API reference](api-reference.md).
+
+## Shared & Exclusive supervision
+
+`ScopedSystem` binds trusted agent identities to shared and exclusive layers.
+Choose context only, guardrails only or both. Context delivery to the host is
+explicit; shared denials remain mandatory alongside exclusive restrictions.
+Each bound agent has a separate history and copied payload. See
+[scoped supervision](scoped-supervision.md) for privacy and deployment limits.
+
+## Native adapters and evidence
+
+v0.8 provides AutoGen, CrewAI, OpenAI Agents, Google ADK and MCP boundaries in
+addition to LangGraph. Native SDK conformance covers all seven decisions and
+both modes. Verified correlated decisions reach Lens 0.7.1 incident timelines;
+Chaos recovery proposals retain native event IDs. See [integrations](integrations.md).

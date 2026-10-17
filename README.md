@@ -6,7 +6,7 @@
 
 ## Status
 
-**Current checkout version: 0.7.0.** The runtime brings together deterministic
+**Current checkout version: 0.8.0.** The runtime brings together deterministic
 intent/policy/risk supervision, optional evaluators, budget accounting,
 narration, and the CLI. See the [roadmap](ROADMAP.md) for release history
 and upcoming capability stages.
@@ -20,12 +20,13 @@ and upcoming capability stages.
 | Planner / Critic | Full-plan boundary, bound constraints, selected plan/history heuristics and supplied evidence flags |
 | Judge | Explicit MockJudge; optional live OpenAI/Anthropic SDK providers, validated verdicts, timeouts and usage accounting |
 | Narration / CLI | Runtime-connected `status --endpoint ... --follow`, execution narration and `control`/`approve`; standalone narrator remains available |
-| Frameworks / integrations | LangGraph callable wrapper; additional adapters and optional exports planned for 0.8 |
+| Frameworks / integrations | LangGraph, AutoGen, CrewAI, OpenAI Agents, Google ADK and MCP; correlated Lens decisions and Chaos recovery |
+| Shared / Exclusive scopes | Context only, guardrails only, or both; explicit host context delivery and mandatory guardrail composition |
 
 Live status, audit and Control Room: [usage and acceptance evidence](docs/live-operations.md).
 Authenticated provider smoke remains pending credentials.
 
-Next: **0.8 adapters/integrations → 0.9 evaluation/authority → 1.0 stable schemas**.
+Next: **0.9 evaluation, privacy and authority → 1.0 stable schemas**.
 See [supported scope and limitations](docs/limitations.md) for operational details.
 
 ### Installation & Usage
@@ -382,7 +383,8 @@ budget and evaluators. See [API reference](docs/api-reference.md),
 
 ## Planned Python API
 
-Live status/audit/operator interfaces are implemented; additional framework adapters target 0.8.
+Live operations and v0.8 framework/scoped integrations are implemented. See
+[validated SDK versions and limits](docs/integrations.md).
 Today `attach(sidecar, tools)` is adapter-specific and `evaluate()` accepts
 `DecisionContext`. Generic whole-agent attachment will be considered when
 multiple integrations demonstrate a useful shared boundary.
@@ -474,16 +476,18 @@ in the roadmap).
 Canonical release history, capability status, completion checklists, and future sequencing:
 [ROADMAP.md](ROADMAP.md).
 
-**Planned: Shared & Exclusive context/intent and guardrails.** Users may choose
+**Shared & Exclusive context/intent and guardrails are available in v0.8.** Users may choose
 context only, guardrails only, or both, independently Shared across a system/task
 or Exclusive to designated agent(s). Each agent receives shared plus assigned
 exclusive context; shared guardrails remain mandatory alongside exclusive rules.
-v0.8 targets scoped configuration, delivery and composition; v0.9 validates
-privacy, authority and lifecycle behavior; v1.0 stabilizes contracts. This is not
-implemented. Current evaluator injection does not automatically populate agent
-prompts or isolate private context.
+v0.8 provides scoped configuration, delivery and composition; v0.9 validates
+privacy, authority and lifecycle behavior; v1.0 stabilizes contracts. Use `ScopedSystem.bind()` and `BoundAgent.deliver()` for explicit host context
+transport; this does not provide automatic prompt rewriting or process isolation.
 
-See the [deliverables and acceptance criteria](ROADMAP.md#planned-shared--exclusive-context-and-guardrails).
+See the [deliverables and acceptance criteria](ROADMAP.md#shared--exclusive-context-and-guardrails).
+
+See [scoped usage](docs/scoped-supervision.md) and the two-agent example
+[examples/v0_8_scoped_agents.py](examples/v0_8_scoped_agents.py).
 
 Original architecture proposal: [concept.md](concept.md).
 
@@ -514,6 +518,6 @@ Sidecar implements task-scoped local stop, dispatch prevention, async cancellati
 requests and harness-revocation receipts alongside deterministic policy enforcement.
 MCP and Tower support access enforcement and operator coordination.
 
-See [planned safety acceptance criteria](ROADMAP.md#operational-safety-acceptance-criteria-planned) for responsibilities and
+See [planned safety acceptance criteria](ROADMAP.md#operational-safety-acceptance-criteria) for responsibilities and
 dependencies. See [live operator scope](docs/live-operations.md) for implemented
 controls and the remaining gateway-isolation and issuer responsibilities.

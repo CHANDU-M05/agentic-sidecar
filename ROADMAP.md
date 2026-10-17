@@ -1,6 +1,6 @@
 # agentic-sidecar — Roadmap & Architecture
 
-> **Updated 2026-10-12 · Current checkout: 0.7.0.**
+> **Updated 2026-10-17 · Current checkout: 0.7.0.**
 > This is the canonical capability roadmap. Each stage builds on the existing
 > runtime with explicit deliverables and acceptance criteria. Future version
 > targets describe development priorities, not committed delivery dates.
@@ -44,6 +44,51 @@ The 0.6.1 validation includes outcome/approval/failure tests, real LangGraph
 execution boundaries, deterministic provider contracts, eight offline examples,
 a four-scenario Intent Guardian benchmark, strict docs and package metadata
 checks. See [acceptance evidence](docs/governance.md) for scope and live-smoke status.
+
+## Planned: Shared & Exclusive Context and Guardrails
+
+**Status: planned, not implemented.** Users can configure context/intent only,
+guardrails only, or both, with independent scopes for each:
+
+| Scope | Context / intent | Guardrails |
+| --- | --- | --- |
+| Shared | Common objective/context for all agents in a declared system/task | Mandatory restrictions for all covered agents |
+| Exclusive | Private context/subtask for designated agent(s) and authorized readers | Additional restrictions for designated agent(s) |
+
+Each agent receives shared plus assigned exclusive context. Actions must satisfy
+shared and applicable exclusive guardrails; exclusive rules cannot weaken shared
+restrictions. Incompatible intent/context must be rejected or explicitly resolved
+by an authorized actor, never silently override shared constraints. Agent identity
+and scope membership must come from a trusted harness, not tool arguments.
+
+Example: all agents share “resolve this billing issue” and “never expose payment
+details.” The research agent gets investigation context; the refund agent gets
+transaction context and a guardrail requiring approval above $100. Neither gets
+the other's exclusive context by default.
+
+- **v0.8 — Configuration, delivery and composition:** define system/task/agent
+  identities, independent scopes and an explicit adapter/harness interface for
+  agent prompt/context delivery, separate from decision-evaluator injection.
+  Provide a runnable two-agent example. Test context-only, guardrails-only, both,
+  shared-only, exclusive-only and mixed configurations; reject unknown identities
+  and invalid scope references. Verify shared and applicable exclusive rules at
+  every supported governed boundary, including conflicting rules and bypass
+  attempts. Document Observe, fail_open, unwrapped tools and isolation limits.
+- **v0.9 — Privacy, authority and lifecycle:** define authorized readers and
+  redacted evidence. Test exclusive-context isolation across other agents' prompts,
+  memory, handoffs, tool results, evaluator inputs, logs, audit exports and operator
+  views. Test authorized updates, expiry, revocation, delegation narrowing and
+  concurrent agents without state contamination or stale authorization. Do not
+  claim private-context isolation before these acceptance checks pass.
+- **v1.0 — Stable contracts:** publish versioned scope, inheritance, conflict,
+  access and propagation semantics with AIOS mappings, compatibility tests and
+  migration guarantees.
+
+Existing per-Sidecar envelopes and policies are foundations, not automatic scope
+inheritance or private-context isolation. Sidecar owns scope resolution and
+pre-action supervision; host frameworks own orchestration and prompt/memory
+transport. Harnesses and access boundaries provide the isolation required by the
+documented threat model.
 
 ## Architecture
 
@@ -202,6 +247,8 @@ Native Tower readback is tested; Lens integrity integration remains v0.8.
 
 **Depends on:** a stable, tested gate and audit/event contract.
 
+- [ ] Deliver Shared & Exclusive scoped configuration, context delivery and guardrail
+      composition with the v0.8 acceptance checks above.
 - [ ] Implement a second real adapter and revise the interception abstraction
       only where integration evidence requires it.
 - [ ] Implement CrewAI, AutoGen, OpenAI Agents SDK, and Google ADK adapters
@@ -224,6 +271,8 @@ Native Tower readback is tested; Lens integrity integration remains v0.8.
 Coordinate generic scoring with Agentic Evals while keeping supervision
 scenarios and intervention measurements within Sidecar.
 
+- [ ] Validate Shared & Exclusive privacy, authority and lifecycle behavior with
+      the v0.9 acceptance checks above.
 - [ ] Extend the fixtures to compare Agent Alone vs. Agent + Sidecar, including
       unnecessary plan steps, unsupported assumptions, and degraded providers.
 - [ ] Publish reproducible task-success, unsafe-action, false-intervention,
@@ -245,6 +294,8 @@ features. Schedule them only when performance/cost measurements justify them.
 
 **Depends on:** validated runtime behavior and coordinated AIOS schema work.
 
+- [ ] Stabilize Shared & Exclusive scope contracts and AIOS mappings with
+      compatibility and migration tests.
 - [ ] Publish versioned Intent Envelope and Decision/audit schemas in
       `ai-operations-spec`, with documented mappings and compatibility tests.
 - [ ] Demonstrate cross-instance and cross-agent intent propagation, preserving

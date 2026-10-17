@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+### Documentation
+
+- Plan Shared & Exclusive context/intent and guardrails: scoped delivery and
+  composition in v0.8, privacy/authority validation in v0.9, stable contracts
+  in v1.0. No runtime support is added.
+
 ## [0.7.0] - 2026-10-12
 
 ### Added

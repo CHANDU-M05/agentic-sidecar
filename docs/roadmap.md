@@ -1,6 +1,6 @@
 # Roadmap
 
-Updated **2026-10-12 · Current version: 0.7.0**.
+Updated **2026-10-17 · Current version: 0.7.0**.
 The [root ROADMAP.md](https://github.com/DeepAgentLabs/agentic-sidecar/blob/main/ROADMAP.md)
 is the canonical plan with detailed deliverables and acceptance criteria.
 Future version targets describe priorities, not committed delivery dates.
@@ -63,6 +63,17 @@ Implemented; see [live operations and acceptance evidence](live-operations.md).
 - Publish versioned Intent Envelope and Decision/audit schemas with AI Operations Specification.
 - Test cross-instance/agent propagation, schema compatibility, and migration behavior.
 - Define public API stability and document supported sibling/framework versions.
+
+**Planned: Shared & Exclusive context/intent and guardrails.** Users may choose
+context only, guardrails only, or both, independently Shared across a system/task
+or Exclusive to designated agent(s). Each agent receives shared plus assigned
+exclusive context; shared guardrails remain mandatory alongside exclusive rules.
+v0.8 targets scoped configuration, delivery and composition; v0.9 validates
+privacy, authority and lifecycle behavior; v1.0 stabilizes contracts. This is not
+implemented. Current evaluator injection does not automatically populate agent
+prompts or isolate private context.
+
+See the [canonical acceptance criteria](../ROADMAP.md#planned-shared--exclusive-context-and-guardrails).
 
 ## Conditional follow-ups
 

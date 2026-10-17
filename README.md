@@ -474,6 +474,17 @@ in the roadmap).
 Canonical release history, capability status, completion checklists, and future sequencing:
 [ROADMAP.md](ROADMAP.md).
 
+**Planned: Shared & Exclusive context/intent and guardrails.** Users may choose
+context only, guardrails only, or both, independently Shared across a system/task
+or Exclusive to designated agent(s). Each agent receives shared plus assigned
+exclusive context; shared guardrails remain mandatory alongside exclusive rules.
+v0.8 targets scoped configuration, delivery and composition; v0.9 validates
+privacy, authority and lifecycle behavior; v1.0 stabilizes contracts. This is not
+implemented. Current evaluator injection does not automatically populate agent
+prompts or isolate private context.
+
+See the [deliverables and acceptance criteria](ROADMAP.md#planned-shared--exclusive-context-and-guardrails).
+
 Original architecture proposal: [concept.md](concept.md).
 
 ## License

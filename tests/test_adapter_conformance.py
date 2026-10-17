@@ -103,8 +103,9 @@ def test_outcome_conformance(adapter: str, asynchronous: bool, mode: Any, status
 
 @pytest.mark.parametrize("adapter", SDK_MODULES)
 @pytest.mark.parametrize("failure", ["fail_open", "fail_closed"])
-def test_failure_conformance(adapter: str, failure: Any) -> None:
-    sidecar = Sidecar(on_sidecar_failure=failure, mode="govern")
+@pytest.mark.parametrize("mode", ["observe", "govern"])
+def test_failure_conformance(adapter: str, failure: Any, mode: Any) -> None:
+    sidecar = Sidecar(on_sidecar_failure=failure, mode=mode)
 
     def broken(_: Any) -> Decision:
         raise TimeoutError("gate unavailable")
@@ -115,7 +116,7 @@ def test_failure_conformance(adapter: str, failure: Any) -> None:
         """Read an amount."""
         return "read"
 
-    if failure == "fail_open":
+    if failure == "fail_open" or mode == "observe":
         assert dispatch(adapter, sidecar, read) == "read"
     else:
         with pytest.raises(SidecarBlockedError):
@@ -138,3 +139,45 @@ def test_approval_conformance(adapter: str) -> None:
         return "approved"
 
     assert dispatch(adapter, sidecar, read) == "approved"
+
+
+@pytest.mark.parametrize("adapter", SDK_MODULES)
+def test_scoped_deny_survives_adapter_and_hook(adapter: str) -> None:
+    from agentic_sidecar.gate.policy import PolicyRule
+    from agentic_sidecar.scopes import GuardrailSpec, ScopedSystem, ScopeLayer
+
+    system = ScopedSystem(
+        system_id="support",
+        task_id="ticket",
+        agents=["worker"],
+        shared=ScopeLayer(
+            guardrails=GuardrailSpec(rules=[PolicyRule(tool="refund", effect="deny")])
+        ),
+    )
+    bound = system.bind("worker", on_sidecar_failure="fail_closed")
+    bound.sidecar.before_tool_call(
+        lambda _: Decision(status="ALLOW", risk="LOW", reason="override")
+    )
+    calls = []
+
+    def refund(amount: int) -> str:
+        """Refund."""
+        calls.append(amount)
+        return "refunded"
+
+    with pytest.raises(SidecarBlockedError):
+        dispatch(adapter, bound.sidecar, refund)
+    assert calls == []
+
+
+def test_crewai_schema_preserves_defaults() -> None:
+    pytest.importorskip("crewai")
+    from agentic_sidecar.adapters.crewai import attach
+
+    def read(amount: int = 10) -> str:
+        """Read default amount."""
+        return str(amount)
+
+    (tool,) = attach(Sidecar(on_sidecar_failure="fail_closed"), [read])
+    assert tool.args_schema.model_validate({}).amount == 10
+    assert tool.run() == "10"

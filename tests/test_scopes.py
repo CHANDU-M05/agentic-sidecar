@@ -215,3 +215,61 @@ def test_positional_only_binding_cannot_be_overwritten_by_extra_keywords() -> No
     assert context.tool_args == {"amount": 50, "metadata": {"amount": 10}}
     assert calls == [(50, {"amount": 10})]
 
+
+@pytest.mark.parametrize("mandatory_status", ["PAUSE", "ESCALATE"])
+def test_approval_cannot_override_an_ordinary_policy_denial(mandatory_status: Any) -> None:
+    from agentic_sidecar import Sidecar
+    from agentic_sidecar.gate.escalation import ApprovalAction, ApprovalResponse
+    from agentic_sidecar.gate.policy import PolicyAdvisor
+
+    sidecar = Sidecar(
+        on_sidecar_failure="fail_closed",
+        mode="govern",
+        mandatory_checks=[
+            lambda _: Decision(status=mandatory_status, risk="LOW", reason="approval")
+        ],
+        policy=PolicyAdvisor([PolicyRule(tool="delete", effect="deny")]),
+    )
+    approvals = []
+
+    @sidecar.on_escalation_required
+    def approve(request):
+        approvals.append(request.decision_id)
+        return ApprovalResponse(decision_id=request.decision_id, action=ApprovalAction.APPROVE_ONCE)
+
+    calls = []
+
+    def delete() -> None:
+        """Delete a record."""
+        calls.append(1)
+
+    (guarded,) = attach(sidecar, [delete])
+    with pytest.raises(SidecarBlockedError):
+        guarded()
+    assert calls == []
+    assert approvals == []
+
+
+def test_mandatory_warning_preserves_risk_provenance_and_export() -> None:
+    from agentic_sidecar import Sidecar
+    from agentic_sidecar.gate.risk import RiskEvaluator
+    from agentic_sidecar.integrations.correlation import Correlation, export_decisions
+
+    sidecar = Sidecar(
+        on_sidecar_failure="fail_closed",
+        mode="govern",
+        mandatory_checks=[lambda _: Decision(status="WARN", risk="LOW", reason="Scoped warning")],
+        risk=RiskEvaluator(default_risk="MEDIUM"),
+    )
+    decision = sidecar.evaluate(DecisionContext(tool_name="read", tool_args={"order": "A100"}))
+    assert decision.status == "WARN"
+    assert decision.risk == "MEDIUM"
+    assert "Scoped warning" in decision.reason and "Risk Evaluator" in decision.reason
+    assert decision.decision_point == "tool_call"
+    assert decision.trigger_details == {"tool_name": "read", "arguments": {"order": "A100"}}
+    (record,) = export_decisions(
+        sidecar, Correlation(run_id="run", trace_id="trace", span_id="span")
+    )
+    assert record.decision.risk == "MEDIUM"
+    assert record.decision.decision_point == "tool_call"
+    assert record.decision.trigger_details == decision.trigger_details

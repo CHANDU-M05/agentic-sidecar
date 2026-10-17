@@ -264,32 +264,30 @@ class Sidecar:
                 decision = Decision(status="BLOCK", risk=None, reason="Task stopped")
             else:
                 evaluator = self._hook or self._default_evaluate
-                decision = None
-                warning = None
-                priority = {
-                    "ALLOW": 0,
-                    "WARN": 1,
-                    "PAUSE": 2,
-                    "ESCALATE": 3,
-                    "REPLAN": 4,
-                    "CHALLENGE": 5,
-                    "BLOCK": 6,
-                }
+                mandatory = []
                 for check in self._mandatory_checks:
                     checked = check(context.model_copy(deep=True))
                     if not isinstance(checked, Decision):
                         raise TypeError("Mandatory checks must return a Decision")
-                    checked = Decision.model_validate(checked.model_dump())
-                    if checked.status == "WARN":
-                        warning = checked
-                    elif checked.status != "ALLOW" and (
-                        decision is None or priority[checked.status] > priority[decision.status]
-                    ):
-                        decision = checked
-                if decision is None:
-                    decision = evaluator(context)
-                    if isinstance(decision, Decision) and decision.status == "ALLOW" and warning:
-                        decision = warning
+                    mandatory.append(Decision.model_validate(checked.model_dump()))
+                if any(result.status == "BLOCK" for result in mandatory):
+                    # A hard denial already settles the proposal: avoid inference.
+                    evaluated = Decision(
+                        status="ALLOW",
+                        risk=None,
+                        reason="",
+                        decision_point=context.boundary,
+                        trigger_details={
+                            "tool_name": context.tool_name,
+                            "arguments": context.tool_args,
+                        },
+                    )
+                else:
+                    evaluated = evaluator(context)
+                    if not isinstance(evaluated, Decision):
+                        raise TypeError("Decision hooks must return a Decision")
+                    evaluated = Decision.model_validate(evaluated.model_dump())
+                decision = self._combine_decisions(evaluated, mandatory)
             if not isinstance(decision, Decision):
                 raise TypeError("Decision hooks must return a Decision")
             # Revalidate even objects constructed with model_construct/model_copy.
@@ -311,6 +309,40 @@ class Sidecar:
                 self._record(context, decision)
         self.runtime.authorize(context, decision)
         return decision
+
+    @staticmethod
+    def _combine_decisions(evaluated: Decision, mandatory: list[Decision]) -> Decision:
+        """Keep hard denials dominant and preserve evaluated risk/provenance."""
+        if not mandatory:
+            return evaluated
+        priority = {
+            "ALLOW": 0,
+            "WARN": 1,
+            "PAUSE": 2,
+            "ESCALATE": 3,
+            "REPLAN": 4,
+            "CHALLENGE": 5,
+            "BLOCK": 6,
+        }
+        relevant = [evaluated, *(result for result in mandatory if result.status != "ALLOW")]
+        dominant = max(relevant, key=lambda result: priority[result.status])
+        risks: list[RiskLevel] = []
+        for result in relevant:
+            if result.risk is not None:
+                risks.append(result.risk)
+        risk: RiskLevel | None = None
+        for candidate in risks:
+            if risk is None or RISK_ORDER[candidate] > RISK_ORDER[risk]:
+                risk = candidate
+        reasons = dict.fromkeys(result.reason for result in relevant if result.reason)
+        return evaluated.model_copy(
+            update={
+                "status": dominant.status,
+                "risk": risk,
+                "reason": "; ".join(reasons),
+                "escalation_required": dominant.status in {"PAUSE", "ESCALATE"},
+            }
+        )
 
     def _record(self, context: DecisionContext, decision: Decision) -> None:
         self.runtime.record(context, decision)

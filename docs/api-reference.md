@@ -347,7 +347,7 @@ optional durable JSONL persistence. See [Live operations](live-operations.md).
 
 ```python
 from agentic_sidecar import __version__
-print(__version__)  # "0.8.0"
+print(__version__)  # "0.8.1"
 ```
 
 ## Runtime operations

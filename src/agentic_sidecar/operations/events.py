@@ -118,3 +118,23 @@ class EventJournal:
             raise ValueError("after must be nonnegative")
         with self._lock:
             return [event.to_dict() for event in self._events if event.sequence > after]
+
+
+def verify_events(events: list[dict[str, Any]], *, task_id: str) -> None:
+    """Validate a complete exported journal before correlated readback.
+
+    Hash chains detect alteration and reordering, not a malicious producer that
+    rewrites the full chain. An external anchor is required for that threat.
+    """
+    previous = ""
+    for sequence, event in enumerate(events, 1):
+        row = dict(event)
+        digest = row.pop("digest")
+        if (
+            row["task_id"] != task_id
+            or row["sequence"] != sequence
+            or row["previous_hash"] != previous
+            or digest != _digest(row)
+        ):
+            raise ValueError("Invalid audit chain or task identity")
+        previous = digest

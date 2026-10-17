@@ -70,7 +70,40 @@ jobs:
           uv run python -m twine check dist/*
           uv run python scripts/validate_release.py --dist dist
 
-  # TODO(v0.1+, once agentic_sidecar.integrations.agenticlens has real code):
-  # add a test-agenticlens-integration job that checks out a sibling
-  # `agenticlens` repo and runs `uv sync --extra dev --extra agenticlens`
-  # against it. Not added yet -- there's nothing in that module to exercise.
+  sdk-conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv python install 3.12
+      - name: Install native SDKs
+        run: uv sync --locked --python 3.12 --extra dev --extra langgraph --extra autogen --extra crewai --extra openai-agents --extra google-adk --extra mcp
+      - name: Native dispatch, approvals, failure policies and protected gateway
+        run: |
+          uv run pytest tests/test_adapter_conformance.py tests/test_autogen_adapter.py tests/test_mcp_gateway.py tests/test_scopes.py --junitxml=sdk-results.xml
+          uv run python -c "import xml.etree.ElementTree as ET; assert all(int(s.get('skipped', 0)) == 0 for s in ET.parse('sdk-results.xml').iter('testsuite'))"
+          uv run python examples/v0_8_framework_agents.py
+
+  ecosystem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: sidecar
+      - uses: actions/checkout@v7
+        with:
+          repository: DeepAgentLabs/agenticlens
+          path: lens
+      - uses: actions/checkout@v7
+        with:
+          repository: DeepAgentLabs/agentic-chaos
+          path: chaos
+      - uses: astral-sh/setup-uv@v7
+      - run: uv python install 3.12
+      - working-directory: sidecar
+        run: |
+          uv sync --locked --python 3.12 --extra dev
+          uv pip install --python .venv/bin/python ../lens ../chaos
+          uv run --no-sync pytest tests/test_ecosystem_exports.py

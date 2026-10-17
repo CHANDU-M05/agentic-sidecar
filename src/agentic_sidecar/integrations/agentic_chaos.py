@@ -1,26 +1,25 @@
-"""Optional Agentic Chaos coordination.
+"""Opt-in same-run recovery supervision and gate-failure experiments."""
 
-Unlike the AgenticLens adapter (a one-way export after the fact, merging a
-completed Sidecar session onto a `Workflow`), this is a two-way, same-run
-relationship: Agentic Chaos and the Sidecar both attach to the *same* agent
-invocation. Agentic Chaos injects a fault; the Sidecar's Decision Gate
-evaluates the agent's recovery attempt through its normal Policy/Risk/Intent
-checks, answering not just "did it recover?" but "was the recovery decision
-itself appropriate?".
+from collections.abc import Mapping
+from typing import Any
 
-Also relevant in the other direction: chaos-testing the Sidecar's own gate
-by injecting a fault into the Sidecar's evaluation path itself, to verify
-`on_sidecar_failure` (`fail_open` / `fail_closed`) behaves as configured
-when the Sidecar times out or errors.
+from agentic_sidecar import Decision, DecisionContext, Sidecar
 
-The concrete integration surface -- what this module reads from an active
-chaos session, what it reports back, and whether that needs a shared schema
-the way the AgenticLens adapter does -- isn't designed yet. See
-ROADMAP.md's Cross-Project Dependencies (`agentic-chaos`: "Coordinate
-with").
 
-Not core-dependency: `agentic_sidecar`'s runtime never imports this module
-on its own. Requires `pip install agentic-sidecar[agentic-chaos]`.
+def evaluate_recovery(
+    sidecar: Sidecar, event: Mapping[str, Any], *, tool_name: str, arguments: dict[str, Any]
+) -> Decision:
+    """Evaluate/enforce a recovery proposal linked to a native Chaos event.
 
-Not yet scheduled to a specific ROADMAP version. Not implemented yet.
-"""
+    Does not execute a tool. Dispatch must still pass through a supported adapter.
+    """
+    event_id = event.get("id")
+    if not isinstance(event_id, str) or not event_id or not event.get("fault_type"):
+        raise ValueError("A native Chaos event id and fault_type are required")
+    context = DecisionContext(
+        tool_name=tool_name,
+        tool_args=arguments,
+        metadata={"chaos.event_id": event_id, "chaos.fault_type": event["fault_type"]},
+    )
+    decision = sidecar.evaluate(context)
+    return sidecar.enforce(context, decision)

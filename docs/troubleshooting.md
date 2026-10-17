@@ -1,7 +1,7 @@
 # Troubleshooting
 
 Use the returned verdict, enabled roles, and configured bindings to inspect
-behavior before attaching real tools. These notes describe the **0.7.0** API.
+behavior before attaching real tools. These notes describe the **0.8.0** API.
 
 ## Required failure configuration
 

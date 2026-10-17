@@ -1,6 +1,6 @@
 # API Reference
 
-Python API for `agentic-sidecar` **0.7.0**. Imports below identify the supported
+Python API for `agentic-sidecar` **0.8.0**. Imports below identify the supported
 module for each symbol; intent and policy/risk types live in their subpackages.
 
 ```python
@@ -347,7 +347,7 @@ optional durable JSONL persistence. See [Live operations](live-operations.md).
 
 ```python
 from agentic_sidecar import __version__
-print(__version__)  # "0.7.0"
+print(__version__)  # "0.8.0"
 ```
 
 ## Runtime operations
@@ -358,3 +358,16 @@ for remote approvals. Inspect `sidecar.runtime.snapshot()` and
 `sidecar.runtime.journal.export(after=0)`. DecisionContext accepts
 `parent_decision_id` and `parent_plan_step` for supplied plan causality.
 See [Live operations](live-operations.md) for the full lifecycle and HTTP surface.
+
+## Scoped supervision and native export (0.8)
+
+Public exports: `ScopedSystem`, `ScopeLayer`, `ContextSpec`, `GuardrailSpec`,
+`BoundAgent`. `ScopedSystem.bind(agent_id, on_sidecar_failure=..., mode=...)`
+returns a separate Sidecar and explicit `context()` / `deliver(receiver)` payload.
+See [scoped supervision](scoped-supervision.md) for configuration and limits.
+`Sidecar` also accepts trusted `mandatory_checks`, `mandatory_configuration` and
+`context_metadata`; checks run before custom hooks and the configuration is
+included in audit policy fingerprints.
+
+`integrations.correlation.Correlation` and `export_decisions()` provide native
+versioned projections. See [integration contracts](integrations.md).

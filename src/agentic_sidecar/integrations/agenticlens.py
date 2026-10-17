@@ -1,14 +1,17 @@
-"""Optional AgenticLens adapter -- surfaces Sidecar Decision events
-(allow/warn/replan/block, intent-alignment score) as AgenticLens `Workflow`
-step data, so `agenticlens analyze` can report on them alongside cost and
-latency. Expected shape: an `attach_events()` / `step_kwargs()`-style pair --
-one call to merge a completed Sidecar session onto a `Workflow`, one helper
-to pass Sidecar's own step correlation IDs through cleanly.
+"""Explicit, optional decision export to a correlated AgenticLens Run."""
 
-Not core-dependency: `agentic_sidecar`'s runtime never imports this module
-on its own. Requires `pip install agentic-sidecar[agenticlens]`.
+from importlib import import_module
+from typing import Any
 
-Not yet scheduled to a specific ROADMAP version -- see ROADMAP.md's
-Cross-Project Dependencies (`agenticlens`: "Validate in"). Not implemented
-yet.
-"""
+from agentic_sidecar.core.sidecar import Sidecar
+from agentic_sidecar.integrations.correlation import Correlation, export_decisions
+
+
+def attach_decisions(sidecar: Sidecar, run: Any, *, span_id: str) -> None:
+    """Attach verified decision projections; Lens owns trace/timeline behavior."""
+    reader = import_module("agenticlens.integrations.sidecar")
+    reader.verify_journal(sidecar.runtime.journal.export(), task_id=sidecar.runtime.task_id)
+    correlation = Correlation(run_id=run.run_id, trace_id=run.trace_id, span_id=span_id)
+    reader.attach_decisions(
+        run, [record.model_dump(mode="json") for record in export_decisions(sidecar, correlation)]
+    )

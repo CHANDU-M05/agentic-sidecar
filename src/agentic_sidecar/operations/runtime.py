@@ -117,10 +117,12 @@ class TaskRuntime(EscalationHandler):
         with self._condition:
             sidecar = self._require_sidecar()
             serialized = context.model_dump(mode="json")
-            policy = {
+            policy: dict[str, Any] = {
                 "default": sidecar.policy.default_effect,
                 "rules": [rule.model_dump(mode="json") for rule in sidecar.policy.rules],
             }
+            if sidecar._mandatory_configuration:
+                policy["mandatory"] = sidecar._mandatory_configuration
             policy_version = hashlib.sha256(json.dumps(policy, sort_keys=True).encode()).hexdigest()
             self.journal.append(
                 "decision",

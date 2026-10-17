@@ -1,7 +1,14 @@
-"""Google Agent Development Kit (ADK) interception adapter.
+"""Google ADK FunctionTools. Injected ToolContext arguments are not supported."""
 
-Not started until `adapters/langgraph.py` (v0.1) is done and stable --
-see ROADMAP.md's Design Constraint 1.
+from collections.abc import Callable, Sequence
+from importlib import import_module
+from typing import Any
 
-Planned for v0.8 -- see ROADMAP.md. Not implemented yet.
-"""
+from agentic_sidecar.adapters.callable import attach as wrap
+from agentic_sidecar.core.sidecar import Sidecar
+
+
+def attach(sidecar: Sidecar, tools: Sequence[Callable[..., Any]]) -> list[Any]:
+    """Build supervised native SDK tools from plain typed functions."""
+    sdk = import_module("google.adk.tools")
+    return [sdk.FunctionTool(func=tool) for tool in wrap(sidecar, tools)]

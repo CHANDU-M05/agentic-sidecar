@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agentic-sidecar"
-version = "0.7.0"
+version = "0.8.0"
 description = "Companion intelligence and real-time decision supervision for autonomous AI agents."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -32,22 +32,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-openai = ["openai>=1.68,<3"]
+openai = ["openai>=1.68,<4"]
 anthropic = ["anthropic>=0.49,<2"]
-# Only needed for agentic_sidecar.integrations.agenticlens -- the core
-# runtime never requires it. That module is currently a placeholder (see
-# src/agentic_sidecar/integrations/agenticlens.py); this extra is declared
-# ahead of time so the dependency boundary is visible from the start.
-agenticlens = [
-  "agenticlens>=0.1.3",
-]
-# Only needed for agentic_sidecar.integrations.agentic_chaos -- also a
-# placeholder (see src/agentic_sidecar/integrations/agentic_chaos.py). No
-# specific floor is known yet since the integration surface itself isn't
-# designed -- see ROADMAP.md's Cross-Project Dependencies ("agentic-chaos").
-agentic-chaos = [
-  "agentic-chaos>=0.1",
-]
+# Sibling runtime dependencies stay optional. Lens 0.7.1 supplies native readback.
+agenticlens = ["agenticlens>=0.7.1,<0.8"]
+agentic-chaos = ["agentic-chaos>=0.5.3,<0.6"]
+# Reserved until the upstream provenance API is validated; no export claim.
+semantica = []
+autogen = ["autogen-core==0.7.5"]
+crewai = ["crewai==1.6.1; python_version < '3.14'"]
+openai-agents = ["openai-agents==0.24.0"]
+google-adk = ["google-adk==2.12.0; python_version >= '3.11'"]
+mcp = ["mcp==2.3.0"]
 # Only needed to run the LangGraph example in examples/ or to build a real
 # graph around agentic_sidecar.adapters.langgraph.attach()'s wrapped tools --
 # the adapter module itself has no import-time dependency on `langgraph`

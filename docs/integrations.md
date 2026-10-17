@@ -98,7 +98,9 @@ failed; actual dispatch/completion remains native journal evidence.
 
 `integrations.agentic_chaos.evaluate_recovery(sidecar, event, tool_name=..., arguments=...)`
 checks/enforces a recovery proposal with a native Chaos event ID. It does not execute
-it; actual dispatch still uses a supervised adapter. Tested against Chaos 0.5.3.
+it; actual dispatch still uses a supervised adapter. Tested against Chaos 0.5.3 and
+0.6.0; the optional `agentic-chaos` extra admits `>=0.5.3,<0.7` since Sidecar 0.8.1.
+Chaos 0.6.0 event IDs and shape are unchanged; its contracts and pytest plugin stay in Chaos.
 Gate failure tests cover explicit fail_open/fail_closed; Chaos retains fault injection.
 Evals 0.7.1 retains scoring/report ownership; comparative supervision evidence and
 delegated authority remain v0.9 work. No core sibling dependency is introduced.

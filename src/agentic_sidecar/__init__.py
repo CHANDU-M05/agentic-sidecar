@@ -3,8 +3,8 @@ supervision layer for autonomous AI agents.
 
     The Main Agent acts. The Sidecar observes, thinks, advises, and governs.
 
-0.7.0 adds runtime events, immutable durable audit evidence, authenticated local
-operator controls and the Control Room. See docs/live-operations.md for scope.
+0.8.0 adds scoped context/guardrails, native framework adapters and correlated
+ecosystem evidence. See docs/scoped-supervision.md and docs/integrations.md.
 """
 
 from agentic_sidecar.core.context import DecisionContext
@@ -39,15 +39,21 @@ from agentic_sidecar.gate import (
 )
 from agentic_sidecar.operations import EventJournal, RuntimeEvent, TaskRuntime
 from agentic_sidecar.operations.server import OperatorServer
+from agentic_sidecar.scopes import BoundAgent, ContextSpec, GuardrailSpec, ScopedSystem, ScopeLayer
 from agentic_sidecar.status import (
     StatusNarrative,
     StatusNarrator,
     ToolCallNarrative,
 )
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 __all__ = [
+    "BoundAgent",
+    "ContextSpec",
+    "GuardrailSpec",
+    "ScopedSystem",
+    "ScopeLayer",
     "EventJournal",
     "OperatorServer",
     "RuntimeEvent",

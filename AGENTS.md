@@ -52,9 +52,9 @@ practice, the package covers both supervision and governance.
 
 ### Current Roadmap Focus
 
-The checkout targets the v0.7.0 release. Runtime code includes Decision Gate outcomes,
+The checkout targets the v0.8.0 release. Runtime code includes Decision Gate outcomes,
 Intent Guardian, evaluator modules, budget/escalation handling, narration and
-CLI commands. Additional framework adapters remain docstring placeholders;
+CLI commands. Native AutoGen, CrewAI, OpenAI Agents, Google ADK and MCP boundaries are implemented;
 use the actual source and tests to distinguish implementation from roadmap
 claims. Ecosystem consumers must preserve decision/risk meaning separately
 from deployment health.
@@ -81,9 +81,10 @@ pending credentials. Read docs/governance.md for supported scope and validation.
 
 The current runtime includes `core/`, policy/risk, intent supervision,
 `evaluators/`, budget/escalation logic, `status/narrate.py`, and `cli/main.py`.
-The LangGraph adapter is implemented; CrewAI, AutoGen, OpenAI Agents SDK and
-Google ADK adapter files remain placeholders. `integrations/*.py` remain
-placeholders. CLI status with --endpoint connects to a TaskRuntime through authenticated
+The LangGraph, AutoGen, CrewAI, OpenAI Agents SDK, Google ADK and MCP adapters
+share a callable boundary. Shared/exclusive scopes provide explicit context
+delivery and mandatory checks. Lens/Chaos integrations and native correlation
+are implemented; Semantica remains reserved. CLI status with --endpoint connects to a TaskRuntime through authenticated
 loopback HTTP; without an endpoint it retains the standalone narrator.
 Control Tower can read serialized `Decision` artifacts without executing the
 Sidecar or treating a BLOCK outcome as an unhealthy deployment.
@@ -148,7 +149,7 @@ for the full rationale on each:
 | `src/agentic_sidecar/status/` | Standalone and measured runtime narration | v0.7 (implemented) |
 | `src/agentic_sidecar/operations/` | Task runtime, immutable journal, local HTTP interface and Control Room | v0.7 (implemented) |
 | `src/agentic_sidecar/cli/` | Connected status/control/approve and standalone demo/version/prompt | v0.7 (implemented) |
-| `src/agentic_sidecar/adapters/{crewai,autogen,openai_agents,google_adk}.py` | Additional framework adapters | v0.8 (planned) |
+| `src/agentic_sidecar/adapters/{crewai,autogen,openai_agents,google_adk}.py` | Additional framework adapters | v0.8 (implemented) |
 | `src/agentic_sidecar/integrations/agenticlens.py` | Optional AgenticLens adapter (surfaces Sidecar decisions in `agenticlens analyze`) | optional, coordinate with `agenticlens` |
 | `src/agentic_sidecar/integrations/agentic_chaos.py` | Optional Agentic Chaos coordination (recovery-decision evaluation, chaos-testing the Sidecar's own gate) | optional, coordinate with `agentic-chaos` |
 | `tests/` | Pytest test suite | ongoing |

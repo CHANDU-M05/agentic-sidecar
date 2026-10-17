@@ -4,6 +4,46 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-17
+
+### Added
+
+- Shared/Exclusive context-only, guardrails-only or combined configuration with
+  trusted system/task/agent binding, explicit context delivery, separate histories,
+  conflict validation and mandatory policy/constraint composition. Shared denials
+  cannot be weakened by exclusive rules or custom decision hooks.
+- Native AutoGen Core 0.7.5, CrewAI 1.6.1, OpenAI Agents 0.24.0 and Google ADK
+  2.12.0 adapters sharing the LangGraph sync/async governed execution boundary.
+  CrewAI schemas preserve default arguments; SDK dependencies remain optional.
+- Native SDK conformance for all seven outcomes, Observe/Govern, failure policies,
+  approval and scoped bypass paths, plus documented Python/version compatibility.
+- MCP 2.3.0 client interception and a separately executed credential-owning gateway
+  fixture: direct-session bypasses still meet server rules, raw tools are absent,
+  and real dispatch/completion appears in the native audit journal.
+- Versioned sidecar.correlation/1 decision projections after complete native journal
+  verification; Lens 0.7.1 verifies/readbacks exact run/trace/span identities and
+  shows decisions on diagnosis schema 1.1 timelines. Tower 0.5.2 accepts that
+  additive schema while retaining separate deployment-health semantics.
+- Optional native Chaos recovery proposal supervision with event identity.
+- Scoped-agent/evidence examples, compatibility and scope-limit documentation,
+  native SDK/ecosystem CI jobs and an AIOS non-normative correlation fixture.
+
+### Changed
+
+- Audit policy fingerprints include mandatory shared/exclusive guardrail configuration.
+- Frameworks share one callable enforcement/approval/cancellation/audit implementation.
+- OpenAI optional provider range admits SDK 3.x used by Agents; the core stays
+  independent of provider/framework/sibling SDK imports.
+
+### Limits
+
+- Semantica module/empty extra is reserved; export awaits upstream API validation.
+- Explicit host context transport is not automatic prompt rewriting or process
+  isolation. Deployment access boundaries and journal-reader authorization remain
+  host responsibilities. Private-context lifecycle and delegated authority validation
+  remain v0.9; stable AIOS scope/decision schemas remain v1.0.
+- Authenticated OpenAI/Anthropic provider smoke remains pending credentials.
+
 ### Documentation
 
 - Plan Shared & Exclusive context/intent and guardrails: scoped delivery and

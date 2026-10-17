@@ -95,6 +95,7 @@ class Sidecar:
         runtime: TaskRuntime | None = None,
         mandatory_checks: Sequence[DecisionHook] = (),
         context_metadata: dict[str, Any] | None = None,
+        mandatory_configuration: dict[str, Any] | None = None,
     ) -> None:
         if on_sidecar_failure not in ("fail_open", "fail_closed"):
             raise ValueError(
@@ -119,6 +120,7 @@ class Sidecar:
                 "on_sidecar_failure instead of failing fast here."
             )
 
+        self._mandatory_configuration = deepcopy(mandatory_configuration or {})
         self._mandatory_checks = tuple(mandatory_checks)
         self._context_metadata = deepcopy(context_metadata or {})
         self.on_sidecar_failure = on_sidecar_failure

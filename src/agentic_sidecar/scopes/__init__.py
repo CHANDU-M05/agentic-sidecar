@@ -175,6 +175,12 @@ class ScopedSystem:
             on_sidecar_failure=on_sidecar_failure,
             mode=mode,
             mandatory_checks=checks,
+            mandatory_configuration={
+                "shared": self._shared.model_dump(mode="json", exclude={"context"}),
+                "exclusive": self._exclusive.get(agent_id, ScopeLayer()).model_dump(
+                    mode="json", exclude={"context"}
+                ),
+            },
             context_metadata={
                 "sidecar.scope": {**self._identity, "agent_id": agent_id},
                 "sidecar.context": payload["values"],

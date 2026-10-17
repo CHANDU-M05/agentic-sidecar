@@ -157,3 +157,33 @@ def test_warning_does_not_skip_later_denial() -> None:
         agent.sidecar.evaluate(DecisionContext(tool_name="refund", tool_args={"amount": 20})).status
         == "BLOCK"
     )
+
+
+def test_all_mandatory_checks_run_before_approval_resolution() -> None:
+    from agentic_sidecar import Sidecar
+
+    sidecar = Sidecar(
+        on_sidecar_failure="fail_closed",
+        mode="govern",
+        mandatory_checks=[
+            lambda _: Decision(status="PAUSE", risk="LOW", reason="approval"),
+            lambda _: Decision(status="BLOCK", risk="LOW", reason="mandatory denial"),
+        ],
+    )
+    assert sidecar.evaluate(DecisionContext(tool_name="read")).status == "BLOCK"
+
+
+def test_scoped_guardrails_are_part_of_audit_policy_fingerprint() -> None:
+    fingerprints = []
+    for effect in ["allow", "deny"]:
+        config = system(
+            shared=ScopeLayer(
+                guardrails=GuardrailSpec(rules=[PolicyRule(tool="read", effect=effect)])
+            )
+        )
+        bound = config.bind("research", on_sidecar_failure="fail_closed")
+        bound.sidecar.evaluate(DecisionContext(tool_name="read"))
+        event = next(e for e in bound.sidecar.runtime.journal.export() if e["kind"] == "decision")
+        assert event["payload"]["policy"]["mandatory"]["shared"]["guardrails"]["rules"]
+        fingerprints.append(event["payload"]["policy_version"])
+    assert len(set(fingerprints)) == 2

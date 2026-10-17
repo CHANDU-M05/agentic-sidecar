@@ -266,6 +266,15 @@ class Sidecar:
                 evaluator = self._hook or self._default_evaluate
                 decision = None
                 warning = None
+                priority = {
+                    "ALLOW": 0,
+                    "WARN": 1,
+                    "PAUSE": 2,
+                    "ESCALATE": 3,
+                    "REPLAN": 4,
+                    "CHALLENGE": 5,
+                    "BLOCK": 6,
+                }
                 for check in self._mandatory_checks:
                     checked = check(context.model_copy(deep=True))
                     if not isinstance(checked, Decision):
@@ -273,9 +282,10 @@ class Sidecar:
                     checked = Decision.model_validate(checked.model_dump())
                     if checked.status == "WARN":
                         warning = checked
-                    elif checked.status != "ALLOW":
+                    elif checked.status != "ALLOW" and (
+                        decision is None or priority[checked.status] > priority[decision.status]
+                    ):
                         decision = checked
-                        break
                 if decision is None:
                     decision = evaluator(context)
                     if isinstance(decision, Decision) and decision.status == "ALLOW" and warning:

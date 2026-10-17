@@ -8,7 +8,7 @@ from collections.abc import Callable, Sequence
 from importlib import import_module
 from typing import Any
 
-from agentic_sidecar.adapters.langgraph import attach as wrap
+from agentic_sidecar.adapters.callable import attach as wrap
 from agentic_sidecar.core.sidecar import Sidecar
 
 

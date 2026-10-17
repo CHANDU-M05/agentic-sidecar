@@ -105,7 +105,7 @@ delegated authority remain v0.9 work. No core sibling dependency is introduced.
 
 ## Tower, AIOS and Semantica
 
-Tower 0.5.1's existing native decision/journal reader retains producer outcomes and
+Tower 0.5.2's existing native decision/journal reader retains producer outcomes and
 separate deployment health. MCP 0.3.5's discovery boundary remains separate from a
 live runtime. Compatibility checks do not imply remote operator bridging.
 AIOS records the correlation convention as a draft, not stable conformance.

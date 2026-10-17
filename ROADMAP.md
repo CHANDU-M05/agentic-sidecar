@@ -368,7 +368,7 @@ Shared authority/event semantics belong in AI Operations Specification.
   attempts still meet server checks, raw tools are unregistered, and actual
   execution is journaled. In-process wrappers alone are not isolation.
 - Lens 0.7.1 verifies native chains and correlates decisions; Chaos 0.5.3 native
-  recovery events are checked. Tower 0.5.1 and MCP server 0.3.5 retain existing
+  recovery events are checked. Tower 0.5.2 and MCP server 0.3.5 retain existing
   producer/discovery contracts; Evals 0.7.1 retains scoring ownership.
 - Full provider smoke remains pending credentials from v0.6.x. Semantica export,
   private-context lifecycle validation and stable AIOS schemas remain deferred.
